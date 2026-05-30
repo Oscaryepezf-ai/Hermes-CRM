@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { authConfig } from "./auth.config";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -10,6 +11,7 @@ const loginSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -66,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+    authorized: authConfig.callbacks!.authorized,
   },
   pages: {
     signIn: "/login",
@@ -73,6 +76,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 365 * 24 * 60 * 60, // 1 año — sin límite práctico para el demo
+    maxAge: 365 * 24 * 60 * 60,
   },
 });
