@@ -1,0 +1,86 @@
+import type { DashboardMetrics } from "@/types";
+
+export const mockMetrics: DashboardMetrics = {
+  totalLeads: 47,
+  conversionRate: 34,
+  monthlyRevenue: 18500000,
+  appointmentsThisMonth: 28,
+  leadsBySource: [
+    { source: "Instagram", count: 14 },
+    { source: "Referido", count: 12 },
+    { source: "Google", count: 9 },
+    { source: "WhatsApp", count: 6 },
+    { source: "Facebook", count: 4 },
+    { source: "TikTok", count: 2 },
+  ],
+  conversionByStage: [
+    { stage: "Nuevo Lead", count: 15, percentage: 32 },
+    { stage: "Contactado", count: 12, percentage: 26 },
+    { stage: "Cita Agendada", count: 9, percentage: 19 },
+    { stage: "Presupuesto Enviado", count: 7, percentage: 15 },
+    { stage: "Convertido", count: 4, percentage: 8 },
+  ],
+  revenueByMonth: [
+    { month: "Dic '24", value: 12000000 },
+    { month: "Ene '25", value: 14500000 },
+    { month: "Feb '25", value: 11200000 },
+    { month: "Mar '25", value: 16800000 },
+    { month: "Abr '25", value: 15300000 },
+    { month: "May '25", value: 18500000 },
+  ],
+  topProcedures: [
+    { name: "Ortodoncia", count: 8, revenue: 36000000 },
+    { name: "Implante dental", count: 5, revenue: 16000000 },
+    { name: "Blanqueamiento", count: 7, revenue: 5250000 },
+    { name: "Carillas", count: 3, revenue: 10800000 },
+    { name: "Limpieza dental", count: 12, revenue: 3000000 },
+  ],
+};
+
+export const mockActivityFeed = [
+  {
+    id: "1",
+    user: "Dr. Carlos García",
+    action: "movió",
+    subject: "Andrea Martínez",
+    fromStage: "Contactado",
+    toStage: "Cita Agendada",
+    time: new Date(Date.now() - 1 * 60 * 60 * 1000),
+  },
+  {
+    id: "2",
+    user: "María López",
+    action: "creó lead",
+    subject: "Sebastián Peña",
+    fromStage: null,
+    toStage: "Nuevo Lead",
+    time: new Date(Date.now() - 3 * 60 * 60 * 1000),
+  },
+  {
+    id: "3",
+    user: "Dr. Carlos García",
+    action: "convirtió a paciente",
+    subject: "Roberto Silva",
+    fromStage: "Presupuesto Enviado",
+    toStage: "Convertido",
+    time: new Date(Date.now() - 6 * 60 * 60 * 1000),
+  },
+  {
+    id: "4",
+    user: "María López",
+    action: "movió",
+    subject: "Diego Ramírez",
+    fromStage: "Cita Agendada",
+    toStage: "Presupuesto Enviado",
+    time: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  },
+  {
+    id: "5",
+    user: "Dr. Carlos García",
+    action: "movió",
+    subject: "Valentina Gómez",
+    fromStage: "Nuevo Lead",
+    toStage: "Contactado",
+    time: new Date(Date.now() - 48 * 60 * 60 * 1000),
+  },
+];

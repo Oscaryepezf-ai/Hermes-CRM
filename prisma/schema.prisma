@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Clinic {
+  id                   String   @id @default(cuid())
+  name                 String
+  slug                 String   @unique
+  logoUrl              String?
+  phone                String?
+  address              String?
+  city                 String?
+  country              String   @default("CO")
+  plan                 Plan     @default(STARTER)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  users          User[]
+  leads          Lead[]
+  patients       Patient[]
+  appointments   Appointment[]
+  pipelineStages PipelineStage[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(STAFF)
+  avatarUrl String?
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  createdAt DateTime @default(now())
+
+  leadHistory   LeadHistory[]
+  appointments  Appointment[]
+  assignedLeads Lead[]        @relation("AssignedLeads")
+}
+
+model PipelineStage {
+  id       String @id @default(cuid())
+  name     String
+  order    Int
+  color    String @default("#6366f1")
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
+
+  leads Lead[]
+}
+
+model Lead {
+  id             String           @id @default(cuid())
+  fullName       String
+  phone          String
+  email          String?
+  // Campos legacy del Kanban (se mantienen para no romper el pipeline visual)
+  source         LeadSource       @default(REFERIDO)
+  interest       String?
+  estimatedValue Float?
+  notes          String?
+  stageId        String?
+  stage          PipelineStage?   @relation(fields: [stageId], references: [id])
+  convertedAt    DateTime?
+  patientId      String?
+  // Campos nuevos del pipeline comercial
+  status         LeadStatus       @default(NUEVO)
+  treatment      DentalTreatment  @default(OTRO)
+  channel        MarketingChannel @default(OTRO)
+  assignedToId   String?
+  assignedTo     User?            @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  lastContactAt  DateTime?
+  clinicId       String
+  clinic         Clinic           @relation(fields: [clinicId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  history         LeadHistory[]
+  messages        Message[]
+  clinicalHistory ClinicalHistory?
+}
+
+model ClinicalHistory {
+  id                String   @id @default(cuid())
+  leadId            String   @unique
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  reasonForConsult  String?  @db.Text
+  medicalHistory    String?  @db.Text
+  dentalHistory     String?  @db.Text
+  odontogramNotes   String?  @db.Text
+  proposedTreatment String?  @db.Text
+  observations      String?  @db.Text
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Message {
+  id          String       @id @default(cuid())
+  leadId      String
+  lead        Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction   MsgDirection
+  content     String
+  mediaUrl    String?
+  status      MsgStatus    @default(SENT)
+  sentAt      DateTime     @default(now())
+  deliveredAt DateTime?
+  readAt      DateTime?
+}
+
+model LeadHistory {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  fromStage String?
+  toStage   String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model Patient {
+  id        String    @id @default(cuid())
+  fullName  String
+  phone     String
+  email     String?
+  birthDate DateTime?
+  cedula    String?
+  address   String?
+  clinicId  String
+  clinic    Clinic    @relation(fields: [clinicId], references: [id])
+  createdAt DateTime  @default(now())
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  patientId   String
+  patient     Patient           @relation(fields: [patientId], references: [id])
+  clinicId    String
+  clinic      Clinic            @relation(fields: [clinicId], references: [id])
+  dentistId   String
+  dentist     User              @relation(fields: [dentistId], references: [id])
+  procedure   String
+  value       Float?
+  status      AppointmentStatus @default(SCHEDULED)
+  scheduledAt DateTime
+  notes       String?
+  createdAt   DateTime          @default(now())
+}
+
+// ─── Enums existentes ──────────────────────────────────────────────────────────
+
+enum Plan {
+  STARTER
+  PROFESIONAL
+  CLINICA
+}
+
+enum UserRole {
+  OWNER
+  DENTIST
+  STAFF
+}
+
+enum LeadSource {
+  REFERIDO
+  INSTAGRAM
+  FACEBOOK
+  GOOGLE
+  TIKTOK
+  WHATSAPP
+  OTRO
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ─── Enums nuevos del pipeline comercial ──────────────────────────────────────
+
+enum LeadStatus {
+  NUEVO
+  CONTACTADO
+  CITA_AGENDADA
+  PRESUPUESTO_ENVIADO
+  CONVERTIDO
+  PERDIDO
+}
+
+enum DentalTreatment {
+  ORTODONCIA
+  IMPLANTES
+  BLANQUEAMIENTO
+  ENDODONCIA
+  LIMPIEZA
+  CIRUGIA
+  PROTESIS
+  OTRO
+}
+
+enum MarketingChannel {
+  INSTAGRAM
+  FACEBOOK
+  WHATSAPP
+  GOOGLE
+  REFERIDO
+  TIKTOK
+  OTRO
+}
+
+enum MsgDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MsgStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
