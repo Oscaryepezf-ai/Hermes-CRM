@@ -20,7 +20,8 @@ type ChannelRecord = {
   isActive:    boolean
   pageId:      string | null
   connectedAt: Date | null
-  metadata?:   { pageName?: string; category?: string } | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?:   any
 }
 
 type StoredPage = {
@@ -77,6 +78,9 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
   const fbConnected = searchParams.get("fb_connected") === "1"
   const fbSelect    = searchParams.get("fb_select")    === "1"
   const fbError     = searchParams.get("fb_error")
+  const igConnected = searchParams.get("ig_connected") === "1"
+  const igSelect    = searchParams.get("ig_select")    === "1"
+  const igError     = searchParams.get("ig_error")
 
   useEffect(() => {
     if (fbConnected) {
@@ -87,33 +91,50 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
       const msgs: Record<string, string> = {
         denied:   "Cancelaste la conexión con Facebook.",
         csrf:     "Error de seguridad. Intenta de nuevo.",
-        token:    "No se pudo obtener el token de Facebook. Intenta de nuevo.",
+        token:    "No se pudo obtener el token. Intenta de nuevo.",
         pages:    "No se pudo obtener la lista de páginas.",
         no_pages: "Tu cuenta no administra ninguna Página de Facebook.",
-        invalid:  "Respuesta inválida de Facebook. Intenta de nuevo.",
+        invalid:  "Respuesta inválida. Intenta de nuevo.",
       }
       toast.error(msgs[fbError] ?? "Error al conectar con Facebook")
       router.replace("/settings/channels")
     }
-  }, [fbConnected, fbError, router])
+    if (igConnected) {
+      toast.success("¡Instagram DM conectado correctamente!")
+      router.replace("/settings/channels")
+    }
+    if (igError) {
+      const msgs: Record<string, string> = {
+        denied:         "Cancelaste la conexión con Instagram.",
+        csrf:           "Error de seguridad. Intenta de nuevo.",
+        token:          "No se pudo obtener el token. Intenta de nuevo.",
+        pages:          "No se pudo obtener la lista de páginas.",
+        no_pages:       "Tu cuenta no administra ninguna Página de Facebook.",
+        no_ig_account:  "Ninguna de tus páginas tiene una cuenta de Instagram Profesional vinculada.",
+        invalid:        "Respuesta inválida. Intenta de nuevo.",
+      }
+      toast.error(msgs[igError] ?? "Error al conectar con Instagram")
+      router.replace("/settings/channels")
+    }
+  }, [fbConnected, fbError, igConnected, igError, router])
 
-  const facebookChannel = channels.find(c => c.channel === "FACEBOOK")
+  const facebookChannel  = channels.find(c => c.channel === "FACEBOOK")
+  const instagramChannel = channels.find(c => c.channel === "INSTAGRAM")
 
   return (
     <div className="space-y-3">
-      {/* WhatsApp */}
       <WhatsAppCard status={waStatus} phoneId={waPhoneId} />
 
-      {/* Facebook */}
       <FacebookCard
         channel={facebookChannel ?? null}
         showPagePicker={fbSelect}
       />
 
-      {/* Instagram — coming soon */}
-      <ComingSoonCard channel="INSTAGRAM" eta="Q3 2026" />
+      <InstagramCard
+        channel={instagramChannel ?? null}
+        showAccountPicker={igSelect}
+      />
 
-      {/* Footer */}
       <div className="flex items-start gap-2.5 bg-brand-50 border border-brand-100 rounded-[10px] px-4 py-3">
         <Info className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
         <p className="text-[12px] text-brand-700 leading-relaxed">
@@ -368,7 +389,175 @@ function PagePickerBanner({ onSuccess }: { onSuccess: () => void }) {
   )
 }
 
-// ─── Coming Soon ──────────────────────────────────────────────────────────────
+// ─── Instagram Card ───────────────────────────────────────────────────────────
+
+function InstagramCard({
+  channel,
+  showAccountPicker,
+}: {
+  channel:            ChannelRecord | null
+  showAccountPicker:  boolean
+}) {
+  const meta      = CHANNEL_META.INSTAGRAM
+  const connected = channel?.isActive ?? false
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
+
+  const igUsername = (channel?.metadata as { igUsername?: string } | null)?.igUsername
+  const igName     = (channel?.metadata as { igName?: string } | null)?.igName
+
+  const handleDisconnect = async () => {
+    setSaving(true)
+    const res = await disconnectChannel("INSTAGRAM")
+    if (res.success) { toast.success("Instagram desconectado"); router.refresh() }
+    else toast.error(res.error)
+    setSaving(false)
+  }
+
+  return (
+    <ChannelCard meta={meta} connected={connected} badge={connected ? "Activo" : "Desconectado"}>
+      {showAccountPicker && !connected && (
+        <InstagramAccountPicker
+          onSuccess={() => router.replace("/settings/channels?ig_connected=1")}
+        />
+      )}
+
+      {connected ? (
+        <div className="mt-4 space-y-3">
+          <StatusBanner
+            type="success"
+            title={igName ?? igUsername ?? "Instagram conectado"}
+            detail={igUsername ? `@${igUsername}` : undefined}
+            extra={channel?.connectedAt
+              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}`
+              : undefined}
+          />
+          <div className="bg-inset border border-line-subtle rounded-[8px] px-3 py-2.5">
+            <p className="text-[11px] text-ink-tertiary mb-1">URL del Webhook</p>
+            <p className="text-[11px] font-mono text-ink-secondary break-all">
+              {typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}
+              /api/webhooks/meta
+            </p>
+          </div>
+          <Button
+            variant="outline" size="sm" onClick={handleDisconnect} disabled={saving}
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 text-[12px] h-8"
+          >
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <WifiOff className="w-3.5 h-3.5 mr-1.5" />}
+            Desconectar Instagram
+          </Button>
+        </div>
+      ) : !showAccountPicker ? (
+        <div className="mt-4 space-y-3">
+          <p className="text-[12px] text-ink-tertiary leading-relaxed">
+            Necesitas una cuenta de Instagram Profesional (Business o Creator) vinculada
+            a una Página de Facebook que administres.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <a href="/api/auth/instagram/connect">
+              <Button
+                size="sm"
+                className="text-white text-[12px] h-8 px-4 gap-2"
+                style={{ background: "linear-gradient(135deg, #f58529 0%, #dd2a7b 50%, #8134af 100%)" }}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                Conectar con Instagram
+              </Button>
+            </a>
+            <a
+              href="https://developers.facebook.com/docs/instagram-api/getting-started"
+              target="_blank" rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="text-[12px] h-8 px-3">
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                Guía
+              </Button>
+            </a>
+          </div>
+          <div className="flex items-start gap-2 bg-inset rounded-[8px] px-3 py-2.5">
+            <Info className="w-3.5 h-3.5 text-ink-tertiary flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-ink-tertiary leading-relaxed">
+              Hermes solicitará acceso a: <strong>Cuenta básica de Instagram · Gestionar mensajes directos</strong>
+            </p>
+          </div>
+        </div>
+      ) : null}
+    </ChannelCard>
+  )
+}
+
+// ─── Instagram Account Picker ─────────────────────────────────────────────────
+
+type IgAccount = { igId: string; igName: string; igUsername: string; igPicture: string; pageName: string }
+
+function InstagramAccountPicker({ onSuccess }: { onSuccess: () => void }) {
+  const [accounts, setAccounts] = useState<IgAccount[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [saving, setSaving]     = useState<string | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    fetch("/api/auth/instagram/accounts-list")
+      .then(r => r.json())
+      .then((d: { accounts?: IgAccount[] }) => { if (d.accounts) setAccounts(d.accounts) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const selectAccount = async (igId: string) => {
+    setSaving(igId)
+    const res = await fetch("/api/auth/instagram/select-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ igId }),
+    })
+    const data = await res.json() as { success?: boolean; error?: string }
+    if (data.success) { onSuccess(); router.refresh() }
+    else { toast.error(data.error ?? "Error al conectar"); setSaving(null) }
+  }
+
+  if (loading) return (
+    <div className="mt-4 flex items-center gap-2 text-[12px] text-ink-tertiary">
+      <Loader2 className="w-4 h-4 animate-spin" /> Cargando tus cuentas de Instagram...
+    </div>
+  )
+
+  return (
+    <div className="mt-4 space-y-2">
+      <p className="text-[12px] font-[550] text-ink-primary">
+        Selecciona la cuenta de Instagram que quieres conectar
+      </p>
+      <div className="space-y-2">
+        {accounts.map(acc => (
+          <button
+            key={acc.igId}
+            onClick={() => selectAccount(acc.igId)}
+            disabled={!!saving}
+            className="w-full flex items-center gap-3 bg-surface border border-line-subtle hover:border-[#E1306C]/30 hover:bg-pink-50/50 rounded-[10px] px-4 py-3 text-left transition-ui group"
+          >
+            {acc.igPicture ? (
+              <img src={acc.igPicture} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[#FDF2F8] flex items-center justify-center flex-shrink-0">
+                <Camera className="w-4 h-4 text-[#E1306C]" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-[550] text-ink-primary truncate">{acc.igName}</p>
+              <p className="text-[11px] text-ink-tertiary">@{acc.igUsername} · {acc.pageName}</p>
+            </div>
+            {saving === acc.igId
+              ? <Loader2 className="w-4 h-4 animate-spin text-[#E1306C] flex-shrink-0" />
+              : <ChevronRight className="w-4 h-4 text-ink-disabled group-hover:text-[#E1306C]/60 flex-shrink-0" />
+            }
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── (legacy placeholder — not used anymore) ──────────────────────────────────
 
 function ComingSoonCard({ channel, eta }: { channel: keyof typeof CHANNEL_META; eta: string }) {
   const meta = CHANNEL_META[channel]

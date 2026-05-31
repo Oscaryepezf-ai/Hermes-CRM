@@ -11,7 +11,7 @@ export default async function ChannelsPage() {
   const [channels, waPhoneId] = await Promise.all([
     db.clinicChannel.findMany({
       where:  { clinicId: session.user.clinicId },
-      select: { id: true, channel: true, isActive: true, pageId: true, connectedAt: true },
+      select: { id: true, channel: true, isActive: true, pageId: true, connectedAt: true, metadata: true },
     }),
     Promise.resolve(process.env.WHATSAPP_PHONE_ID ?? null),
   ])

@@ -19,7 +19,7 @@ import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { getMessagesByLead, sendMessage } from "@/lib/actions/messages";
-import { sendMessengerReply, getUnifiedMessages } from "@/lib/actions/messenger";
+import { sendMessengerReply, sendInstagramReply, getUnifiedMessages } from "@/lib/actions/messenger";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuickReplies } from "./QuickReplies";
@@ -164,7 +164,7 @@ export function ChatPanel({
   // ─── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchMessages = useCallback(async () => {
-    if (channel !== "WHATSAPP") {
+    if (channel === "FACEBOOK" || channel === "INSTAGRAM") {
       const res = await getUnifiedMessages(leadId);
       if (res.success) setMessages(res.data as Message[]);
     } else {
@@ -260,6 +260,8 @@ export function ChatPanel({
 
     const res = channel === "FACEBOOK"
       ? await sendMessengerReply({ leadId, content })
+      : channel === "INSTAGRAM"
+      ? await sendInstagramReply({ leadId, content })
       : await sendMessage({ leadId, content });
 
     if (!res.success) {
