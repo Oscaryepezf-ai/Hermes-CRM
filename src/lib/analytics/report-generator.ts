@@ -3,8 +3,6 @@ import type { ClinicMetrics } from "./pipeline-metrics";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 export type GeneratedReport = {
   headline: string;
   executiveSummary: string;
@@ -33,6 +31,7 @@ export type GeneratedReport = {
 export async function generateAnalyticsReport(
   metrics: ClinicMetrics
 ): Promise<GeneratedReport> {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const prompt = buildPrompt(metrics);
 
   const response = await openai.chat.completions.create({
