@@ -24,6 +24,7 @@ export type LeadForBoard = {
   lastContactAt: Date | null
   updatedAt: Date
   notes: string | null
+  isAgentHandled: boolean
 }
 
 export type LeadWithAssignee = {

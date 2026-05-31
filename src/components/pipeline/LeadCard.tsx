@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { Stethoscope } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { AgentIndicator } from "./AgentIndicator";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { TREATMENT_LABELS } from "@/types/leads";
@@ -113,6 +114,13 @@ export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
           <p className="mt-2.5 text-[14px] font-[550] text-ink-primary leading-tight truncate">
             {lead.fullName}
           </p>
+
+          {/* Agent badge */}
+          {lead.isAgentHandled && (
+            <div className="mt-1">
+              <AgentIndicator />
+            </div>
+          )}
 
           {/* Phone */}
           <p className="text-[11px] text-ink-tertiary mt-0.5">{lead.phone}</p>

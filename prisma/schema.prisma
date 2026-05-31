@@ -26,6 +26,10 @@ model Clinic {
   messengerActive  Boolean @default(false)
   instagramActive  Boolean @default(false)
 
+  // ─── Hermes Captador ──────────────────────────────────
+  captadorActive   Boolean @default(false)
+  captadorConfig   Json?
+
   users          User[]
   leads          Lead[]
   patients       Patient[]
@@ -139,11 +143,14 @@ model Lead {
   totalTouchpoints  Int           @default(0)
   responseTimeAvg   Float?
 
-  history         LeadHistory[]
-  messages        Message[]
-  clinicalHistory ClinicalHistory?
-  journeyEvents   JourneyEvent[]
-  socialProfiles  SocialProfile[]
+  isAgentHandled    Boolean @default(false)
+
+  history           LeadHistory[]
+  messages          Message[]
+  clinicalHistory   ClinicalHistory?
+  journeyEvents     JourneyEvent[]
+  socialProfiles    SocialProfile[]
+  agentConversation AgentConversation?
 }
 
 model ClinicalHistory {
@@ -175,6 +182,7 @@ model Message {
   readAt            DateTime?
   channel           MarketingChannel @default(WHATSAPP)
   externalMessageId String?          @db.Text
+  isAutomatic       Boolean          @default(false)
 
   @@index([externalMessageId])
 }
@@ -428,4 +436,35 @@ model SocialProfile {
 
   @@unique([channel, externalId])
   @@index([externalId])
+}
+
+// ─── Hermes Captador ──────────────────────────────────────────────────────────
+
+model AgentConversation {
+  id             String             @id @default(cuid())
+  leadId         String             @unique
+  lead           Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  agentType      AgentType          @default(CAPTADOR)
+  status         ConversationStatus @default(ACTIVE)
+  channel        MarketingChannel
+  turnCount      Int                @default(0)
+  lastAgentMsgAt DateTime?
+  handedOffAt    DateTime?
+  handoffReason  String?
+  collectedData  Json               @default("{}")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+enum AgentType {
+  CAPTADOR
+  AGENDADOR
+  REACTIVADOR
+}
+
+enum ConversationStatus {
+  ACTIVE
+  HANDED_OFF
+  COMPLETED
+  ABANDONED
 }

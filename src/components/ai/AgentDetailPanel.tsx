@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bot, Zap, Clock, CheckCircle2, X } from "lucide-react";
+import { Bot, Zap, Clock, CheckCircle2, X, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentConfig } from "./AgentBubble";
+import { CaptadorConfig } from "@/components/hermes-ai/CaptadorConfig";
 
 interface AgentDetailPanelProps {
   agent: AgentConfig;
@@ -44,6 +46,7 @@ const CAPABILITIES: Record<string, string[]> = {
 export function AgentDetailPanel({ agent, onClose }: AgentDetailPanelProps) {
   const Icon = agent.icon;
   const caps = CAPABILITIES[agent.id] ?? [];
+  const [showConfig, setShowConfig] = useState(false);
 
   return (
     <div className="bg-medical-card rounded-2xl border border-medical-border shadow-sm overflow-hidden">
@@ -127,6 +130,26 @@ export function AgentDetailPanel({ agent, onClose }: AgentDetailPanelProps) {
             <Bot className="w-4 h-4" />
             {agent.ctaLabel}
           </Link>
+        ) : agent.id === 'captador' ? (
+          <>
+            <button
+              onClick={() => setShowConfig(!showConfig)}
+              className={cn(
+                "w-full py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90",
+                agent.gradient
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Settings className="w-4 h-4" />
+                {showConfig ? 'Ocultar configuración' : agent.ctaLabel}
+              </div>
+            </button>
+            {showConfig && (
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <CaptadorConfig onClose={() => setShowConfig(false)} />
+              </div>
+            )}
+          </>
         ) : (
           <button
             className={cn(

@@ -328,6 +328,7 @@ export async function getLeadsForBoard(): Promise<ActionResponse<LeadForBoard[]>
         lastContactAt: true,
         updatedAt: true,
         notes: true,
+        isAgentHandled: true,
         assignedTo: {
           select: { id: true, name: true, avatarUrl: true },
         },

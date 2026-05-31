@@ -8,6 +8,7 @@ import {
 import { markMessengerMessageSeen } from '@/lib/meta/messenger-client'
 import { markInstagramMessageSeen } from '@/lib/meta/instagram-client'
 import { sendPushToClinicAdmins } from '@/lib/push/send-notification'
+import { runCaptadorCycle } from '@/lib/captador/run-cycle'
 
 export const maxDuration = 30
 export const dynamic     = 'force-dynamic'
@@ -80,6 +81,11 @@ async function processMessengerEvents(body: unknown): Promise<void> {
           data:  { url: '/pipeline', type: 'appointment_created', entityId: leadId },
         }).catch(() => {})
       }
+
+      // Run Captador if message has text content
+      if (event.message?.text) {
+        runCaptadorCycle({ leadId, message: event.message.text, channel: 'FACEBOOK' }).catch(console.error)
+      }
     } catch (err) {
       console.error(`[meta-webhook] FB PSID ${event.senderId}:`, err)
     }
@@ -113,6 +119,10 @@ async function processInstagramEvents(body: unknown): Promise<void> {
           body:  'Nuevo prospecto desde Instagram DM — revisa el pipeline',
           data:  { url: '/pipeline', type: 'appointment_created', entityId: leadId },
         }).catch(() => {})
+      }
+
+      if (event.message?.text) {
+        runCaptadorCycle({ leadId, message: event.message.text, channel: 'INSTAGRAM' }).catch(console.error)
       }
     } catch (err) {
       console.error(`[meta-webhook] IG IGSID ${event.senderId}:`, err)

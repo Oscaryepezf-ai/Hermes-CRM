@@ -252,6 +252,7 @@ export function ChatPanel({
       readAt:            null,
       channel:           channel ?? "WHATSAPP",
       externalMessageId: null,
+      isAutomatic:       false,
       isOptimistic: true,
     };
 
