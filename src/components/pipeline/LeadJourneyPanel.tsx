@@ -152,6 +152,7 @@ export function LeadJourneyPanel({
             clinicName={clinicName}
             onClose={onClose}
             embedded
+            channel={lead?.socialProfiles?.[0]?.channel ?? "WHATSAPP"}
           />
         )}
 

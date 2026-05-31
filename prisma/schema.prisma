@@ -21,6 +21,11 @@ model Clinic {
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
+  // ─── Canales Meta ─────────────────────────────────────
+  facebookPageId   String?
+  messengerActive  Boolean @default(false)
+  instagramActive  Boolean @default(false)
+
   users          User[]
   leads          Lead[]
   patients       Patient[]
@@ -119,6 +124,7 @@ model Lead {
   messages        Message[]
   clinicalHistory ClinicalHistory?
   journeyEvents   JourneyEvent[]
+  socialProfiles  SocialProfile[]
 }
 
 model ClinicalHistory {
@@ -138,16 +144,20 @@ model ClinicalHistory {
 }
 
 model Message {
-  id          String       @id @default(cuid())
-  leadId      String
-  lead        Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  direction   MsgDirection
-  content     String
-  mediaUrl    String?
-  status      MsgStatus    @default(SENT)
-  sentAt      DateTime     @default(now())
-  deliveredAt DateTime?
-  readAt      DateTime?
+  id                String           @id @default(cuid())
+  leadId            String
+  lead              Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction         MsgDirection
+  content           String
+  mediaUrl          String?
+  status            MsgStatus        @default(SENT)
+  sentAt            DateTime         @default(now())
+  deliveredAt       DateTime?
+  readAt            DateTime?
+  channel           MarketingChannel @default(WHATSAPP)
+  externalMessageId String?          @db.Text
+
+  @@index([externalMessageId])
 }
 
 model LeadHistory {
@@ -379,4 +389,24 @@ enum EventType {
   AI_SCHEDULED
   AI_REMINDER_SENT
   AI_REENGAGED
+}
+
+// ─── Canal Social — Perfiles de redes sociales ────────────────────────────────
+
+model SocialProfile {
+  id            String           @id @default(cuid())
+  leadId        String
+  lead          Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  channel       MarketingChannel
+  externalId    String           // PSID de Facebook, IG user ID, etc.
+  displayName   String?
+  profilePicUrl String?
+  locale        String?
+  timezone      Int?
+  rawProfile    Json?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([channel, externalId])
+  @@index([externalId])
 }

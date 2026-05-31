@@ -19,11 +19,13 @@ import { format, isToday, isYesterday, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { getMessagesByLead, sendMessage } from "@/lib/actions/messages";
+import { sendMessengerReply, getUnifiedMessages } from "@/lib/actions/messenger";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QuickReplies } from "./QuickReplies";
+import { ChannelBadge } from "./ChannelBadge";
 import { QUICK_REPLIES, resolveQuickReply } from "@/lib/quick-replies-data";
-import type { Message } from "@prisma/client";
+import type { Message, MarketingChannel } from "@prisma/client";
 import type { DentalTreatment } from "@prisma/client";
 import type { QuickReply } from "@/types/quick-replies";
 
@@ -113,6 +115,7 @@ interface ChatPanelProps {
   clinicName:     string;
   onClose:        () => void;
   embedded?:      boolean;
+  channel?:       MarketingChannel;
 }
 
 // ─── Optimistic message shape ─────────────────────────────────────────────────
@@ -129,6 +132,7 @@ export function ChatPanel({
   clinicName,
   onClose,
   embedded = false,
+  channel = "WHATSAPP",
 }: ChatPanelProps) {
   const [messages,      setMessages]      = useState<OptimisticMessage[]>([]);
   const [inputText,     setInputText]     = useState("");
@@ -160,9 +164,14 @@ export function ChatPanel({
   // ─── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchMessages = useCallback(async () => {
-    const res = await getMessagesByLead(leadId);
-    if (res.success) setMessages(res.data);
-  }, [leadId]);
+    if (channel !== "WHATSAPP") {
+      const res = await getUnifiedMessages(leadId);
+      if (res.success) setMessages(res.data as Message[]);
+    } else {
+      const res = await getMessagesByLead(leadId);
+      if (res.success) setMessages(res.data);
+    }
+  }, [leadId, channel]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -232,30 +241,41 @@ export function ChatPanel({
     if (textareaRef.current) textareaRef.current.style.height = "auto";
 
     const optimisticMsg: OptimisticMessage = {
-      id:          `opt-${Date.now()}`,
+      id:                `opt-${Date.now()}`,
       leadId,
-      direction:   "OUTBOUND",
+      direction:         "OUTBOUND",
       content,
-      mediaUrl:    null,
-      status:      "SENT",
-      sentAt:      new Date(),
-      deliveredAt: null,
-      readAt:      null,
+      mediaUrl:          null,
+      status:            "SENT",
+      sentAt:            new Date(),
+      deliveredAt:       null,
+      readAt:            null,
+      channel:           channel ?? "WHATSAPP",
+      externalMessageId: null,
       isOptimistic: true,
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
     setIsSending(true);
 
-    const res = await sendMessage({ leadId, content });
+    const res = channel === "FACEBOOK"
+      ? await sendMessengerReply({ leadId, content })
+      : await sendMessage({ leadId, content });
 
     if (!res.success) {
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
       toast.error(res.error ?? "Error al enviar el mensaje");
     } else {
-      setMessages((prev) =>
-        prev.map((m) => (m.id === optimisticMsg.id ? { ...res.data } : m))
-      );
+      // Messenger reply returns no data — refresh from server
+      if (channel === "FACEBOOK") {
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+        await fetchMessages();
+      } else {
+        const msgData = (res as { success: true; data: Message }).data;
+        setMessages((prev) =>
+          prev.map((m) => (m.id === optimisticMsg.id ? { ...msgData } : m))
+        );
+      }
     }
 
     setIsSending(false);
@@ -313,7 +333,12 @@ export function ChatPanel({
 
         <div className="flex-1 min-w-0">
           <p className="text-white font-medium text-sm leading-tight truncate">{leadName}</p>
-          <p className="text-green-200 text-xs leading-tight">{leadPhone}</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {channel !== "WHATSAPP" && (
+              <ChannelBadge channel={channel} size="xs" />
+            )}
+            <p className="text-green-200 text-xs leading-tight">{leadPhone}</p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

@@ -87,6 +87,10 @@ export async function getLeadJourney(leadId: string) {
         },
       },
       clinicalHistory: true,
+      socialProfiles: {
+        select: { channel: true, displayName: true, profilePicUrl: true },
+        orderBy: { createdAt: "asc" },
+      },
       messages: {
         orderBy: { sentAt: "desc" },
         take:    1,
