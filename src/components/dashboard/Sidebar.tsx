@@ -10,12 +10,14 @@ import {
   Settings,
   Stethoscope,
   ChevronRight,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
   { label: "Pipeline",   href: "/pipeline",  icon: Kanban },
+  { label: "Agenda",     href: "/agenda",    icon: CalendarDays },
   { label: "Pacientes",  href: "/patients",  icon: Users },
   { label: "Dr. Clinic", href: "/dr-clinic", icon: Stethoscope },
   { label: "Hermes AI",  href: "/ai",        icon: Bot, badge: "Pro" },
