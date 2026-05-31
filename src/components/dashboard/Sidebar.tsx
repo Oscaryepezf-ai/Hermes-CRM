@@ -31,19 +31,28 @@ interface SidebarProps {
   plan?:    string;
 }
 
+function applySidebarWidth(collapsed: boolean) {
+  document.documentElement.style.setProperty("--sidebar-w", collapsed ? "60px" : "220px");
+}
+
 export function Sidebar({ userRole, plan = "STARTER" }: SidebarProps) {
   const pathname  = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
+  // Initialize from localStorage and set CSS variable — no polling, no re-renders in parent
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-collapsed");
-    if (saved === "true") setCollapsed(true);
+    const saved = localStorage.getItem("sidebar-collapsed") === "true";
+    if (saved) {
+      setCollapsed(true);
+      applySidebarWidth(true);
+    }
   }, []);
 
   const toggle = () => {
     const next = !collapsed;
     setCollapsed(next);
     localStorage.setItem("sidebar-collapsed", String(next));
+    applySidebarWidth(next);
   };
 
   const allowedModules = SIDEBAR_MODULES[userRole] ?? [];

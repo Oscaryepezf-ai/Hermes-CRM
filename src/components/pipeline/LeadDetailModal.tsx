@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ interface LeadDetailModalProps {
 }
 
 export function LeadDetailModal({ lead, onClose }: LeadDetailModalProps) {
+  const router = useRouter();
   const [history, setHistory] = useState<any[]>([]);
   const [converting, setConverting] = useState(false);
 
@@ -48,7 +50,7 @@ export function LeadDetailModal({ lead, onClose }: LeadDetailModalProps) {
     if (res.success) {
       toast.success("Lead convertido a paciente");
       onClose();
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(res.error);
       setConverting(false);

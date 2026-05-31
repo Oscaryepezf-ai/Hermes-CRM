@@ -157,9 +157,7 @@ async function sendAgentReply(
         if (channel === 'FACEBOOK') {
           await sendMessengerMessage(profile.externalId, content, token)
         } else if (channel === 'INSTAGRAM') {
-          // Get IG Business Account ID from ClinicChannel
-          const { db: dbClient } = await import('@/lib/db')
-          const igChannel = await dbClient.clinicChannel.findUnique({
+          const igChannel = await db.clinicChannel.findUnique({
             where:  { clinicId_channel: { clinicId, channel: 'INSTAGRAM' } },
             select: { pageId: true },
           })

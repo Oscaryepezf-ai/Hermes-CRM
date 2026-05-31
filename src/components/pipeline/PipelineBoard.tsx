@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
 import { StageColumn } from "./StageColumn";
 import { LeadFormModal } from "./LeadFormModal";
@@ -91,8 +92,14 @@ interface PipelineBoardProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function PipelineBoard({ initialLeads, selectedLeadId, onSelectLead }: PipelineBoardProps) {
+  const router = useRouter();
   const [leads, setLeads]               = useState<LeadForBoard[]>(initialLeads);
   const [showCreateModal, setShowCreate] = useState(false);
+
+  // Sync local state when server data changes (after router.refresh() or revalidation)
+  useEffect(() => {
+    setLeads(initialLeads);
+  }, [initialLeads]);
 
   const getLeadsForStatus = useCallback(
     (status: LeadStatus) => leads.filter(l => l.status === status),
@@ -119,7 +126,7 @@ export function PipelineBoard({ initialLeads, selectedLeadId, onSelectLead }: Pi
 
   const handleLeadCreated = (_lead: LeadWithStage) => {
     setShowCreate(false);
-    window.location.reload();
+    router.refresh();
   };
 
   const handleSelectLead = (id: string) => {
