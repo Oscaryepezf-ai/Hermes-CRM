@@ -47,6 +47,7 @@ const AGENTS: AgentConfig[] = [
       { label: "Ausentismo", value: "-58%" },
     ],
     ctaLabel: "Configurar Agendador",
+    href: "/settings/calendar",
   },
   {
     id: "reactivador",
