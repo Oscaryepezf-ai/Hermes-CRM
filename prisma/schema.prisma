@@ -39,9 +39,22 @@ model User {
   clinic    Clinic   @relation(fields: [clinicId], references: [id])
   createdAt DateTime @default(now())
 
-  leadHistory   LeadHistory[]
-  appointments  Appointment[]
-  assignedLeads Lead[]        @relation("AssignedLeads")
+  leadHistory         LeadHistory[]
+  appointments        Appointment[]
+  assignedLeads       Lead[]                @relation("AssignedLeads")
+  googleCalendarToken GoogleCalendarToken?
+}
+
+model GoogleCalendarToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken  String   @db.Text
+  refreshToken String   @db.Text
+  expiresAt    DateTime
+  calendarId   String   @default("primary")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model PipelineStage {
@@ -143,19 +156,25 @@ model Patient {
 }
 
 model Appointment {
-  id          String            @id @default(cuid())
-  patientId   String
-  patient     Patient           @relation(fields: [patientId], references: [id])
-  clinicId    String
-  clinic      Clinic            @relation(fields: [clinicId], references: [id])
-  dentistId   String
-  dentist     User              @relation(fields: [dentistId], references: [id])
-  procedure   String
-  value       Float?
-  status      AppointmentStatus @default(SCHEDULED)
-  scheduledAt DateTime
-  notes       String?
-  createdAt   DateTime          @default(now())
+  id                 String            @id @default(cuid())
+  patientId          String
+  patient            Patient           @relation(fields: [patientId], references: [id])
+  clinicId           String
+  clinic             Clinic            @relation(fields: [clinicId], references: [id])
+  dentistId          String
+  dentist            User              @relation(fields: [dentistId], references: [id])
+  procedure          String
+  value              Float?
+  status             AppointmentStatus @default(SCHEDULED)
+  scheduledAt        DateTime
+  notes              String?
+  createdAt          DateTime          @default(now())
+  // Agendador fields
+  googleEventId      String?
+  reminderSentAt     DateTime?
+  reminderStatus     ReminderStatus    @default(PENDING)
+  confirmationCode   String?           @default(cuid())
+  patientConfirmed   Boolean           @default(false)
 }
 
 // ─── Enums existentes ──────────────────────────────────────────────────────────
@@ -232,4 +251,14 @@ enum MsgStatus {
   DELIVERED
   READ
   FAILED
+}
+
+// ─── Enums del Agendador ───────────────────────────────────────────────────────
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  CONFIRMED
+  FAILED
+  NOT_NEEDED
 }
