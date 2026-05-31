@@ -1,16 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
-  MessageCircle, Globe, Camera, CheckCircle2, XCircle,
-  ChevronRight, ExternalLink, AlertCircle, Eye, EyeOff,
-  Wifi, WifiOff, Loader2, Info,
+  MessageCircle, Globe, Camera, CheckCircle2,
+  ExternalLink, AlertCircle, WifiOff, Loader2,
+  Info, ChevronRight, Building2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { connectFacebook, disconnectChannel } from "@/lib/actions/channels"
+import { disconnectChannel } from "@/lib/actions/channels"
 import { toast } from "sonner"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,74 +20,105 @@ type ChannelRecord = {
   isActive:    boolean
   pageId:      string | null
   connectedAt: Date | null
+  metadata?:   { pageName?: string; category?: string } | null
 }
 
-type WhatsAppStatus = "configured" | "missing"
+type StoredPage = {
+  id:       string
+  name:     string
+  category: string
+  picture:  string
+}
 
 interface ChannelsViewProps {
-  channels:      ChannelRecord[]
-  waStatus:      WhatsAppStatus
-  waPhoneId:     string | null
+  channels:  ChannelRecord[]
+  waStatus:  "configured" | "missing"
+  waPhoneId: string | null
 }
 
-// ─── Channel config ───────────────────────────────────────────────────────────
+// ─── Channel visual config ────────────────────────────────────────────────────
 
 const CHANNEL_META = {
   WHATSAPP: {
     name:        "WhatsApp Business",
-    description: "Recibe y envía mensajes de WhatsApp desde el pipeline. Configurado via WhatsApp Cloud API.",
+    description: "Recibe y envía mensajes de WhatsApp desde el pipeline. Vía WhatsApp Cloud API.",
     icon:        MessageCircle,
     iconBg:      "bg-[#F0FDF4]",
     iconColor:   "text-[#128C4A]",
-    dotColor:    "#25D366",
-    docsUrl:     "https://developers.facebook.com/docs/whatsapp",
+    dotActive:   "#10B981",
+    brandColor:  "#25D366",
   },
   FACEBOOK: {
     name:        "Facebook Messenger",
-    description: "Los mensajes que llegan a tu página de Facebook crean leads automáticamente en el pipeline.",
+    description: "Los mensajes a tu Página de Facebook crean leads automáticamente en el pipeline.",
     icon:        Globe,
     iconBg:      "bg-[#EFF6FF]",
     iconColor:   "text-[#1877F2]",
-    dotColor:    "#1877F2",
-    docsUrl:     "https://developers.facebook.com/docs/messenger-platform",
+    dotActive:   "#1877F2",
+    brandColor:  "#1877F2",
   },
   INSTAGRAM: {
     name:        "Instagram DM",
-    description: "Convierte mensajes directos de Instagram en leads del pipeline automáticamente.",
+    description: "Convierte mensajes directos de Instagram en leads automáticamente.",
     icon:        Camera,
     iconBg:      "bg-[#FDF2F8]",
     iconColor:   "text-[#E1306C]",
-    dotColor:    "#E1306C",
-    docsUrl:     "https://developers.facebook.com/docs/instagram-api",
+    dotActive:   "#E1306C",
+    brandColor:  "#E1306C",
   },
-} as const
+}
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProps) {
+  const searchParams = useSearchParams()
+  const router       = useRouter()
+
+  const fbConnected = searchParams.get("fb_connected") === "1"
+  const fbSelect    = searchParams.get("fb_select")    === "1"
+  const fbError     = searchParams.get("fb_error")
+
+  useEffect(() => {
+    if (fbConnected) {
+      toast.success("¡Facebook Messenger conectado correctamente!")
+      router.replace("/settings/channels")
+    }
+    if (fbError) {
+      const msgs: Record<string, string> = {
+        denied:   "Cancelaste la conexión con Facebook.",
+        csrf:     "Error de seguridad. Intenta de nuevo.",
+        token:    "No se pudo obtener el token de Facebook. Intenta de nuevo.",
+        pages:    "No se pudo obtener la lista de páginas.",
+        no_pages: "Tu cuenta no administra ninguna Página de Facebook.",
+        invalid:  "Respuesta inválida de Facebook. Intenta de nuevo.",
+      }
+      toast.error(msgs[fbError] ?? "Error al conectar con Facebook")
+      router.replace("/settings/channels")
+    }
+  }, [fbConnected, fbError, router])
+
   const facebookChannel = channels.find(c => c.channel === "FACEBOOK")
 
   return (
-    <div className="max-w-3xl space-y-3">
+    <div className="space-y-3">
       {/* WhatsApp */}
       <WhatsAppCard status={waStatus} phoneId={waPhoneId} />
 
-      {/* Facebook Messenger */}
-      <FacebookCard channel={facebookChannel ?? null} />
-
-      {/* Instagram DM */}
-      <ComingSoonCard
-        channel="INSTAGRAM"
-        meta={CHANNEL_META.INSTAGRAM}
-        eta="Q3 2026"
+      {/* Facebook */}
+      <FacebookCard
+        channel={facebookChannel ?? null}
+        showPagePicker={fbSelect}
       />
 
-      {/* Info footer */}
-      <div className="flex items-start gap-2.5 bg-brand-50 border border-brand-100 rounded-[10px] px-4 py-3 mt-2">
+      {/* Instagram — coming soon */}
+      <ComingSoonCard channel="INSTAGRAM" eta="Q3 2026" />
+
+      {/* Footer */}
+      <div className="flex items-start gap-2.5 bg-brand-50 border border-brand-100 rounded-[10px] px-4 py-3">
         <Info className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
         <p className="text-[12px] text-brand-700 leading-relaxed">
-          Todos los mensajes entrantes de cualquier canal se unifican en el panel de conversación
-          del pipeline. El asesor siempre sabe desde dónde llegó cada prospecto.
+          Todos los canales se unifican en el panel de conversación del pipeline.
+          El asesor siempre sabe desde dónde llegó cada prospecto.
         </p>
       </div>
     </div>
@@ -97,51 +127,38 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
 
 // ─── WhatsApp Card ────────────────────────────────────────────────────────────
 
-function WhatsAppCard({ status, phoneId }: { status: WhatsAppStatus; phoneId: string | null }) {
-  const meta = CHANNEL_META.WHATSAPP
-  const Icon = meta.icon
+function WhatsAppCard({ status, phoneId }: { status: "configured" | "missing"; phoneId: string | null }) {
+  const meta      = CHANNEL_META.WHATSAPP
+  const Icon      = meta.icon
   const connected = status === "configured"
 
   return (
-    <ChannelCard
-      meta={meta}
-      connected={connected}
-      badge={connected ? "Activo" : "Sin configurar"}
-    >
+    <ChannelCard meta={meta} connected={connected} badge={connected ? "Activo" : "Sin configurar"}>
       {connected ? (
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 bg-[#F0FDF4] border border-[#BBF7D0] rounded-[8px] px-3 py-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#15694A] flex-shrink-0" />
-            <div>
-              <p className="text-[12px] font-medium text-[#15694A]">WhatsApp Cloud API conectado</p>
-              {phoneId && (
-                <p className="text-[11px] text-[#166534] mt-0.5 font-mono">Phone ID: {phoneId.slice(0, 6)}••••••</p>
-              )}
-            </div>
-          </div>
+        <div className="mt-4 space-y-2">
+          <StatusBanner
+            type="success"
+            title="WhatsApp Cloud API conectado"
+            detail={phoneId ? `Phone ID: ${phoneId.slice(0, 6)}••••••` : undefined}
+          />
           <p className="text-[11px] text-ink-tertiary leading-relaxed">
-            La configuración de WhatsApp se gestiona mediante variables de entorno (WHATSAPP_PHONE_ID,
-            WHATSAPP_TOKEN). Para cambiarla, actualiza las variables en Vercel y redespliega.
+            La configuración de WhatsApp se gestiona por variables de entorno.
+            Para cambiarla, actualiza <code className="font-mono bg-inset px-1 rounded">WHATSAPP_PHONE_ID</code> en Vercel.
           </p>
         </div>
       ) : (
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 bg-[#FEF9EE] border border-[#FDF0D4] rounded-[8px] px-3 py-2.5">
-            <AlertCircle className="w-4 h-4 text-[#8A5C0A] flex-shrink-0" />
-            <div>
-              <p className="text-[12px] font-medium text-[#8A5C0A]">WHATSAPP_PHONE_ID no configurado</p>
-              <p className="text-[11px] text-[#92400E] mt-0.5">
-                Agrega las variables de entorno en Vercel para activar este canal.
-              </p>
-            </div>
-          </div>
+          <StatusBanner
+            type="warning"
+            title="WHATSAPP_PHONE_ID no configurado"
+            detail="Agrega las variables de entorno en Vercel para activar este canal."
+          />
           <a
             href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started"
-            target="_blank"
-            rel="noopener noreferrer"
+            target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-[12px] text-brand-600 font-medium hover:underline"
           >
-            Ver guía de configuración <ExternalLink className="w-3 h-3" />
+            Ver guía de WhatsApp Cloud API <ExternalLink className="w-3 h-3" />
           </a>
         </div>
       )}
@@ -151,39 +168,29 @@ function WhatsAppCard({ status, phoneId }: { status: WhatsAppStatus; phoneId: st
 
 // ─── Facebook Card ────────────────────────────────────────────────────────────
 
-function FacebookCard({ channel }: { channel: ChannelRecord | null }) {
+function FacebookCard({
+  channel,
+  showPagePicker,
+}: {
+  channel:        ChannelRecord | null
+  showPagePicker: boolean
+}) {
   const meta      = CHANNEL_META.FACEBOOK
   const connected = channel?.isActive ?? false
+  const [saving, setSaving] = useState(false)
+  const router = useRouter()
 
-  const [showForm, setShowForm]   = useState(false)
-  const [pageId, setPageId]       = useState("")
-  const [token, setToken]         = useState("")
-  const [showToken, setShowToken] = useState(false)
-  const [saving, setSaving]       = useState(false)
-
-  const handleConnect = async () => {
-    if (!pageId.trim() || !token.trim()) {
-      toast.error("Completa todos los campos")
-      return
-    }
-    setSaving(true)
-    const res = await connectFacebook({ pageId: pageId.trim(), accessToken: token.trim() })
-    if (res.success) {
-      toast.success("Facebook Messenger conectado")
-      setShowForm(false)
-      setPageId("")
-      setToken("")
-    } else {
-      toast.error(res.error)
-    }
-    setSaving(false)
-  }
+  const pageName = (channel?.metadata as { pageName?: string } | null)?.pageName
 
   const handleDisconnect = async () => {
     setSaving(true)
     const res = await disconnectChannel("FACEBOOK")
-    if (res.success) toast.success("Facebook desconectado")
-    else toast.error(res.error)
+    if (res.success) {
+      toast.success("Facebook desconectado")
+      router.refresh()
+    } else {
+      toast.error(res.error)
+    }
     setSaving(false)
   }
 
@@ -193,33 +200,30 @@ function FacebookCard({ channel }: { channel: ChannelRecord | null }) {
       connected={connected}
       badge={connected ? "Activo" : "Desconectado"}
     >
+      {/* Page picker — shown after OAuth when user has multiple pages */}
+      {showPagePicker && !connected && (
+        <PagePickerBanner onSuccess={() => router.replace("/settings/channels?fb_connected=1")} />
+      )}
+
       {connected ? (
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 bg-[#EFF6FF] border border-[#BFDBFE] rounded-[8px] px-3 py-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#1D4ED8] flex-shrink-0" />
-            <div>
-              <p className="text-[12px] font-medium text-[#1D4ED8]">Messenger activo</p>
-              {channel?.pageId && (
-                <p className="text-[11px] text-[#1E40AF] mt-0.5 font-mono">
-                  Page ID: {channel.pageId}
-                </p>
-              )}
-              {channel?.connectedAt && (
-                <p className="text-[11px] text-ink-tertiary mt-0.5">
-                  Conectado el {new Date(channel.connectedAt).toLocaleDateString("es-CO")}
-                </p>
-              )}
-            </div>
-          </div>
+          <StatusBanner
+            type="success"
+            title={pageName ? `Página: ${pageName}` : "Messenger activo"}
+            detail={channel?.pageId ? `Page ID: ${channel.pageId}` : undefined}
+            extra={channel?.connectedAt
+              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}`
+              : undefined
+            }
+          />
 
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-[#F0F2F6] border border-line-soft rounded-[8px] px-3 py-2">
-              <p className="text-[11px] text-ink-tertiary mb-0.5">Webhook URL configurado</p>
-              <p className="text-[11px] font-mono text-ink-secondary truncate">
-                {typeof window !== "undefined" ? window.location.origin : "https://dentflow-henna.vercel.app"}
-                /api/webhooks/meta
-              </p>
-            </div>
+          {/* Webhook URL */}
+          <div className="bg-inset border border-line-subtle rounded-[8px] px-3 py-2.5">
+            <p className="text-[11px] text-ink-tertiary mb-1">URL del Webhook (pega en Meta for Developers)</p>
+            <p className="text-[11px] font-mono text-ink-secondary break-all">
+              {typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL}
+              /api/webhooks/meta
+            </p>
           </div>
 
           <Button
@@ -227,113 +231,169 @@ function FacebookCard({ channel }: { channel: ChannelRecord | null }) {
             size="sm"
             onClick={handleDisconnect}
             disabled={saving}
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 text-xs"
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 text-[12px] h-8"
           >
-            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <WifiOff className="w-3.5 h-3.5 mr-1.5" />}
-            Desconectar Facebook
+            {saving
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+              : <WifiOff className="w-3.5 h-3.5 mr-1.5" />
+            }
+            Desconectar página
           </Button>
         </div>
-      ) : (
+      ) : !showPagePicker ? (
         <div className="mt-4 space-y-3">
-          {!showForm ? (
-            <>
-              <p className="text-[12px] text-ink-tertiary leading-relaxed">
-                Para conectar, necesitas una App de Meta for Developers con el producto
-                Messenger habilitado y un token de acceso de tu página.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => setShowForm(true)}
-                  className="bg-[#1877F2] hover:bg-[#1565D8] text-white text-xs h-8 px-3"
-                >
-                  <Wifi className="w-3.5 h-3.5 mr-1.5" />
-                  Conectar Facebook
-                </Button>
-                <a
-                  href="https://developers.facebook.com/docs/messenger-platform/get-started"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="outline" size="sm" className="text-xs h-8 px-3">
-                    <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                    Ver guía
-                  </Button>
-                </a>
-              </div>
-            </>
-          ) : (
-            <ConnectForm
-              title="Conectar Facebook Messenger"
-              fields={[
-                {
-                  id:          "fb-page-id",
-                  label:       "Facebook Page ID",
-                  placeholder: "123456789012345",
-                  value:       pageId,
-                  onChange:    setPageId,
-                  type:        "text",
-                  hint:        "Encuéntralo en Configuración de tu Página → Info de la página",
-                },
-                {
-                  id:          "fb-token",
-                  label:       "Page Access Token",
-                  placeholder: "EAABs...",
-                  value:       token,
-                  onChange:    setToken,
-                  type:        showToken ? "text" : "password",
-                  hint:        "Meta for Developers → Messenger → Tokens de acceso",
-                  toggle:      { show: showToken, onToggle: () => setShowToken(!showToken) },
-                },
-              ]}
-              onCancel={() => { setShowForm(false); setPageId(""); setToken("") }}
-              onSubmit={handleConnect}
-              saving={saving}
-              submitLabel="Conectar"
-              submitColor="bg-[#1877F2] hover:bg-[#1565D8]"
-            />
-          )}
+          <p className="text-[12px] text-ink-tertiary leading-relaxed">
+            Conecta tu Página de Facebook en un solo clic. Seleccionarás la página
+            que quieres vincular con el CRM.
+          </p>
+
+          <div className="flex gap-2 flex-wrap">
+            {/* Main OAuth button */}
+            <a href="/api/auth/facebook/connect">
+              <Button
+                size="sm"
+                className="text-white text-[12px] h-8 px-4 gap-2"
+                style={{ background: "#1877F2" }}
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Conectar con Facebook
+              </Button>
+            </a>
+
+            <a
+              href="https://developers.facebook.com/docs/messenger-platform/get-started"
+              target="_blank" rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="text-[12px] h-8 px-3">
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                Guía
+              </Button>
+            </a>
+          </div>
+
+          {/* Permissions hint */}
+          <div className="flex items-start gap-2 bg-inset rounded-[8px] px-3 py-2.5">
+            <Info className="w-3.5 h-3.5 text-ink-tertiary flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-ink-tertiary leading-relaxed">
+              Hermes solicitará acceso a: <strong>Ver tus páginas · Enviar mensajes · Gestionar webhooks</strong>
+            </p>
+          </div>
         </div>
-      )}
+      ) : null}
     </ChannelCard>
   )
 }
 
-// ─── Coming Soon Card ─────────────────────────────────────────────────────────
+// ─── Page Picker Banner ───────────────────────────────────────────────────────
 
-function ComingSoonCard({
-  meta, eta,
-}: {
-  channel: keyof typeof CHANNEL_META
-  meta:    typeof CHANNEL_META[keyof typeof CHANNEL_META]
-  eta:     string
-}) {
+function PagePickerBanner({ onSuccess }: { onSuccess: () => void }) {
+  const [pages, setPages]   = useState<StoredPage[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving]   = useState<string | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    // Fetch pages from our own API (reads cookie)
+    fetch("/api/auth/facebook/pages-list")
+      .then(r => r.json())
+      .then((d: { pages?: StoredPage[] }) => { if (d.pages) setPages(d.pages) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const selectPage = async (pageId: string) => {
+    setSaving(pageId)
+    const res = await fetch("/api/auth/facebook/select-page", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ pageId }),
+    })
+    const data = await res.json() as { success?: boolean; error?: string }
+    if (data.success) {
+      onSuccess()
+      router.refresh()
+    } else {
+      toast.error(data.error ?? "Error al conectar la página")
+      setSaving(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="mt-4 flex items-center gap-2 text-[12px] text-ink-tertiary">
+        <Loader2 className="w-4 h-4 animate-spin" /> Cargando tus páginas...
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-4 space-y-2">
+      <p className="text-[12px] font-[550] text-ink-primary">
+        Selecciona la Página de Facebook que quieres conectar
+      </p>
+      <div className="space-y-2">
+        {pages.map(page => (
+          <button
+            key={page.id}
+            onClick={() => selectPage(page.id)}
+            disabled={!!saving}
+            className="w-full flex items-center gap-3 bg-surface border border-line-subtle hover:border-brand-200 hover:bg-brand-50 rounded-[10px] px-4 py-3 text-left transition-ui group"
+          >
+            {page.picture ? (
+              <img src={page.picture} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[#EFF6FF] flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-[#1877F2]" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-[550] text-ink-primary truncate">{page.name}</p>
+              {page.category && (
+                <p className="text-[11px] text-ink-tertiary">{page.category}</p>
+              )}
+            </div>
+            {saving === page.id
+              ? <Loader2 className="w-4 h-4 animate-spin text-brand-500 flex-shrink-0" />
+              : <ChevronRight className="w-4 h-4 text-ink-disabled group-hover:text-brand-400 flex-shrink-0" />
+            }
+          </button>
+        ))}
+      </div>
+      <p className="text-[11px] text-ink-tertiary">
+        Page ID: {pages[0]?.id ?? "—"} · Solo se conectará una página a la vez.
+      </p>
+    </div>
+  )
+}
+
+// ─── Coming Soon ──────────────────────────────────────────────────────────────
+
+function ComingSoonCard({ channel, eta }: { channel: keyof typeof CHANNEL_META; eta: string }) {
+  const meta = CHANNEL_META[channel]
   const Icon = meta.icon
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-5 opacity-60">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center", meta.iconBg)}>
-            <Icon className={cn("w-5 h-5", meta.iconColor)} />
+    <div className="bg-surface border border-line-subtle rounded-[12px] p-5 opacity-55">
+      <div className="flex items-center gap-3">
+        <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center", meta.iconBg)}>
+          <Icon className={cn("w-5 h-5", meta.iconColor)} />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="text-[14px] font-[550] text-ink-primary">{meta.name}</p>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[4px] bg-amber-50 text-amber-700">
+              Próximamente · {eta}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-[14px] font-[550] text-ink-primary">{meta.name}</p>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[4px] bg-amber-50 text-amber-700">
-                Próximamente · {eta}
-              </span>
-            </div>
-            <p className="text-[12px] text-ink-tertiary mt-0.5 leading-relaxed max-w-lg">
-              {meta.description}
-            </p>
-          </div>
+          <p className="text-[12px] text-ink-tertiary mt-0.5 leading-relaxed">{meta.description}</p>
         </div>
       </div>
     </div>
   )
 }
 
-// ─── Shared: Channel Card shell ───────────────────────────────────────────────
+// ─── Shared: ChannelCard ──────────────────────────────────────────────────────
 
 function ChannelCard({
   meta, connected, badge, children,
@@ -345,39 +405,29 @@ function ChannelCard({
 }) {
   const Icon = meta.icon
   return (
-    <div
-      className={cn(
-        "bg-surface border rounded-[12px] p-5 transition-ui",
-        connected ? "border-line-soft shadow-card" : "border-line-subtle"
-      )}
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0", meta.iconBg)}>
-            <Icon className={cn("w-5 h-5", meta.iconColor)} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-[14px] font-[550] text-ink-primary">{meta.name}</p>
+    <div className={cn(
+      "bg-surface border rounded-[12px] p-5 transition-ui",
+      connected ? "border-line-soft shadow-card" : "border-line-subtle"
+    )}>
+      <div className="flex items-start gap-3">
+        <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0", meta.iconBg)}>
+          <Icon className={cn("w-5 h-5", meta.iconColor)} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-[14px] font-[550] text-ink-primary">{meta.name}</p>
+            <span className={cn(
+              "flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-[4px]",
+              connected ? "bg-[#EDFAF4] text-[#15694A]" : "bg-[#F0F2F6] text-[#4A5568]"
+            )}>
               <span
-                className={cn(
-                  "flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-[4px]",
-                  connected
-                    ? "bg-[#EDFAF4] text-[#15694A]"
-                    : "bg-[#F0F2F6] text-[#4A5568]"
-                )}
-              >
-                <span
-                  className="w-[5px] h-[5px] rounded-full"
-                  style={{ background: connected ? "#10B981" : "#94A3B8" }}
-                />
-                {badge}
-              </span>
-            </div>
-            <p className="text-[12px] text-ink-tertiary mt-0.5 leading-relaxed max-w-lg">
-              {meta.description}
-            </p>
+                className="w-[5px] h-[5px] rounded-full"
+                style={{ background: connected ? meta.dotActive : "#94A3B8" }}
+              />
+              {badge}
+            </span>
           </div>
+          <p className="text-[12px] text-ink-tertiary mt-0.5 leading-relaxed">{meta.description}</p>
         </div>
       </div>
       {children}
@@ -385,86 +435,32 @@ function ChannelCard({
   )
 }
 
-// ─── Shared: Connect Form ─────────────────────────────────────────────────────
+// ─── Shared: StatusBanner ─────────────────────────────────────────────────────
 
-type FormField = {
-  id:          string
-  label:       string
-  placeholder: string
-  value:       string
-  onChange:    (v: string) => void
-  type:        string
-  hint?:       string
-  toggle?:     { show: boolean; onToggle: () => void }
-}
-
-function ConnectForm({
-  title, fields, onCancel, onSubmit, saving, submitLabel, submitColor,
+function StatusBanner({
+  type, title, detail, extra,
 }: {
-  title:       string
-  fields:      FormField[]
-  onCancel:    () => void
-  onSubmit:    () => void
-  saving:      boolean
-  submitLabel: string
-  submitColor: string
+  type:    "success" | "warning" | "error"
+  title:   string
+  detail?: string
+  extra?:  string
 }) {
+  const styles = {
+    success: { bg: "#EDFAF4", border: "#BBF7D0", iconColor: "#15694A", icon: CheckCircle2 },
+    warning: { bg: "#FEF9EE", border: "#FDF0D4", iconColor: "#8A5C0A", icon: AlertCircle  },
+    error:   { bg: "#FEF2F4", border: "#FDE2E7", iconColor: "#9B2335", icon: AlertCircle  },
+  }[type]
+  const SIcon = styles.icon
   return (
-    <div className="bg-inset border border-line-subtle rounded-[10px] p-4 space-y-4">
-      <p className="text-[12px] font-[550] text-ink-primary">{title}</p>
-
-      {fields.map(f => (
-        <div key={f.id} className="space-y-1.5">
-          <Label htmlFor={f.id} className="text-[12px] font-medium text-ink-secondary">
-            {f.label}
-          </Label>
-          <div className="relative">
-            <Input
-              id={f.id}
-              type={f.type}
-              placeholder={f.placeholder}
-              value={f.value}
-              onChange={e => f.onChange(e.target.value)}
-              className="text-[12px] h-9 pr-8 font-mono"
-            />
-            {f.toggle && (
-              <button
-                type="button"
-                onClick={f.toggle.onToggle}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-tertiary hover:text-ink-secondary"
-              >
-                {f.toggle.show
-                  ? <EyeOff className="w-3.5 h-3.5" />
-                  : <Eye className="w-3.5 h-3.5" />
-                }
-              </button>
-            )}
-          </div>
-          {f.hint && <p className="text-[11px] text-ink-tertiary">{f.hint}</p>}
-        </div>
-      ))}
-
-      <div className="flex gap-2 pt-1">
-        <Button
-          size="sm"
-          onClick={onSubmit}
-          disabled={saving}
-          className={cn("text-white text-xs h-8 px-4", submitColor)}
-        >
-          {saving
-            ? <><Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />Verificando...</>
-            : <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />{submitLabel}</>
-          }
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onCancel}
-          disabled={saving}
-          className="text-xs h-8"
-        >
-          Cancelar
-        </Button>
+    <div
+      className="flex items-start gap-2.5 rounded-[8px] px-3 py-2.5 border"
+      style={{ background: styles.bg, borderColor: styles.border }}
+    >
+      <SIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: styles.iconColor }} />
+      <div>
+        <p className="text-[12px] font-medium" style={{ color: styles.iconColor }}>{title}</p>
+        {detail && <p className="text-[11px] mt-0.5 font-mono" style={{ color: styles.iconColor }}>{detail}</p>}
+        {extra  && <p className="text-[11px] mt-0.5 text-ink-tertiary">{extra}</p>}
       </div>
     </div>
   )
