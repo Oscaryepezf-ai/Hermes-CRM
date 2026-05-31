@@ -13,19 +13,27 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SIDEBAR_MODULES } from "@/lib/rbac/permissions";
+import type { UserRole } from "@prisma/client";
 
-const navItems = [
-  { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard },
-  { label: "Pipeline",   href: "/pipeline",  icon: Kanban },
-  { label: "Agenda",     href: "/agenda",    icon: CalendarDays },
-  { label: "Pacientes",  href: "/patients",  icon: Users },
-  { label: "Dr. Clinic", href: "/dr-clinic", icon: Stethoscope },
-  { label: "Hermes AI",  href: "/ai",        icon: Bot, badge: "Pro" },
-  { label: "Ajustes",    href: "/settings",  icon: Settings },
+const ALL_NAV_ITEMS = [
+  { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard, module: "dashboard" },
+  { label: "Pipeline",   href: "/pipeline",  icon: Kanban,          module: "pipeline"  },
+  { label: "Agenda",     href: "/agenda",    icon: CalendarDays,    module: "agenda"    },
+  { label: "Pacientes",  href: "/patients",  icon: Users,           module: "patients"  },
+  { label: "Dr. Clinic", href: "/dr-clinic", icon: Stethoscope,     module: "dr_clinic" },
+  { label: "Hermes AI",  href: "/ai",        icon: Bot,             module: "hermes_ai", badge: "Pro" },
+  { label: "Ajustes",    href: "/settings",  icon: Settings,        module: "settings"  },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  userRole: UserRole;
+}
+
+export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
+  const allowedModules = SIDEBAR_MODULES[userRole] ?? [];
+  const navItems = ALL_NAV_ITEMS.filter((item) => allowedModules.includes(item.module));
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-medical-card border-r border-medical-border flex flex-col z-40 shadow-sm">

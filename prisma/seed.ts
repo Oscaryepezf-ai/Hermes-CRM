@@ -41,7 +41,7 @@ async function main() {
       name: "Dr. Carlos García",
       email: "dr.garcia@sonrisas.co",
       password: passwordHash,
-      role: UserRole.OWNER,
+      role: UserRole.ADMIN,
       clinicId: clinic.id,
     },
   });
@@ -53,7 +53,7 @@ async function main() {
       name: "María López",
       email: "recepcion@sonrisas.co",
       password: passwordHash,
-      role: UserRole.STAFF,
+      role: UserRole.RECEPTIONIST,
       clinicId: clinic.id,
     },
   });

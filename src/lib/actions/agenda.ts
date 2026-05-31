@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { auth } from "../../../auth"
 import { db } from "@/lib/db"
+import { requirePermission } from "@/lib/rbac/guards"
 import { revalidatePath } from "next/cache"
 import { sendPushToClinicAdmins } from "@/lib/push/send-notification"
 import {
@@ -104,6 +105,8 @@ const CreateSchema = z.object({
 export async function createAppointmentFromCalendar(
   data: z.infer<typeof CreateSchema>
 ) {
+  const guard = await requirePermission("agenda", "create")
+  if (!guard.authorized) return { success: false, error: guard.error }
   const session = await auth()
   if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
 
@@ -146,6 +149,8 @@ export async function updateAppointmentStatusFromCalendar(
   appointmentId: string,
   status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
 ) {
+  const guard = await requirePermission("agenda", "edit")
+  if (!guard.authorized) return { success: false, error: guard.error }
   const session = await auth()
   if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
 

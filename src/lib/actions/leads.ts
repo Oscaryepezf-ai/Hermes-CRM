@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { auth } from "../../../auth";
+import { requirePermission } from "@/lib/rbac/guards";
 import type { ActionResponse, LeadWithStage } from "@/types";
 import type { LeadWithAssignee, LeadForBoard } from "@/types/leads";
 import type { LeadStatus } from "@prisma/client";
@@ -181,6 +182,8 @@ export async function convertLeadToPatient(
 }
 
 export async function deleteLead(leadId: string): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("pipeline", "delete");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 

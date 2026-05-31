@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { auth } from "../../../auth";
+import { requirePermission } from "@/lib/rbac/guards";
 import { revalidatePath } from "next/cache";
 import type { ActionResponse } from "@/types";
 import type { ClinicalHistoryWithLead } from "@/types/clinical";
@@ -19,6 +20,8 @@ async function getSession() {
 export async function getClinicalHistory(
   leadId: string
 ): Promise<ActionResponse<ClinicalHistoryWithLead>> {
+  const guard = await requirePermission("dr_clinic", "view");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const parsed = z.string().cuid().safeParse(leadId);
     if (!parsed.success) return { success: false, error: "ID de lead inválido" };
@@ -64,6 +67,8 @@ const SaveSchema = z.object({
 export async function saveClinicalHistory(
   data: z.infer<typeof SaveSchema>
 ): Promise<ActionResponse<ClinicalHistory>> {
+  const guard = await requirePermission("dr_clinic", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const parsed = SaveSchema.safeParse(data);
     if (!parsed.success) {

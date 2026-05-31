@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { auth } from "../../../auth";
+import { requirePermission } from "@/lib/rbac/guards";
 import type { ActionResponse, PatientWithAppointments } from "@/types";
 
 const patientSchema = z.object({
@@ -23,6 +24,8 @@ async function getSession() {
 export async function createPatient(
   data: z.infer<typeof patientSchema>
 ): Promise<ActionResponse<{ id: string }>> {
+  const guard = await requirePermission("patients", "create");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
     const parsed = patientSchema.safeParse(data);
@@ -53,6 +56,8 @@ export async function updatePatient(
   id: string,
   data: z.infer<typeof patientSchema>
 ): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("patients", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
     const parsed = patientSchema.safeParse(data);

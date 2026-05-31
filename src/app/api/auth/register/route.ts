@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         name,
         email,
         password: passwordHash,
-        role: "OWNER",
+        role: "ADMIN",
         clinicId: clinic.id,
       },
     });

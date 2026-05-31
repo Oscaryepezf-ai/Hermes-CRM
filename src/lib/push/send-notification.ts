@@ -43,7 +43,7 @@ export async function sendPushToClinicAdmins(
   const admins = await db.user.findMany({
     where: {
       clinicId,
-      role: { in: ['OWNER', 'DENTIST'] },
+      role: { in: ['ADMIN', 'DOCTOR'] },
       pushSubscriptions: { some: { isActive: true } },
     },
     select: { id: true },

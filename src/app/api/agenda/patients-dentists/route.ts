@@ -17,7 +17,7 @@ export async function GET() {
     db.user.findMany({
       where: {
         clinicId: session.user.clinicId,
-        role: { in: ["OWNER", "DENTIST"] },
+        role: { in: ["ADMIN", "DOCTOR"] },
       },
       select: { id: true, name: true },
       orderBy: { name: "asc" },

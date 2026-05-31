@@ -96,7 +96,7 @@ export async function getClinicMetrics(clinicId: string): Promise<ClinicMetrics>
     where: { id: clinicId },
     include: {
       users: {
-        where: { role: "OWNER" },
+        where: { role: "ADMIN" },
         select: { email: true },
         take: 1,
       },

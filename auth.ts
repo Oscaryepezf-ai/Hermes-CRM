@@ -30,6 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: true,
             avatarUrl: true,
             clinicId: true,
+            isActive: true,
           },
         });
 
@@ -38,6 +39,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) return null;
 
+        // Update lastLoginAt
+        db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {})
+
         return {
           id: user.id,
           name: user.name,
@@ -45,7 +49,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           avatarUrl: user.avatarUrl,
           clinicId: user.clinicId,
-        };
+          isActive: user.isActive,
+        } as any;
       },
     }),
   ],
@@ -56,6 +61,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.clinicId = (user as any).clinicId;
         token.role = (user as any).role;
         token.avatarUrl = (user as any).avatarUrl;
+        token.isActive = (user as any).isActive ?? true;
       }
       return token;
     },
@@ -65,6 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.clinicId = token.clinicId as string;
         session.user.role = token.role as any;
         session.user.avatarUrl = token.avatarUrl as string | null;
+        (session.user as any).isActive = (token.isActive as boolean) ?? true;
       }
       return session;
     },
