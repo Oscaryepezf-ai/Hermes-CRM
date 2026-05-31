@@ -15,6 +15,10 @@ const ROLE_ALLOWED_MODULES: Record<string, string[]> = {
   ADMIN:        ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "settings"],
   DOCTOR:       ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai"],
   RECEPTIONIST: ["dashboard", "pipeline", "agenda", "patients"],
+  // Legacy JWT values — users with old tokens before the role rename
+  OWNER:   ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "settings"],
+  DENTIST: ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai"],
+  STAFF:   ["dashboard", "pipeline", "agenda", "patients"],
 }
 
 export const authConfig: NextAuthConfig = {
@@ -63,8 +67,9 @@ export const authConfig: NextAuthConfig = {
 
         if (matchedModule) {
           const role = user.role as string;
-          const allowed = ROLE_ALLOWED_MODULES[role] ?? [];
-          if (!allowed.includes(matchedModule)) {
+          const allowed = ROLE_ALLOWED_MODULES[role];
+          // If role is unknown (e.g. stale JWT), allow through — don't loop
+          if (allowed && !allowed.includes(matchedModule)) {
             return Response.redirect(new URL("/dashboard?error=unauthorized", nextUrl));
           }
         }
