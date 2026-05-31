@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PipelineBoard } from "./PipelineBoard";
-import { ChatPanel } from "./ChatPanel";
+import { LeadJourneyPanel } from "./LeadJourneyPanel";
 import { cn } from "@/lib/utils";
 import type { LeadForBoard } from "@/types/leads";
+import type { UserRole } from "@prisma/client";
 
 interface PipelineLayoutProps {
   initialLeads: LeadForBoard[];
-  clinicName: string;
+  clinicName:   string;
+  userRole:     UserRole;
 }
 
-export function PipelineLayout({ initialLeads, clinicName }: PipelineLayoutProps) {
+export function PipelineLayout({ initialLeads, clinicName, userRole }: PipelineLayoutProps) {
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
   const selectedLead = selectedLeadId
@@ -21,13 +23,11 @@ export function PipelineLayout({ initialLeads, clinicName }: PipelineLayoutProps
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Board — compresses when chat is open */}
+      {/* Board — compresses when panel is open */}
       <div
         className={cn(
           "flex flex-col overflow-hidden transition-all duration-300",
-          selectedLeadId
-            ? "w-full md:w-[60%]"
-            : "w-full"
+          selectedLeadId ? "w-full md:w-[60%]" : "w-full"
         )}
       >
         <PipelineBoard
@@ -37,7 +37,7 @@ export function PipelineLayout({ initialLeads, clinicName }: PipelineLayoutProps
         />
       </div>
 
-      {/* Chat panel — slides in from right */}
+      {/* Journey panel — slides in from right */}
       <AnimatePresence>
         {selectedLeadId && selectedLead && (
           <motion.div
@@ -48,16 +48,16 @@ export function PipelineLayout({ initialLeads, clinicName }: PipelineLayoutProps
             transition={{ duration: 0.25, ease: "easeOut" }}
             className={cn(
               "flex flex-col border-l border-medical-border bg-white",
-              // Mobile: full width overlay; Desktop: 40% side panel
               "fixed inset-0 z-50 md:static md:z-auto md:w-[40%]"
             )}
           >
-            <ChatPanel
+            <LeadJourneyPanel
               leadId={selectedLeadId}
               leadName={selectedLead.fullName}
               leadPhone={selectedLead.phone}
               leadTreatment={selectedLead.treatment}
               clinicName={clinicName}
+              userRole={userRole}
               onClose={() => setSelectedLeadId(null)}
             />
           </motion.div>

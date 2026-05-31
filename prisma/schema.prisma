@@ -51,6 +51,7 @@ model User {
   googleCalendarToken GoogleCalendarToken?
   pushSubscriptions   PushSubscription[]
   sentInvitations     UserInvitation[]      @relation("SentInvitations")
+  journeyEvents       JourneyEvent[]
 }
 
 model GoogleCalendarToken {
@@ -102,9 +103,22 @@ model Lead {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
+  // ─── Journey fields ───────────────────────────────────────
+  journeyState      JourneyState  @default(PROSPECTO)
+  interestLevel     Int?
+  budgetRange       BudgetRange?
+  consultationDate  DateTime?
+  conversionValue   Float?
+  lostReason        LostReason?
+  lostAt            DateTime?
+  lastActivityAt    DateTime?
+  totalTouchpoints  Int           @default(0)
+  responseTimeAvg   Float?
+
   history         LeadHistory[]
   messages        Message[]
   clinicalHistory ClinicalHistory?
+  journeyEvents   JourneyEvent[]
 }
 
 model ClinicalHistory {
@@ -299,4 +313,70 @@ model PushSubscription {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Journey / Proceso Comercial ──────────────────────────────────────────────
+
+model JourneyEvent {
+  id          String        @id @default(cuid())
+  leadId      String
+  lead        Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  type        EventType
+  fromState   JourneyState?
+  toState     JourneyState?
+  metadata    Json?
+  note        String?
+  isAutomatic Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  @@index([leadId])
+}
+
+enum JourneyState {
+  PROSPECTO
+  CALIFICADO
+  CITA_AGENDADA
+  EN_CONSULTA
+  PACIENTE_ACTIVO
+  INACTIVO
+  PERDIDO
+}
+
+enum BudgetRange {
+  BAJO
+  MEDIO
+  ALTO
+  PREMIUM
+}
+
+enum LostReason {
+  PRECIO_ALTO
+  ELIGIO_OTRA
+  NO_RESPONDE
+  NO_NECESITA
+  MALA_EXPERIENCIA
+  OTRO
+}
+
+enum EventType {
+  STATE_CHANGED
+  MESSAGE_SENT
+  MESSAGE_RECEIVED
+  CALL_MADE
+  QUICK_REPLY_USED
+  APPOINTMENT_CREATED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_COMPLETED
+  NO_SHOW
+  CLINICAL_NOTE_ADDED
+  DICTATION_USED
+  CONVERTED_TO_PATIENT
+  LOST
+  AI_QUALIFIED
+  AI_SCHEDULED
+  AI_REMINDER_SENT
+  AI_REENGAGED
 }

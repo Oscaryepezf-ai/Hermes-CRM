@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react"
-import type { LeadStatus, DentalTreatment, MarketingChannel } from "@prisma/client"
+import type { LeadStatus, DentalTreatment, MarketingChannel, JourneyState } from "@prisma/client"
 import {
   AtSign,
   Share2,
@@ -10,13 +10,14 @@ import {
   HelpCircle,
 } from "lucide-react"
 
-export type { LeadStatus, DentalTreatment, MarketingChannel }
+export type { LeadStatus, DentalTreatment, MarketingChannel, JourneyState }
 
 export type LeadForBoard = {
   id: string
   fullName: string
   phone: string
   status: LeadStatus
+  journeyState: JourneyState
   treatment: DentalTreatment
   channel: MarketingChannel
   assignedTo: { id: string; name: string; avatarUrl: string | null } | null

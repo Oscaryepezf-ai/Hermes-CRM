@@ -21,7 +21,7 @@ export default async function PipelinePage() {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col bg-medical-bg -m-6 overflow-hidden">
-      <PipelineLayout initialLeads={leads} clinicName={clinicName} />
+      <PipelineLayout initialLeads={leads} clinicName={clinicName} userRole={session.user.role} />
     </div>
   );
 }

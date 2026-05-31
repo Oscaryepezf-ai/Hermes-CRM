@@ -112,6 +112,7 @@ interface ChatPanelProps {
   leadTreatment:  DentalTreatment;
   clinicName:     string;
   onClose:        () => void;
+  embedded?:      boolean;
 }
 
 // ─── Optimistic message shape ─────────────────────────────────────────────────
@@ -127,6 +128,7 @@ export function ChatPanel({
   leadTreatment,
   clinicName,
   onClose,
+  embedded = false,
 }: ChatPanelProps) {
   const [messages,      setMessages]      = useState<OptimisticMessage[]>([]);
   const [inputText,     setInputText]     = useState("");
@@ -295,8 +297,8 @@ export function ChatPanel({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="bg-wa-header flex items-center gap-3 px-3 py-2 flex-shrink-0">
+      {/* Header — hidden when embedded in LeadJourneyPanel */}
+      <div className={cn("bg-wa-header flex items-center gap-3 px-3 py-2 flex-shrink-0", embedded && "hidden")}>
         <button
           onClick={onClose}
           className="text-white/80 hover:text-white md:hidden"

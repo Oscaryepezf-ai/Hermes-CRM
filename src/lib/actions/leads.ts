@@ -322,6 +322,7 @@ export async function getLeadsForBoard(): Promise<ActionResponse<LeadForBoard[]>
         fullName: true,
         phone: true,
         status: true,
+        journeyState: true,
         treatment: true,
         channel: true,
         lastContactAt: true,

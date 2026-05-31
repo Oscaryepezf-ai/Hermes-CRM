@@ -22,7 +22,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-medical-bg">
-      <Sidebar />
+      <Sidebar userRole={session.user.role} />
       <div className="pl-[220px]">
         <Header
           clinicName={clinic.name}
