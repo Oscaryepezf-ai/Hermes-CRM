@@ -32,6 +32,25 @@ model Clinic {
   appointments   Appointment[]
   pipelineStages PipelineStage[]
   invitations    UserInvitation[]
+  channels       ClinicChannel[]
+}
+
+model ClinicChannel {
+  id          String           @id @default(cuid())
+  clinicId    String
+  clinic      Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  channel     MarketingChannel
+  isActive    Boolean          @default(false)
+  pageId      String?
+  accessToken String?          @db.Text
+  webhookId   String?
+  connectedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([clinicId, channel])
+  @@index([clinicId])
 }
 
 model User {
