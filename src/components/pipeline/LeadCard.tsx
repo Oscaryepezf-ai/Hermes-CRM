@@ -2,64 +2,56 @@
 
 import { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
-import { Camera, Share2, MessageCircle, Globe, Users, Search, HelpCircle } from "lucide-react";
+import { Stethoscope } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { TREATMENT_LABELS, CHANNEL_LABELS } from "@/types/leads";
+import { TREATMENT_LABELS } from "@/types/leads";
 import type { LeadForBoard, MarketingChannel } from "@/types/leads";
-import type { LucideIcon } from "lucide-react";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const AVATAR_COLORS = [
-  "bg-indigo-500",
-  "bg-violet-500",
-  "bg-teal-500",
-  "bg-amber-500",
-  "bg-rose-500",
+const AVATAR_PALETTE = [
+  { bg: "bg-blue-100",   text: "text-blue-700"   },
+  { bg: "bg-violet-100", text: "text-violet-700"  },
+  { bg: "bg-teal-100",   text: "text-teal-700"    },
+  { bg: "bg-amber-100",  text: "text-amber-700"   },
+  { bg: "bg-rose-100",   text: "text-rose-700"    },
 ];
 
-function getAvatarColor(name: string): string {
-  const hash = name.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+function getAvatar(name: string) {
+  const hash = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+function getInitials(name: string) {
+  return name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
 }
 
-function getPriority(updatedAt: Date): { label: string; className: string } {
-  const days = Math.floor(
-    (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)
-  );
-  if (days > 7) return { label: "alta", className: "bg-red-100 text-red-700" };
-  if (days >= 3) return { label: "normal", className: "bg-blue-100 text-blue-700" };
-  return { label: "baja", className: "bg-gray-100 text-gray-600" };
+function getPriority(updatedAt: Date): { label: string; bg: string; text: string } {
+  const days = Math.floor((Date.now() - new Date(updatedAt).getTime()) / 86400000);
+  if (days > 7)  return { label: "alta",   bg: "#FEF2F4", text: "#9B2335" };
+  if (days >= 3) return { label: "normal", bg: "#EEF3FC", text: "#1E4A8A" };
+  return              { label: "baja",   bg: "#F0F2F6", text: "#4A5568" };
 }
 
-const CHANNEL_ICON_MAP: Record<MarketingChannel, { icon: LucideIcon; color: string }> = {
-  WHATSAPP: { icon: MessageCircle, color: "text-green-500" },
-  INSTAGRAM: { icon: Camera, color: "text-pink-500" },
-  FACEBOOK: { icon: Share2, color: "text-blue-500" },
-  REFERIDO: { icon: Users, color: "text-teal-500" },
-  GOOGLE: { icon: Search, color: "text-gray-500" },
-  TIKTOK: { icon: Globe, color: "text-gray-700" },
-  OTRO: { icon: HelpCircle, color: "text-gray-400" },
+const CHANNEL_CONFIG: Record<MarketingChannel, { dot: string; text: string; label: string }> = {
+  WHATSAPP:  { dot: "#25D366", text: "#128C4A", label: "WhatsApp"  },
+  INSTAGRAM: { dot: "#E1306C", text: "#C2185B", label: "Instagram" },
+  FACEBOOK:  { dot: "#1877F2", text: "#0D5DBB", label: "Facebook"  },
+  REFERIDO:  { dot: "#8B7CF6", text: "#6248C4", label: "Referido"  },
+  GOOGLE:    { dot: "#4285F4", text: "#1A56C9", label: "Google"    },
+  TIKTOK:    { dot: "#010101", text: "#4A5568", label: "TikTok"    },
+  OTRO:      { dot: "#94A3B8", text: "#4A5568", label: "Otro"      },
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface LeadCardProps {
-  lead: LeadForBoard;
-  index: number;
+  lead:       LeadForBoard;
+  index:      number;
   isSelected: boolean;
-  onSelect: (id: string) => void;
+  onSelect:   (id: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -67,10 +59,10 @@ interface LeadCardProps {
 export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
   const [isPressed, setIsPressed] = useState(false);
 
-  const priority = getPriority(lead.updatedAt);
-  const { icon: ChannelIcon, color: channelColor } = CHANNEL_ICON_MAP[lead.channel];
-  const avatarColor = getAvatarColor(lead.fullName);
-  const initials = getInitials(lead.fullName);
+  const priority  = getPriority(lead.updatedAt);
+  const channel   = CHANNEL_CONFIG[lead.channel];
+  const avatar    = getAvatar(lead.fullName);
+  const initials  = getInitials(lead.fullName);
 
   const handleClick = () => {
     setIsPressed(true);
@@ -87,62 +79,75 @@ export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
           {...provided.dragHandleProps}
           onClick={handleClick}
           className={cn(
-            "bg-medical-card rounded-2xl border p-3 cursor-pointer select-none",
-            "transition-all duration-150",
+            "bg-surface rounded-[10px] border p-[14px] cursor-pointer select-none transition-ui",
             snapshot.isDragging
-              ? "shadow-lg opacity-90 rotate-1"
-              : "shadow-sm hover:shadow-md hover:border-gray-300",
+              ? "opacity-90 rotate-1"
+              : "hover:border-line-soft",
             isSelected
-              ? "ring-2 ring-teal-400 border-teal-300 shadow-md"
-              : "border-medical-border",
+              ? "border-brand-200 ring-1 ring-brand-200"
+              : "border-line-subtle",
             isPressed && "scale-[0.98]"
           )}
+          style={{
+            boxShadow: isSelected
+              ? "var(--shadow-card-focus)"
+              : snapshot.isDragging
+              ? "var(--shadow-card-hover)"
+              : "var(--shadow-card)",
+          }}
         >
-          {/* Row 1: Avatar + Name + Priority badge */}
-          <div className="flex items-start gap-2.5">
-            <div className={cn("w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0", avatarColor)}>
-              <span className="text-white text-sm font-medium">{initials}</span>
+          {/* Row 1: Avatar + Priority */}
+          <div className="flex items-start justify-between gap-2">
+            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-[550]", avatar.bg, avatar.text)}>
+              {initials}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-sm font-semibold text-gray-900 leading-tight truncate">
-                  {lead.fullName}
-                </p>
-                <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0", priority.className)}>
-                  {priority.label}
-                </span>
-              </div>
-              <a
-                href={`https://wa.me/${lead.phone.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 mt-0.5 group"
-              >
-                <MessageCircle className="w-3 h-3 flex-shrink-0" />
-                <span className="group-hover:underline">{lead.phone}</span>
-              </a>
-            </div>
+            <span
+              className="text-[10px] font-medium px-2 py-0.5 rounded-[9999px] flex-shrink-0"
+              style={{ background: priority.bg, color: priority.text }}
+            >
+              {priority.label}
+            </span>
           </div>
 
-          {/* Row 2: Treatment */}
-          <p className="mt-2 text-xs text-gray-600 flex items-center gap-1">
-            <span>🦷</span>
-            {TREATMENT_LABELS[lead.treatment]}
+          {/* Name */}
+          <p className="mt-2.5 text-[14px] font-[550] text-ink-primary leading-tight truncate">
+            {lead.fullName}
           </p>
 
-          {/* Row 3: Last message snippet */}
-          <p className="mt-1.5 text-xs text-gray-400 italic truncate" aria-label="Último mensaje">
-            {lead.notes ? `"${lead.notes}"` : "Sin mensajes aún"}
+          {/* Phone */}
+          <p className="text-[11px] text-ink-tertiary mt-0.5">{lead.phone}</p>
+
+          {/* Treatment */}
+          <div className="mt-2 flex items-center gap-1.5">
+            <Stethoscope className="w-3.5 h-3.5 text-ink-disabled flex-shrink-0" />
+            <span className="text-[12px] font-medium text-ink-secondary">
+              {TREATMENT_LABELS[lead.treatment]}
+            </span>
+          </div>
+
+          {/* Last note / message */}
+          <p className="mt-2 text-[12px] text-ink-tertiary italic line-clamp-1 leading-snug">
+            {lead.notes
+              ? `"${lead.notes}"`
+              : <span className="not-italic text-ink-disabled">Sin notas aún</span>
+            }
           </p>
 
-          {/* Row 4: Channel + Time */}
-          <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <ChannelIcon className={cn("w-3.5 h-3.5", channelColor)} />
-              <span>{CHANNEL_LABELS[lead.channel]}</span>
+          {/* Divider */}
+          <div className="mt-3 border-t border-line-subtle" />
+
+          {/* Row bottom: Channel dot + Time */}
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-[5px]">
+              <span
+                className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                style={{ background: channel.dot }}
+              />
+              <span className="text-[10px] font-medium" style={{ color: channel.text }}>
+                {channel.label}
+              </span>
             </div>
-            <span className="text-xs text-gray-400">
+            <span className="text-[11px] text-ink-tertiary">
               {lead.lastContactAt
                 ? formatDistanceToNow(new Date(lead.lastContactAt), { addSuffix: true, locale: es })
                 : "Sin contacto"}

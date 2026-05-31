@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface MetricCardProps {
@@ -9,40 +9,63 @@ interface MetricCardProps {
   changePositive?: boolean;
   subtitle?:       string;
   icon:            LucideIcon;
+  iconBg?:         string;
+  iconColor?:      string;
 }
 
 export function MetricCard({
-  title,
-  value,
-  change,
-  changePositive = true,
-  subtitle,
+  title, value, change, changePositive = true, subtitle,
   icon: Icon,
+  iconBg    = "bg-brand-50",
+  iconColor = "text-brand-600",
 }: MetricCardProps) {
   return (
-    <Card className="bg-white shadow-sm border-gray-100">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500 font-medium">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            {change && (
-              <p className={cn(
-                "text-xs font-medium",
-                changePositive ? "text-emerald-600" : "text-red-500"
-              )}>
-                {changePositive ? "↑" : "↓"} {change}
-              </p>
+    <div
+      className="bg-surface border border-line-subtle rounded-[16px] p-5 hover:border-line-soft transition-ui"
+      style={{ boxShadow: "var(--shadow-card)" }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "var(--shadow-card-hover)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "var(--shadow-card)")}
+    >
+      {/* Icon */}
+      <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center", iconBg)}>
+        <Icon className={cn("w-[18px] h-[18px]", iconColor)} />
+      </div>
+
+      {/* Label */}
+      <p className="mt-3 text-[11px] font-medium text-ink-tertiary uppercase tracking-[0.05em]">
+        {title}
+      </p>
+
+      {/* Value */}
+      <p className="mt-1 text-[28px] font-bold text-ink-primary leading-none tabular-nums tracking-[-0.04em]">
+        {value}
+      </p>
+
+      {/* Change badge */}
+      {change && (
+        <div className="mt-1.5 flex items-center gap-1">
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-[4px]",
+              changePositive
+                ? "text-[#15694A] bg-[#EDFAF4]"
+                : "text-[#9B2335] bg-[#FEF2F4]"
             )}
-            {subtitle && (
-              <p className="text-xs text-gray-400">{subtitle}</p>
-            )}
-          </div>
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-            <Icon className="w-5 h-5 text-indigo-600" />
-          </div>
+          >
+            {changePositive
+              ? <TrendingUp className="w-3 h-3" />
+              : <TrendingDown className="w-3 h-3" />
+            }
+            {change}
+          </span>
+          {subtitle && (
+            <span className="text-[11px] text-ink-tertiary">{subtitle}</span>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      )}
+      {!change && subtitle && (
+        <p className="mt-1.5 text-[11px] text-ink-tertiary">{subtitle}</p>
+      )}
+    </div>
   );
 }

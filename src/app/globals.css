@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,450;0,500;0,550;0,600;1,400&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── shadcn color aliases (keep untouched) ─────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -48,6 +50,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── shadcn :root variables (keep untouched) ────────────── */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -117,140 +120,234 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* ── Hermes Design System — Premium Medical SaaS ────────── */
+@theme {
+  /* ── Fondos ─────────────────────────────────────────── */
+  --color-canvas:  #F7F8FA;
+  --color-surface: #FFFFFF;
+  --color-inset:   #F0F2F6;
+
+  /* ── Textos (ink scale) ─────────────────────────────── */
+  --color-ink-primary:   #1A1D23;
+  --color-ink-secondary: #4A5568;
+  --color-ink-tertiary:  #8896A8;
+  --color-ink-disabled:  #B8C4D0;
+
+  /* ── Bordes (line scale) ────────────────────────────── */
+  --color-line-subtle: #EDF0F4;
+  --color-line-soft:   #DDE3EC;
+  --color-line-medium: #C8D0DC;
+  --color-line-strong: #9AAABB;
+
+  /* ── Acento principal — azul clínico ────────────────── */
+  --color-brand-50:  #EEF2FF;
+  --color-brand-100: #E0E7FF;
+  --color-brand-200: #C7D2FE;
+  --color-brand-400: #818CF8;
+  --color-brand-500: #6366F1;
+  --color-brand-600: #4F46E5;
+  --color-brand-700: #4338CA;
+  --color-brand-900: #1E1B4B;
+
+  /* ── Columnas Kanban — pasteles médicos ─────────────── */
+  /* NUEVO LEAD — azul médico */
+  --color-col-new:     #EEF3FC;
+  --color-col-new-hdr: #DDE8F8;
+  /* CONTACTADO — lavanda suave */
+  --color-col-contact:     #F2EFFE;
+  --color-col-contact-hdr: #E8E2FC;
+  /* CITA AGENDADA — verde menta */
+  --color-col-appt:     #EDFAF4;
+  --color-col-appt-hdr: #D8F4E8;
+  /* PRESUPUESTO — ámbar cálido */
+  --color-col-budget:     #FEF9EE;
+  --color-col-budget-hdr: #FDF0D4;
+  /* CONVERTIDO — esmeralda suave */
+  --color-col-convert:     #EDFBF6;
+  --color-col-convert-hdr: #D4F5E7;
+  /* PERDIDO — rosa desaturado */
+  --color-col-lost:     #FEF2F4;
+  --color-col-lost-hdr: #FDE2E7;
+
+  /* ── Compatibilidad hacia atrás ─────────────────────── */
+  --color-medical-bg:     #F7F8FA;
+  --color-medical-card:   #FFFFFF;
+  --color-medical-border: #EDF0F4;
+
+  /* ── WhatsApp chat ──────────────────────────────────── */
+  --color-wa-bg:        #ECE5DD;
+  --color-wa-bubble-in: #FFFFFF;
+  --color-wa-bubble-out:#DCF8C6;
+  --color-wa-header:    #075E54;
+  --color-wa-input-bg:  #F0F2F5;
+
+  /* ── Sombras del sistema ────────────────────────────── */
+  --shadow-card:       0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.03);
+  --shadow-card-hover: 0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04);
+  --shadow-card-focus: 0 0 0 2px rgba(99,102,241,0.20), 0 1px 3px rgba(15,23,42,0.04);
+  --shadow-col:        0 2px 8px rgba(15,23,42,0.05);
+  --shadow-panel:      0 8px 32px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.06);
+  --shadow-topbar:     0 1px 0 #EDF0F4;
+  --shadow-sidebar:    1px 0 0 #EDF0F4;
+  --shadow-dropdown:   0 8px 24px rgba(15,23,42,0.12);
+
+  /* ── Border radius tokens ───────────────────────────── */
+  --radius-card:  10px;
+  --radius-col:   12px;
+  --radius-badge: 6px;
+  --radius-pill:  9999px;
+  --radius-input: 8px;
+  --radius-modal: 16px;
+  --radius-bubble:0.75rem;
+
+  /* ── Pesos de fuente extra ──────────────────────────── */
+  --font-weight-book:    450;
+  --font-weight-display: 550;
+}
+
+/* ── Base styles ────────────────────────────────────────── */
 @layer base {
+  * {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background-color: #F7F8FA;
+    color: #1A1D23;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    font-size: 13px;
+  }
+
+  h1 { font-size: 22px; font-weight: 600; color: #1A1D23; letter-spacing: -0.04em; line-height: 1.3; }
+  h2 { font-size: 18px; font-weight: 600; color: #1A1D23; letter-spacing: -0.03em; }
+  h3 { font-size: 15px; font-weight: 550; color: #1A1D23; letter-spacing: -0.02em; }
+  h4 { font-size: 13px; font-weight: 550; color: #4A5568; letter-spacing: 0; }
+
+  /* Scrollbar discreta */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #C8D0DC;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #8896A8; }
+
+  *:focus-visible {
+    outline: 2px solid #6366F1;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  input, textarea, select {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    color: #1A1D23;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #B8C4D0;
   }
 }
 
-@theme {
-  /* Medical design system */
-  --color-medical-bg: #F1F5F9;
-  --color-medical-card: #FFFFFF;
-  --color-medical-border: #E2E8F0;
-
-  /* Kanban columns — pastel backgrounds */
-  --color-col-new: #EFF6FF;
-  --color-col-contact: #FDF2F8;
-  --color-col-appt: #ECFDF5;
-  --color-col-budget: #FFFBEB;
-  --color-col-convert: #F0FDF4;
-  --color-col-lost: #FFF1F2;
-
-  /* Kanban column headers — slightly more intense */
-  --color-col-new-hdr: #DBEAFE;
-  --color-col-contact-hdr: #FCE7F3;
-  --color-col-appt-hdr: #D1FAE5;
-  --color-col-budget-hdr: #FDE68A;
-  --color-col-convert-hdr: #BBF7D0;
-  --color-col-lost-hdr: #FFE4E6;
-
-  /* WhatsApp chat colors */
-  --color-wa-bg: #ECE5DD;
-  --color-wa-bubble-in: #FFFFFF;
-  --color-wa-bubble-out: #DCF8C6;
-  --color-wa-header: #075E54;
-  --color-wa-input-bg: #F0F2F5;
-
-  /* Border radius tokens */
-  --radius-card: 1rem;
-  --radius-bubble: 0.75rem;
-}
-
-/* Thin scrollbar utilities */
+/* ── Utilidades ─────────────────────────────────────────── */
 @layer utilities {
+  .transition-ui {
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #E2E8F0 transparent;
+    scrollbar-color: #C8D0DC transparent;
   }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #E2E8F0;
-    border-radius: 2px;
+    background-color: #C8D0DC;
+    border-radius: 9999px;
   }
+
+  /* Pulse animado para estado PACIENTE_ACTIVO */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 }
 
-/* ── FullCalendar overrides ─────────────────────────────────────────── */
+/* ── FullCalendar overrides ─────────────────────────────── */
 .fc {
-  font-family: Inter, system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
 }
 .fc .fc-toolbar-title {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
-  color: #111827;
+  color: #1A1D23;
+  letter-spacing: -0.02em;
 }
 .fc .fc-button {
-  background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  color: #6b7280 !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
+  background: #FFFFFF !important;
+  border: 1px solid #DDE3EC !important;
+  color: #4A5568 !important;
+  border-radius: 7px !important;
+  font-size: 12px !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 500 !important;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04) !important;
+  transition: all 0.15s ease !important;
   padding: 5px 12px !important;
-  transition: all 0.15s !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
 }
 .fc .fc-button:hover {
-  background: #f9fafb !important;
-  color: #111827 !important;
+  background: #F0F2F6 !important;
+  border-color: #C8D0DC !important;
+  color: #1A1D23 !important;
 }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  background: #eef2ff !important;
-  color: #4f46e5 !important;
-  border-color: #c7d2fe !important;
-  box-shadow: inset 0 1px 3px rgba(79,70,229,0.15) !important;
+  background: #EEF2FF !important;
+  color: #6366F1 !important;
+  border-color: #C7D2FE !important;
 }
-.fc .fc-timegrid-slot {
-  height: 40px;
-}
-.fc .fc-timegrid-now-indicator-line {
-  border-color: #ef4444;
-  border-width: 2px;
-}
-.fc .fc-day-today {
-  background: rgba(99, 102, 241, 0.04) !important;
-}
+.fc .fc-timegrid-slot { height: 40px; }
+.fc .fc-timegrid-now-indicator-line { border-color: #F47B8A; border-width: 1.5px; }
+.fc .fc-day-today { background: rgba(99,102,241,0.03) !important; }
 .fc .fc-event {
-  border-radius: 6px !important;
+  border-radius: 5px !important;
   border-left-width: 3px !important;
-  font-size: 12px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
   padding: 2px 6px !important;
   cursor: pointer !important;
 }
 .fc .fc-col-header-cell-cushion {
-  font-size: 13px;
-  font-weight: 500;
-  color: #6b7280;
+  font-size: 11px;
+  font-weight: 550;
+  color: #8896A8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   text-decoration: none;
 }
 .fc .fc-timegrid-axis-cushion {
   font-size: 11px;
-  color: #9ca3af;
+  color: #8896A8;
 }
-.fc-theme-standard .fc-scrollgrid {
-  border-color: #f3f4f6;
-}
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border-color: #f3f4f6;
-}
-.fc .fc-list-event:hover td {
-  background: #f9fafb;
-}
+.fc-theme-standard .fc-scrollgrid { border-color: #EDF0F4; }
+.fc-theme-standard td, .fc-theme-standard th { border-color: #EDF0F4; }
+.fc .fc-list-event:hover td { background: #F7F8FA; }
 .fc .fc-daygrid-day-number,
 .fc .fc-daygrid-week-number {
-  color: #6b7280;
+  color: #8896A8;
   font-size: 12px;
   text-decoration: none;
 }
