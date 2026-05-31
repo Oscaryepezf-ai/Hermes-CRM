@@ -20,12 +20,7 @@ export function MetricCard({
   iconColor = "text-brand-600",
 }: MetricCardProps) {
   return (
-    <div
-      className="bg-surface border border-line-subtle rounded-[16px] p-5 hover:border-line-soft transition-ui"
-      style={{ boxShadow: "var(--shadow-card)" }}
-      onMouseEnter={e => (e.currentTarget.style.boxShadow = "var(--shadow-card-hover)")}
-      onMouseLeave={e => (e.currentTarget.style.boxShadow = "var(--shadow-card)")}
-    >
+    <div className="bg-surface border border-line-subtle rounded-[16px] p-5 shadow-card hover:shadow-card-hover hover:border-line-soft transition-ui">
       {/* Icon */}
       <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center", iconBg)}>
         <Icon className={cn("w-[18px] h-[18px]", iconColor)} />
@@ -47,20 +42,13 @@ export function MetricCard({
           <span
             className={cn(
               "inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-[4px]",
-              changePositive
-                ? "text-[#15694A] bg-[#EDFAF4]"
-                : "text-[#9B2335] bg-[#FEF2F4]"
+              changePositive ? "text-[#15694A] bg-[#EDFAF4]" : "text-[#9B2335] bg-[#FEF2F4]"
             )}
           >
-            {changePositive
-              ? <TrendingUp className="w-3 h-3" />
-              : <TrendingDown className="w-3 h-3" />
-            }
+            {changePositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {change}
           </span>
-          {subtitle && (
-            <span className="text-[11px] text-ink-tertiary">{subtitle}</span>
-          )}
+          {subtitle && <span className="text-[11px] text-ink-tertiary">{subtitle}</span>}
         </div>
       )}
       {!change && subtitle && (
