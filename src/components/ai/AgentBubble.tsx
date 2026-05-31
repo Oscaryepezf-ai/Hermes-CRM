@@ -19,6 +19,7 @@ export interface AgentConfig {
   status: AgentStatus;
   stats?: { label: string; value: string }[];
   ctaLabel: string;
+  href?: string;            // If set, CTA in detail panel links here instead of a button
 }
 
 interface AgentBubbleProps {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bot, Zap, Clock, CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentConfig } from "./AgentBubble";
@@ -115,6 +116,17 @@ export function AgentDetailPanel({ agent, onClose }: AgentDetailPanelProps) {
               Este agente estará disponible próximamente. Te notificaremos cuando esté listo.
             </p>
           </div>
+        ) : agent.href ? (
+          <Link
+            href={agent.href}
+            className={cn(
+              "flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90",
+              agent.gradient
+            )}
+          >
+            <Bot className="w-4 h-4" />
+            {agent.ctaLabel}
+          </Link>
         ) : (
           <button
             className={cn(

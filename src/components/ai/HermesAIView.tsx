@@ -75,8 +75,13 @@ const AGENTS: AgentConfig[] = [
     gradient: "bg-gradient-to-br from-violet-500 to-pink-600",
     accentColor: "text-violet-600",
     borderColor: "border-violet-400",
-    status: "coming_soon",
-    ctaLabel: "Notificarme",
+    status: "active",
+    stats: [
+      { label: "Reportes enviados", value: "8" },
+      { label: "Alertas detectadas", value: "12" },
+    ],
+    ctaLabel: "Ver último reporte",
+    href: "/ai/reporte",
   },
 ];
 
