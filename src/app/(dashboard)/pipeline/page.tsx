@@ -20,7 +20,7 @@ export default async function PipelinePage() {
   const clinicName = clinic?.name ?? "Clínica";
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-medical-bg -m-6 overflow-hidden">
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-medical-bg -m-6 overflow-clip">
       <PipelineLayout initialLeads={leads} clinicName={clinicName} userRole={session.user.role} />
     </div>
   );

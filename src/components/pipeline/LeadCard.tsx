@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { Stethoscope } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -58,18 +57,10 @@ interface LeadCardProps {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
-  const [isPressed, setIsPressed] = useState(false);
-
-  const priority  = getPriority(lead.updatedAt);
-  const channel   = CHANNEL_CONFIG[lead.channel];
-  const avatar    = getAvatar(lead.fullName);
-  const initials  = getInitials(lead.fullName);
-
-  const handleClick = () => {
-    setIsPressed(true);
-    onSelect(lead.id);
-    setTimeout(() => setIsPressed(false), 150);
-  };
+  const priority = getPriority(lead.updatedAt);
+  const channel  = CHANNEL_CONFIG[lead.channel];
+  const avatar   = getAvatar(lead.fullName);
+  const initials = getInitials(lead.fullName);
 
   return (
     <Draggable draggableId={lead.id} index={index}>
@@ -78,24 +69,21 @@ export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          onClick={handleClick}
+          onClick={() => onSelect(lead.id)}
           className={cn(
-            "bg-surface rounded-[10px] border p-[14px] cursor-pointer select-none transition-ui",
+            "bg-surface rounded-[10px] border p-[14px] select-none",
+            // Only transition safe properties — NEVER transition: all on a Draggable
+            // transition: transform/opacity during drag causes lag and broken visual
+            "transition-[box-shadow,border-color,opacity] duration-150",
             snapshot.isDragging
-              ? "opacity-90 rotate-1"
-              : "hover:border-line-soft",
-            isSelected
-              ? "border-brand-200 ring-1 ring-brand-200"
-              : "border-line-subtle",
-            isPressed && "scale-[0.98]"
+              ? "cursor-grabbing opacity-90"
+              : "cursor-grab hover:border-line-soft",
+            isSelected && !snapshot.isDragging
+              ? "border-brand-200 ring-1 ring-brand-200 shadow-[var(--shadow-card-focus)]"
+              : !snapshot.isDragging
+              ? "border-line-subtle shadow-[var(--shadow-card)]"
+              : "border-line-soft",
           )}
-          style={{
-            boxShadow: isSelected
-              ? "var(--shadow-card-focus)"
-              : snapshot.isDragging
-              ? "var(--shadow-card-hover)"
-              : "var(--shadow-card)",
-          }}
         >
           {/* Row 1: Avatar + Priority */}
           <div className="flex items-start justify-between gap-2">

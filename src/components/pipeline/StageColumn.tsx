@@ -64,9 +64,16 @@ export function StageColumn({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "flex-1 flex flex-col gap-2 px-[10px] py-[12px] min-h-[200px] max-h-[calc(100vh-168px)] overflow-y-auto scrollbar-thin transition-colors duration-150"
+              "flex-1 flex flex-col gap-2 px-[10px] py-[12px]",
+              // min-h ensures empty columns remain droppable targets
+              "min-h-[200px] overflow-y-auto scrollbar-thin",
+              // transition only background color, never transform
+              "transition-colors duration-100"
             )}
-            style={{ background: snapshot.isDraggingOver ? "rgba(99,102,241,0.04)" : bgColor }}
+            style={{
+              background: snapshot.isDraggingOver ? "rgba(99,102,241,0.05)" : bgColor,
+              maxHeight: "calc(100vh - 160px)",
+            }}
           >
             {leads.map((lead, index) => (
               <LeadCard

@@ -22,12 +22,13 @@ export function PipelineLayout({ initialLeads, clinicName, userRole }: PipelineL
     : null;
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* Board — compresses when panel is open */}
+    // No overflow-hidden here — it breaks position:fixed drag ghosts in @hello-pangea/dnd
+    <div className="flex h-full">
+      {/* Board — shrinks when panel is open */}
       <div
         className={cn(
-          "flex flex-col overflow-hidden transition-all duration-300",
-          selectedLeadId ? "w-full md:w-[60%]" : "w-full"
+          "flex flex-col min-w-0 transition-[width] duration-300",
+          selectedLeadId ? "w-[60%]" : "w-full"
         )}
       >
         <PipelineBoard
@@ -48,6 +49,7 @@ export function PipelineLayout({ initialLeads, clinicName, userRole }: PipelineL
             transition={{ duration: 0.25, ease: "easeOut" }}
             className={cn(
               "flex flex-col border-l border-medical-border bg-white",
+              // Mobile: fixed overlay; Desktop: static side panel
               "fixed inset-0 z-50 md:static md:z-auto md:w-[40%]"
             )}
           >
