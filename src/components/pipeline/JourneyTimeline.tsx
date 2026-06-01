@@ -94,7 +94,7 @@ export function JourneyTimeline({ leadId, events, onNote }: JourneyTimelineProps
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-gray-400">
+          <div className="text-center text-ink-tertiary">
             <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Sin eventos registrados</p>
           </div>
@@ -128,17 +128,17 @@ export function JourneyTimeline({ leadId, events, onNote }: JourneyTimelineProps
               <div className={cn("pb-4 min-w-0 flex-1", isLast && "pb-2")}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 leading-tight">
+                    <p className="text-sm font-medium text-ink-primary leading-tight">
                       {config.label}
                       {event.fromState && event.toState && (
-                        <span className="ml-1.5 text-xs font-normal text-gray-500">
+                        <span className="ml-1.5 text-xs font-normal text-ink-tertiary">
                           {STATE_LABELS[event.fromState]} → {STATE_LABELS[event.toState]}
                         </span>
                       )}
                     </p>
 
                     {event.note && (
-                      <p className="text-xs text-gray-600 mt-0.5 leading-snug">{event.note}</p>
+                      <p className="text-xs text-ink-secondary mt-0.5 leading-snug">{event.note}</p>
                     )}
 
                     <div className="flex items-center gap-1.5 mt-1">
@@ -147,12 +147,12 @@ export function JourneyTimeline({ leadId, events, onNote }: JourneyTimelineProps
                           <Bot className="w-3 h-3" /> Hermes AI
                         </span>
                       ) : event.user ? (
-                        <span className="text-[11px] text-gray-500">{event.user.name}</span>
+                        <span className="text-[11px] text-ink-tertiary">{event.user.name}</span>
                       ) : null}
                     </div>
                   </div>
 
-                  <span className="text-[11px] text-gray-400 flex-shrink-0 mt-0.5">
+                  <span className="text-[11px] text-ink-tertiary flex-shrink-0 mt-0.5">
                     {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true, locale: es })}
                   </span>
                 </div>
@@ -174,7 +174,7 @@ function NoteInput({ note, setNote, saving, onSave }: {
   onSave: () => void
 }) {
   return (
-    <div className="border-t border-gray-100 p-3 space-y-2">
+    <div className="border-t border-line-subtle p-3 space-y-2">
       <Textarea
         placeholder="Agregar nota al timeline..."
         value={note}

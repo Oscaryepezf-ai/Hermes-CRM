@@ -83,15 +83,15 @@ export function LeadJourneyPanel({
   ]
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-surface">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-sm flex-shrink-0">
             {leadName.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-sm text-gray-900 truncate">{leadName}</p>
+            <p className="font-semibold text-sm text-ink-primary truncate">{leadName}</p>
             <div className="flex items-center gap-1.5">
               <Badge className={cn("text-[10px] px-1.5 py-0 font-normal", stateConfig.color)}>
                 <StateIcon className="w-2.5 h-2.5 mr-0.5" />
@@ -100,13 +100,13 @@ export function LeadJourneyPanel({
             </div>
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-md transition-colors">
-          <X className="w-4 h-4 text-gray-500" />
+        <button onClick={onClose} className="p-1.5 hover:bg-inset rounded-md transition-colors">
+          <X className="w-4 h-4 text-ink-tertiary" />
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100">
+      <div className="flex border-b border-line-subtle">
         {TABS.filter(t => t.show).map(t => (
           <button
             key={t.id}
@@ -115,7 +115,7 @@ export function LeadJourneyPanel({
               "flex-1 py-2.5 text-xs font-medium transition-colors relative",
               tab === t.id
                 ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                : "text-ink-tertiary hover:text-ink-secondary"
             )}
           >
             {t.label}
@@ -233,7 +233,7 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
       {/* Primary action buttons */}
       {primaryNextStates.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+          <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider">
             Avanzar a
           </p>
           {primaryNextStates.map(state => {
@@ -246,7 +246,7 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
                 onClick={() => onTransition(state)}
               >
                 <span>{cfg.label}</span>
-                <ArrowRight className="w-4 h-4 text-gray-400" />
+                <ArrowRight className="w-4 h-4 text-ink-tertiary" />
               </Button>
             )
           })}
@@ -255,12 +255,12 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
 
       {/* Quick actions */}
       <div className="space-y-2">
-        <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider">
           Acciones rápidas
         </p>
         <button
           onClick={onSwitchToChat}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm text-gray-700"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft hover:bg-canvas transition-colors text-sm text-ink-secondary"
         >
           <MessageCircle className="w-4 h-4 text-teal-500" />
           Abrir chat WhatsApp
@@ -268,7 +268,7 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
         {(journeyState === "EN_CONSULTA" || journeyState === "PACIENTE_ACTIVO") && (
           <a
             href={`/dr-clinic?leadId=${lead?.id}`}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm text-gray-700"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft hover:bg-canvas transition-colors text-sm text-ink-secondary"
           >
             <FileText className="w-4 h-4 text-blue-500" />
             Historia clínica
@@ -278,7 +278,7 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
 
       {/* Lost button */}
       {lostState && (
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-2 border-t border-line-subtle">
           <Button
             variant="ghost"
             size="sm"
@@ -296,9 +296,9 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-      <p className="text-sm font-semibold text-gray-900 leading-tight">{value}</p>
-      <p className="text-[10px] text-gray-500 mt-0.5">{label}</p>
+    <div className="bg-canvas rounded-lg p-2.5 text-center">
+      <p className="text-sm font-semibold text-ink-primary leading-tight">{value}</p>
+      <p className="text-[10px] text-ink-tertiary mt-0.5">{label}</p>
     </div>
   )
 }
@@ -309,7 +309,7 @@ function ClinicTab({ lead, loading }: { lead: any; loading: boolean }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <p className="text-sm text-gray-400">Cargando...</p>
+        <p className="text-sm text-ink-tertiary">Cargando...</p>
       </div>
     )
   }
@@ -319,8 +319,8 @@ function ClinicTab({ lead, loading }: { lead: any; loading: boolean }) {
   if (!ch) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 px-4">
-        <Stethoscope className="w-10 h-10 text-gray-300" />
-        <p className="text-sm text-gray-500 text-center">
+        <Stethoscope className="w-10 h-10 text-ink-disabled" />
+        <p className="text-sm text-ink-tertiary text-center">
           No hay historia clínica registrada
         </p>
         <a
@@ -361,10 +361,10 @@ function ClinicTab({ lead, loading }: { lead: any; loading: boolean }) {
 function ClinicalField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5">
+      <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider mb-0.5">
         {label}
       </p>
-      <p className="text-sm text-gray-700 whitespace-pre-line">{value}</p>
+      <p className="text-sm text-ink-secondary whitespace-pre-line">{value}</p>
     </div>
   )
 }

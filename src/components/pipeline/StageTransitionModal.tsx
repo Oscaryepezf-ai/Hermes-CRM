@@ -86,13 +86,13 @@ export function StageTransitionModal({
           <Badge className={fromConfig.color + " font-normal text-xs"}>
             {fromConfig.label}
           </Badge>
-          <ArrowRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <ArrowRight className="w-3.5 h-3.5 text-ink-tertiary flex-shrink-0" />
           <Badge className={toConfig.color + " font-normal text-xs"}>
             {toConfig.label}
           </Badge>
         </div>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-ink-secondary">
           <span className="font-medium">{leadName}</span> — {toConfig.nextAction}
         </p>
 
@@ -118,7 +118,7 @@ export function StageTransitionModal({
           <div className="space-y-1.5">
             <Label>
               {toState === "PERDIDO" ? "Nota adicional" : "Nota"}{" "}
-              {toState !== "PERDIDO" && <span className="text-gray-400 text-xs">(opcional)</span>}
+              {toState !== "PERDIDO" && <span className="text-ink-tertiary text-xs">(opcional)</span>}
             </Label>
             <Textarea
               placeholder={

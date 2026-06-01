@@ -61,8 +61,8 @@ async function DashboardContent() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Dashboard</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h2 className="text-xl font-bold text-ink-primary">Dashboard</h2>
+        <p className="text-sm text-ink-tertiary mt-0.5">
           Resumen de actividad de tu clínica
         </p>
       </div>
@@ -103,19 +103,19 @@ async function DashboardContent() {
 
       {/* Fila 3: Embudo + Actividad */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-white shadow-sm border-gray-100">
+        <Card className="bg-surface shadow-card border-line-subtle">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-700">
+            <CardTitle className="text-sm font-semibold text-ink-secondary">
               Embudo de conversión
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {metrics.conversionByStage.map((stage, idx) => (
-                <div key={`${stage.stage}-${idx}`}> {/* KEY: stage name + idx — robusto ante nombres duplicados */}
+                <div key={`${stage.stage}-${idx}`}>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-600 font-medium">{stage.stage}</span>
-                    <span className="text-gray-400">
+                    <span className="text-ink-secondary font-medium">{stage.stage}</span>
+                    <span className="text-ink-tertiary">
                       {stage.count} leads · {stage.percentage}%
                     </span>
                   </div>
@@ -149,15 +149,15 @@ export default function DashboardPage() {
 function DashboardSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="h-7 bg-gray-100 rounded w-32" />
+      <div className="h-7 bg-inset rounded w-32" />
       <div className="grid grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 bg-gray-100 rounded-xl" />
+          <div key={i} className="h-28 bg-inset rounded-xl" />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="h-56 bg-gray-100 rounded-xl" />
-        <div className="h-56 bg-gray-100 rounded-xl" />
+        <div className="h-56 bg-inset rounded-xl" />
+        <div className="h-56 bg-inset rounded-xl" />
       </div>
     </div>
   );

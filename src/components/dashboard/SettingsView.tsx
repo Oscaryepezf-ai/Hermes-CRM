@@ -22,7 +22,7 @@ const PLAN_CONFIG = {
       "Cumplimiento LOPDP básico",
       "Hasta 2 usuarios",
     ],
-    checkColor: "text-gray-300",
+    checkColor: "text-ink-disabled",
     cta:        null,
   },
   PROFESIONAL: {
@@ -86,10 +86,10 @@ function PlanCard({
 
   return (
     <div className={cn(
-      "relative flex flex-col rounded-2xl border bg-white p-5 transition-shadow",
+      "relative flex flex-col rounded-2xl border bg-surface p-5 transition-shadow",
       isActive
-        ? "border-gray-200 shadow-sm"
-        : "border-gray-100 shadow-sm hover:shadow-md"
+        ? "border-line-soft shadow-sm"
+        : "border-line-subtle shadow-sm hover:shadow-md"
     )}>
       {/* Active badge */}
       {isActive && (
@@ -100,22 +100,22 @@ function PlanCard({
 
       {/* Title row */}
       <div className="flex items-center gap-1.5 mb-1">
-        <h3 className="text-base font-semibold text-gray-900">{cfg.label}</h3>
+        <h3 className="text-base font-semibold text-ink-primary">{cfg.label}</h3>
         {cfg.icon === "zap"  && <Zap  className="w-3.5 h-3.5 text-indigo-400 fill-indigo-100" />}
         {cfg.icon === "star" && <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-100" />}
       </div>
 
       {/* Price */}
-      <p className="text-sm text-gray-500 mb-0.5">{cfg.price}</p>
+      <p className="text-sm text-ink-tertiary mb-0.5">{cfg.price}</p>
       {"sub" in cfg && cfg.sub && (
-        <p className="text-xs text-gray-400 mb-3">{cfg.sub}</p>
+        <p className="text-xs text-ink-tertiary mb-3">{cfg.sub}</p>
       )}
       {!("sub" in cfg && cfg.sub) && <div className="mb-3" />}
 
       {/* Features */}
       <ul className="space-y-2 flex-1">
         {cfg.features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
+          <li key={f} className="flex items-start gap-2 text-sm text-ink-secondary">
             <Check className={cn("w-4 h-4 flex-shrink-0 mt-0.5", cfg.checkColor)} />
             {f}
           </li>
@@ -128,7 +128,7 @@ function PlanCard({
           className={cn(
             "mt-5 w-full py-2 rounded-xl text-sm font-medium transition-colors",
             planKey === "CLINICA"
-              ? "border border-gray-200 text-gray-700 hover:bg-gray-50"
+              ? "border border-line-soft text-ink-secondary hover:bg-canvas"
               : "bg-indigo-600 text-white hover:bg-indigo-700"
           )}
         >
@@ -151,10 +151,10 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
   return (
     <div className="max-w-4xl space-y-6">
       {/* Page title */}
-      <h1 className="text-xl font-bold text-gray-900">Ajustes</h1>
+      <h1 className="text-xl font-bold text-ink-primary">Ajustes</h1>
 
       {/* Tabs */}
-      <div className="flex items-center gap-6 border-b border-gray-100">
+      <div className="flex items-center gap-6 border-b border-line-subtle">
         {(["subscription", "security"] as const).map((t) => {
           const label = t === "subscription" ? "Plan de suscripción" : "Seguridad";
           return (
@@ -165,7 +165,7 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
                 "pb-2.5 text-sm font-medium transition-colors",
                 tab === t
                   ? "text-indigo-600 border-b-2 border-indigo-600 -mb-px"
-                  : "text-gray-500 hover:text-gray-700"
+                  : "text-ink-tertiary hover:text-ink-secondary"
               )}
             >
               {label}
@@ -178,23 +178,23 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
         <>
           {/* Plan selector pills + demo label */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-inset rounded-lg p-1">
               {PLAN_KEYS.map((k) => (
                 <span
                   key={k}
                   className={cn(
                     "px-3 py-1 rounded-md text-sm font-medium transition-colors",
                     k === plan
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500"
+                      ? "bg-surface text-ink-primary shadow-sm"
+                      : "text-ink-tertiary"
                   )}
                 >
                   {PLAN_CONFIG[k].label}
                 </span>
               ))}
             </div>
-            <span className="text-sm text-gray-500">
-              Demo activo: <span className="font-medium text-gray-700">{PLAN_CONFIG[plan].label}</span>
+            <span className="text-sm text-ink-tertiary">
+              Demo activo: <span className="font-medium text-ink-secondary">{PLAN_CONFIG[plan].label}</span>
             </span>
           </div>
 
@@ -207,23 +207,23 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
 
           {/* Clinic config */}
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">
+            <h2 className="text-sm font-semibold text-ink-secondary mb-3">
               Configuración del consultorio
             </h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1.5">Consultorio</p>
-                <p className="font-mono text-sm font-medium text-gray-900">{clinicName}</p>
-                <p className="text-[11px] text-gray-300 mt-1 uppercase tracking-wide">
+              <div className="rounded-xl border border-line-subtle bg-surface p-4 shadow-sm">
+                <p className="text-xs text-ink-tertiary mb-1.5">Consultorio</p>
+                <p className="font-mono text-sm font-medium text-ink-primary">{clinicName}</p>
+                <p className="text-[11px] text-ink-disabled mt-1 uppercase tracking-wide">
                   CLINIC_NAME
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1.5">API Key OpenAI</p>
-                <p className="font-mono text-sm text-gray-700 tracking-widest">
+              <div className="rounded-xl border border-line-subtle bg-surface p-4 shadow-sm">
+                <p className="text-xs text-ink-tertiary mb-1.5">API Key OpenAI</p>
+                <p className="font-mono text-sm text-ink-secondary tracking-widest">
                   {apiKeyMasked}
                 </p>
-                <p className="text-[11px] text-gray-300 mt-1 uppercase tracking-wide">
+                <p className="text-[11px] text-ink-disabled mt-1 uppercase tracking-wide">
                   OPENAI_API_KEY
                 </p>
               </div>
@@ -233,8 +233,8 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
       )}
 
       {tab === "security" && (
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-500 text-center py-8">
+        <div className="rounded-2xl border border-line-subtle bg-surface p-6 shadow-sm">
+          <p className="text-sm text-ink-tertiary text-center py-8">
             Opciones de seguridad próximamente disponibles.
           </p>
         </div>
