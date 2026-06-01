@@ -31,6 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             avatarUrl: true,
             clinicId: true,
             isActive: true,
+            isSuperAdmin: true,
           },
         });
 
@@ -39,17 +40,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) return null;
 
-        // Update lastLoginAt
         db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {})
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatarUrl: user.avatarUrl,
-          clinicId: user.clinicId,
-          isActive: user.isActive,
+          id:           user.id,
+          name:         user.name,
+          email:        user.email,
+          role:         user.role,
+          avatarUrl:    user.avatarUrl,
+          clinicId:     user.clinicId,
+          isActive:     user.isActive,
+          isSuperAdmin: user.isSuperAdmin,
         } as any;
       },
     }),
@@ -57,21 +58,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.clinicId = (user as any).clinicId;
-        token.role = (user as any).role;
-        token.avatarUrl = (user as any).avatarUrl;
-        token.isActive = (user as any).isActive ?? true;
+        token.id           = user.id;
+        token.clinicId     = (user as any).clinicId;
+        token.role         = (user as any).role;
+        token.avatarUrl    = (user as any).avatarUrl;
+        token.isActive     = (user as any).isActive     ?? true;
+        token.isSuperAdmin = (user as any).isSuperAdmin ?? false;
       }
       return token;
     },
     session({ session, token }) {
       if (token) {
-        session.user.id = token.id as string;
-        session.user.clinicId = token.clinicId as string;
-        session.user.role = token.role as any;
+        session.user.id        = token.id as string;
+        session.user.clinicId  = token.clinicId as string;
+        session.user.role      = token.role as any;
         session.user.avatarUrl = token.avatarUrl as string | null;
-        (session.user as any).isActive = (token.isActive as boolean) ?? true;
+        (session.user as any).isActive     = (token.isActive     as boolean) ?? true;
+        (session.user as any).isSuperAdmin = (token.isSuperAdmin as boolean) ?? false;
       }
       return session;
     },
@@ -79,10 +82,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/login",
-    error: "/login",
+    error:  "/login",
   },
   session: {
     strategy: "jwt",
-    maxAge: 365 * 24 * 60 * 60,
+    maxAge:   365 * 24 * 60 * 60,
   },
 });

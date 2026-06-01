@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Kanban, Users, Bot, Settings,
   Stethoscope, CalendarDays, ChevronRight, ChevronLeft,
-  Star,
+  Star, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_MODULES } from "@/lib/rbac/permissions";
@@ -27,15 +27,16 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 interface SidebarProps {
-  userRole: UserRole;
-  plan?:    string;
+  userRole:     UserRole;
+  plan?:        string;
+  isSuperAdmin?: boolean;
 }
 
 function applySidebarWidth(collapsed: boolean) {
   document.documentElement.style.setProperty("--sidebar-w", collapsed ? "60px" : "220px");
 }
 
-export function Sidebar({ userRole, plan = "STARTER" }: SidebarProps) {
+export function Sidebar({ userRole, plan = "STARTER", isSuperAdmin = false }: SidebarProps) {
   const pathname  = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -88,6 +89,24 @@ export function Sidebar({ userRole, plan = "STARTER" }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto scrollbar-thin">
+        {/* Super Admin shortcut */}
+        {isSuperAdmin && (
+          <Link
+            href="/super-admin"
+            title={collapsed ? "Super Admin" : undefined}
+            className={cn(
+              "relative flex items-center rounded-[7px] transition-ui cursor-pointer select-none",
+              "bg-violet-600/10 text-violet-600 hover:bg-violet-600/20",
+              collapsed ? "justify-center px-0 py-2.5 mx-0" : "gap-3 px-2.5 py-2 mx-0"
+            )}
+          >
+            <ShieldCheck className="w-4 h-4 flex-shrink-0 text-violet-500" />
+            {!collapsed && (
+              <span className="flex-1 text-sm font-[550] leading-tight">Super Admin</span>
+            )}
+          </Link>
+        )}
+
         {navItems.map((item) => {
           const Icon    = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");

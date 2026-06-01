@@ -39,7 +39,8 @@ export const authConfig: NextAuthConfig = {
         pathname.startsWith("/appointments") ||
         pathname.startsWith("/settings") ||
         pathname.startsWith("/ai") ||
-        pathname.startsWith("/dr-clinic");
+        pathname.startsWith("/dr-clinic") ||
+        pathname.startsWith("/super-admin");
 
       const isAuthRoute =
         pathname.startsWith("/login") ||
@@ -59,6 +60,16 @@ export const authConfig: NextAuthConfig = {
         // Block deactivated accounts
         if (user.isActive === false) {
           return Response.redirect(new URL("/login?error=account_disabled", nextUrl));
+        }
+
+        // Super admin can only access /super-admin, redirect away from clinic routes
+        if (user.isSuperAdmin && pathname.startsWith("/super-admin")) {
+          return true;
+        }
+
+        // Prevent non-super-admins from accessing /super-admin
+        if (!user.isSuperAdmin && pathname.startsWith("/super-admin")) {
+          return Response.redirect(new URL("/dashboard", nextUrl));
         }
 
         // Check role-based module access

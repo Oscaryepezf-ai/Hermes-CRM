@@ -69,6 +69,7 @@ model User {
   createdAt DateTime @default(now())
 
   isActive            Boolean               @default(true)
+  isSuperAdmin        Boolean               @default(false)
   invitedByUserId     String?
   invitedAt           DateTime?
   lastLoginAt         DateTime?

@@ -24,6 +24,7 @@ export default async function DashboardLayout({
       userName={session.user.name ?? "Usuario"}
       plan={clinic.plan}
       userRole={session.user.role}
+      isSuperAdmin={(session.user as any).isSuperAdmin ?? false}
     >
       {children}
     </DashboardShell>
