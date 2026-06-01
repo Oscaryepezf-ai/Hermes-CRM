@@ -4,6 +4,7 @@ import { signOut } from "next-auth/react";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard":  "Dashboard",
@@ -54,6 +55,8 @@ export function Header({ clinicName, userName }: HeaderProps) {
         >
           <Search className="w-3.5 h-3.5" />
         </button>
+
+        <ThemeToggle />
 
         <NotificationBell />
 

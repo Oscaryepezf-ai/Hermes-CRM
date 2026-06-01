@@ -118,6 +118,25 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* ── Hermes dark mode overrides ──────────────────────── */
+  --color-canvas:  #0F1117;
+  --color-surface: #1A1D27;
+  --color-inset:   #13161F;
+
+  --color-ink-primary:   #F0F2F8;
+  --color-ink-secondary: #9AA3B8;
+  --color-ink-tertiary:  #5C6680;
+  --color-ink-disabled:  #3A3F52;
+
+  --color-line-subtle: #232736;
+  --color-line-soft:   #2A2F42;
+  --color-line-medium: #363C54;
+  --color-line-strong: #4A5270;
+
+  --color-medical-bg:     #0F1117;
+  --color-medical-card:   #1A1D27;
+  --color-medical-border: #232736;
 }
 
 /* ── Hermes Design System — Premium Medical SaaS ────────── */
@@ -257,6 +276,24 @@
   }
   input::placeholder, textarea::placeholder {
     color: #B8C4D0;
+  }
+
+  /* Dark mode base overrides */
+  .dark body {
+    background-color: #0F1117;
+    color: #F0F2F8;
+  }
+  .dark input, .dark textarea, .dark select {
+    color: #F0F2F8;
+  }
+  .dark input::placeholder, .dark textarea::placeholder {
+    color: #3A3F52;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: #363C54;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #4A5270;
   }
 }
 
