@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
+import { createDefaultStages } from "@/lib/pipeline/stage-manager";
 
 const registerSchema = z.object({
   clinicName: z.string().min(2),
@@ -50,19 +51,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Etapas predeterminadas
-    const defaultStages = [
-      { name: "Nuevo Lead", order: 1, color: "#6366f1" },
-      { name: "Contactado", order: 2, color: "#8b5cf6" },
-      { name: "Cita Agendada", order: 3, color: "#06b6d4" },
-      { name: "Presupuesto Enviado", order: 4, color: "#f59e0b" },
-      { name: "Convertido", order: 5, color: "#10b981" },
-      { name: "Perdido", order: 6, color: "#ef4444" },
-    ];
-
-    await db.pipelineStage.createMany({
-      data: defaultStages.map((s) => ({ ...s, clinicId: clinic.id })),
-    });
+    await createDefaultStages(clinic.id);
 
     await db.user.create({
       data: {

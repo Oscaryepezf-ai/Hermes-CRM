@@ -3,6 +3,18 @@ import { DEFAULT_STAGES } from './default-stages'
 
 const MAX_STAGES = 12
 
+// Maps legacy/old stage names to the canonical slugs in DEFAULT_STAGES
+const LEGACY_NAME_TO_SLUG: Record<string, string> = {
+  'nuevo lead':          'contacto_nuevo',
+  'contacto nuevo':      'contacto_nuevo',
+  'contactado':          'contactado',
+  'cita agendada':       'cita_agendada',
+  'presupuesto enviado': 'calificado',
+  'calificado':          'calificado',
+  'convertido':          'convertido',
+  'perdido':             'perdido',
+}
+
 export async function createDefaultStages(clinicId: string): Promise<void> {
   const count = await db.pipelineStage.count({ where: { clinicId } })
   if (count > 0) return // already initialized
@@ -25,11 +37,43 @@ export async function createDefaultStages(clinicId: string): Promise<void> {
 }
 
 export async function getClinicStages(clinicId: string) {
-  return db.pipelineStage.findMany({
+  const stages = await db.pipelineStage.findMany({
     where:   { clinicId },
     orderBy: { order: 'asc' },
     include: { _count: { select: { leads: true } } },
   })
+
+  // Auto-repair legacy stages that have empty slug (created before the pipeline refactor)
+  const legacyStages = stages.filter(s => !s.slug)
+  if (legacyStages.length > 0) {
+    const defaultMap = new Map(DEFAULT_STAGES.map(s => [s.slug, s]))
+    await Promise.all(legacyStages.map(stage => {
+      const slug   = LEGACY_NAME_TO_SLUG[stage.name.toLowerCase()]
+      const config = slug ? defaultMap.get(slug) : undefined
+      if (!config) return
+      return db.pipelineStage.update({
+        where: { id: stage.id },
+        data: {
+          slug,
+          color:         config.color,
+          bgColor:       config.bgColor,
+          headerBgColor: config.headerBgColor,
+          isProtected:   config.isProtected,
+          isDefault:     true,
+          icon:          config.icon,
+        },
+      })
+    }))
+
+    // Refetch with repaired data
+    return db.pipelineStage.findMany({
+      where:   { clinicId },
+      orderBy: { order: 'asc' },
+      include: { _count: { select: { leads: true } } },
+    })
+  }
+
+  return stages
 }
 
 export async function addCustomStage(params: {

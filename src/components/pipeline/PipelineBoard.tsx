@@ -52,8 +52,11 @@ export function PipelineBoard({ initialLeads, userRole, selectedLeadId, onSelect
   useEffect(() => { loadStages() }, [loadStages]);
 
   const getLeadsForStage = useCallback(
-    (stageId: string) => leads.filter(l => l.stageId === stageId),
-    [leads]
+    (stageId: string) => {
+      const isFirstStage = stages.length > 0 && stages[0].id === stageId;
+      return leads.filter(l => l.stageId === stageId || (isFirstStage && !l.stageId));
+    },
+    [leads, stages]
   );
 
   const onDragEnd = async (result: DropResult) => {
