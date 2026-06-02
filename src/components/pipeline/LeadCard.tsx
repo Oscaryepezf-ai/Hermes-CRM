@@ -4,6 +4,7 @@ import { Draggable } from "@hello-pangea/dnd";
 import { Stethoscope } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { AgentIndicator } from "./AgentIndicator";
+import { ConvertedBadge } from "./ConvertedBadge";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { TREATMENT_LABELS } from "@/types/leads";
@@ -48,15 +49,17 @@ const CHANNEL_CONFIG: Record<MarketingChannel, { dot: string; text: string; labe
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface LeadCardProps {
-  lead:       LeadForBoard;
-  index:      number;
-  isSelected: boolean;
-  onSelect:   (id: string) => void;
+  lead:                LeadForBoard;
+  index:               number;
+  isSelected:          boolean;
+  onSelect:            (id: string) => void;
+  showConvertedBadge?: boolean;
+  userRole?:           string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
+export function LeadCard({ lead, index, isSelected, onSelect, showConvertedBadge, userRole }: LeadCardProps) {
   const priority = getPriority(lead.updatedAt);
   const channel  = CHANNEL_CONFIG[lead.channel];
   const avatar   = getAvatar(lead.fullName);
@@ -102,6 +105,17 @@ export function LeadCard({ lead, index, isSelected, onSelect }: LeadCardProps) {
           <p className="mt-2.5 text-[14px] font-[550] text-ink-primary leading-tight truncate">
             {lead.fullName}
           </p>
+
+          {/* Converted badge */}
+          {showConvertedBadge && (
+            <div className="mt-1.5" onClick={e => e.stopPropagation()}>
+              <ConvertedBadge
+                leadId={lead.id}
+                active={lead.isNewPatientOfMonth}
+                canEdit={userRole === 'ADMIN' || userRole === 'DOCTOR'}
+              />
+            </div>
+          )}
 
           {/* Agent badge */}
           {lead.isAgentHandled && (

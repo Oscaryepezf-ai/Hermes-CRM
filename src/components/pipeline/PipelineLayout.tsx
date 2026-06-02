@@ -35,6 +35,7 @@ export function PipelineLayout({ initialLeads, clinicName, userRole }: PipelineL
           initialLeads={initialLeads}
           selectedLeadId={selectedLeadId}
           onSelectLead={setSelectedLeadId}
+          userRole={userRole}
         />
       </div>
 

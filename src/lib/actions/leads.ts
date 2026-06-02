@@ -322,6 +322,7 @@ export async function getLeadsForBoard(): Promise<ActionResponse<LeadForBoard[]>
         fullName: true,
         phone: true,
         status: true,
+        stageId: true,
         journeyState: true,
         treatment: true,
         channel: true,
@@ -329,6 +330,7 @@ export async function getLeadsForBoard(): Promise<ActionResponse<LeadForBoard[]>
         updatedAt: true,
         notes: true,
         isAgentHandled: true,
+        isNewPatientOfMonth: true,
         assignedTo: {
           select: { id: true, name: true, avatarUrl: true },
         },

@@ -17,6 +17,7 @@ export type LeadForBoard = {
   fullName: string
   phone: string
   status: LeadStatus
+  stageId: string | null
   journeyState: JourneyState
   treatment: DentalTreatment
   channel: MarketingChannel
@@ -25,6 +26,7 @@ export type LeadForBoard = {
   updatedAt: Date
   notes: string | null
   isAgentHandled: boolean
+  isNewPatientOfMonth: boolean
 }
 
 export type LeadWithAssignee = {
@@ -41,21 +43,21 @@ export type LeadWithAssignee = {
 }
 
 export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
-  NUEVO: "Nuevo",
-  CONTACTADO: "Contactado",
-  CITA_AGENDADA: "Cita agendada",
-  PRESUPUESTO_ENVIADO: "Presupuesto enviado",
-  CONVERTIDO: "Convertido",
-  PERDIDO: "Perdido",
+  NUEVO:               "Contacto nuevo",
+  CONTACTADO:          "Contactado",
+  CITA_AGENDADA:       "Cita agendada",
+  PRESUPUESTO_ENVIADO: "Calificado",
+  CONVERTIDO:          "Convertido",
+  PERDIDO:             "Perdido",
 }
 
 export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
-  NUEVO: "bg-slate-100 text-slate-700",
-  CONTACTADO: "bg-blue-100 text-blue-700",
-  CITA_AGENDADA: "bg-yellow-100 text-yellow-700",
-  PRESUPUESTO_ENVIADO: "bg-purple-100 text-purple-700",
-  CONVERTIDO: "bg-green-100 text-green-700",
-  PERDIDO: "bg-red-100 text-red-700",
+  NUEVO:               "bg-blue-100 text-blue-700",
+  CONTACTADO:          "bg-violet-100 text-violet-700",
+  CITA_AGENDADA:       "bg-amber-100 text-amber-700",
+  PRESUPUESTO_ENVIADO: "bg-teal-100 text-teal-700",
+  CONVERTIDO:          "bg-emerald-100 text-emerald-700",
+  PERDIDO:             "bg-red-100 text-red-700",
 }
 
 export const TREATMENT_LABELS: Record<DentalTreatment, string> = {

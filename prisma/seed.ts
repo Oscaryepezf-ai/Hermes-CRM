@@ -60,22 +60,22 @@ async function main() {
 
   console.log("✅ Usuarios creados:", owner.name, "&", staff.name);
 
-  // Etapas del pipeline
+  // Etapas del pipeline — 6 etapas definitivas
   const stagesData = [
-    { name: "Nuevo Lead", order: 1, color: "#6366f1" },
-    { name: "Contactado", order: 2, color: "#8b5cf6" },
-    { name: "Cita Agendada", order: 3, color: "#06b6d4" },
-    { name: "Presupuesto Enviado", order: 4, color: "#f59e0b" },
-    { name: "Convertido", order: 5, color: "#10b981" },
-    { name: "Perdido", order: 6, color: "#ef4444" },
+    { name: "Contacto Nuevo",  slug: "contacto_nuevo", order: 0, color: "#4A90E2", bgColor: "#EEF3FC", headerBgColor: "#DDE8F8", icon: "UserPlus",     isProtected: true,  isDefault: true },
+    { name: "Contactado",      slug: "contactado",      order: 1, color: "#8B7CF6", bgColor: "#F2EFFE", headerBgColor: "#E8E2FC", icon: "Phone",        isProtected: false, isDefault: true },
+    { name: "Calificado",      slug: "calificado",      order: 2, color: "#0D9488", bgColor: "#EDFAF4", headerBgColor: "#D8F4E8", icon: "BadgeCheck",   isProtected: false, isDefault: true },
+    { name: "Cita Agendada",   slug: "cita_agendada",   order: 3, color: "#E8A528", bgColor: "#FEF9EE", headerBgColor: "#FDF0D4", icon: "CalendarCheck",isProtected: false, isDefault: true },
+    { name: "Convertido",      slug: "convertido",      order: 4, color: "#10B981", bgColor: "#EDFBF6", headerBgColor: "#D4F5E7", icon: "HeartPulse",   isProtected: true,  isDefault: true },
+    { name: "Perdido",         slug: "perdido",         order: 5, color: "#F47B8A", bgColor: "#FEF2F4", headerBgColor: "#FDE2E7", icon: "XCircle",      isProtected: true,  isDefault: true },
   ];
 
   const stages: Record<string, string> = {};
   for (const s of stagesData) {
     const stage = await prisma.pipelineStage.create({
-      data: { ...s, clinicId: clinic.id },
+      data: { ...s, clinicId: clinic.id, isCustom: false },
     });
-    stages[s.name] = stage.id;
+    stages[s.slug] = stage.id;
   }
 
   console.log("✅ Etapas del pipeline creadas");
@@ -89,7 +89,7 @@ async function main() {
       source: LeadSource.INSTAGRAM,
       interest: "Ortodoncia",
       estimatedValue: 4500000,
-      stageId: stages["Nuevo Lead"],
+      stageId: stages["contacto_nuevo"],
     },
     {
       fullName: "Roberto Silva",
@@ -97,7 +97,7 @@ async function main() {
       source: LeadSource.REFERIDO,
       interest: "Implante dental",
       estimatedValue: 3200000,
-      stageId: stages["Contactado"],
+      stageId: stages["contactado"],
     },
     {
       fullName: "Camila Torres",
@@ -106,7 +106,7 @@ async function main() {
       source: LeadSource.GOOGLE,
       interest: "Blanqueamiento",
       estimatedValue: 800000,
-      stageId: stages["Cita Agendada"],
+      stageId: stages["cita_agendada"],
     },
     {
       fullName: "Diego Ramírez",
@@ -114,7 +114,7 @@ async function main() {
       source: LeadSource.FACEBOOK,
       interest: "Carillas",
       estimatedValue: 6000000,
-      stageId: stages["Presupuesto Enviado"],
+      stageId: stages["calificado"],
     },
     {
       fullName: "Valentina Gómez",
@@ -123,7 +123,7 @@ async function main() {
       source: LeadSource.WHATSAPP,
       interest: "Ortodoncia invisible",
       estimatedValue: 5500000,
-      stageId: stages["Nuevo Lead"],
+      stageId: stages["contacto_nuevo"],
     },
     {
       fullName: "Andrés Moreno",
@@ -131,7 +131,7 @@ async function main() {
       source: LeadSource.TIKTOK,
       interest: "Blanqueamiento",
       estimatedValue: 750000,
-      stageId: stages["Contactado"],
+      stageId: stages["contactado"],
     },
     {
       fullName: "Lucía Herrera",
@@ -140,7 +140,7 @@ async function main() {
       source: LeadSource.INSTAGRAM,
       interest: "Implante dental",
       estimatedValue: 3800000,
-      stageId: stages["Cita Agendada"],
+      stageId: stages["cita_agendada"],
     },
     {
       fullName: "Felipe Castillo",
@@ -148,7 +148,7 @@ async function main() {
       source: LeadSource.REFERIDO,
       interest: "Ortodoncia",
       estimatedValue: 4200000,
-      stageId: stages["Presupuesto Enviado"],
+      stageId: stages["calificado"],
     },
     {
       fullName: "Sara Quintero",
@@ -156,7 +156,7 @@ async function main() {
       source: LeadSource.GOOGLE,
       interest: "Carillas",
       estimatedValue: 5800000,
-      stageId: stages["Nuevo Lead"],
+      stageId: stages["contacto_nuevo"],
     },
     {
       fullName: "Nicolás Vargas",
@@ -165,7 +165,7 @@ async function main() {
       source: LeadSource.REFERIDO,
       interest: "Limpieza dental",
       estimatedValue: 250000,
-      stageId: stages["Contactado"],
+      stageId: stages["contactado"],
     },
     {
       fullName: "Isabella Ríos",
@@ -173,7 +173,7 @@ async function main() {
       source: LeadSource.FACEBOOK,
       interest: "Ortodoncia",
       estimatedValue: 4700000,
-      stageId: stages["Perdido"],
+      stageId: stages["perdido"],
       notes: "No le gustó el presupuesto, fue a otra clínica",
     },
     {
@@ -183,7 +183,7 @@ async function main() {
       source: LeadSource.INSTAGRAM,
       interest: "Implante dental",
       estimatedValue: 3500000,
-      stageId: stages["Nuevo Lead"],
+      stageId: stages["contacto_nuevo"],
     },
   ];
 

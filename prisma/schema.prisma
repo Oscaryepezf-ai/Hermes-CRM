@@ -102,14 +102,26 @@ model GoogleCalendarToken {
 }
 
 model PipelineStage {
-  id       String @id @default(cuid())
-  name     String
-  order    Int
-  color    String @default("#6366f1")
-  clinicId String
-  clinic   Clinic @relation(fields: [clinicId], references: [id])
+  id            String   @id @default(cuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
 
-  leads Lead[]
+  name          String
+  slug          String   @default("")
+  color         String   @default("#6366F1")
+  bgColor       String   @default("#EEF3FC")
+  headerBgColor String   @default("#DDE8F8")
+  order         Int
+  isProtected   Boolean  @default(false)
+  isDefault     Boolean  @default(false)
+  isCustom      Boolean  @default(false)
+  icon          String?
+
+  leads         Lead[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clinicId, order])
 }
 
 model Lead {
@@ -150,7 +162,9 @@ model Lead {
   totalTouchpoints  Int           @default(0)
   responseTimeAvg   Float?
 
-  isAgentHandled    Boolean @default(false)
+  isAgentHandled       Boolean @default(false)
+  isNewPatientOfMonth  Boolean @default(false)
+  convertedThisMonth   Boolean @default(false)
 
   history               LeadHistory[]
   messages              Message[]
