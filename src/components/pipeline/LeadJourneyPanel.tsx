@@ -14,6 +14,7 @@ import { getLeadJourney } from "@/lib/actions/journey"
 import { JourneyTimeline } from "./JourneyTimeline"
 import { StageTransitionModal } from "./StageTransitionModal"
 import { ConvertToPatientModal } from "./ConvertToPatientModal"
+import { ScheduleLeadAppointmentModal } from "./ScheduleLeadAppointmentModal"
 import { ChatPanel } from "./ChatPanel"
 import type { JourneyState, UserRole } from "@prisma/client"
 import type { DentalTreatment } from "@prisma/client"
@@ -50,6 +51,7 @@ export function LeadJourneyPanel({
   const [loading, setLoading]             = useState(true)
   const [transitionTo, setTransitionTo]   = useState<JourneyState | null>(null)
   const [showConvert, setShowConvert]     = useState(false)
+  const [showSchedule, setShowSchedule]   = useState(false)
   const [unreadChat, setUnreadChat]       = useState(false)
 
   const loadData = useCallback(async () => {
@@ -140,6 +142,7 @@ export function LeadJourneyPanel({
               else setTransitionTo(state)
             }}
             onSwitchToChat={() => setTab("chat")}
+            onSchedule={() => setShowSchedule(true)}
           />
         )}
 
@@ -190,13 +193,22 @@ export function LeadJourneyPanel({
           onSuccess={handleTransitionSuccess}
         />
       )}
+
+      {showSchedule && (
+        <ScheduleLeadAppointmentModal
+          leadId={leadId}
+          leadName={leadName}
+          onClose={() => setShowSchedule(false)}
+          onSuccess={handleTransitionSuccess}
+        />
+      )}
     </div>
   )
 }
 
 // ── Resumen Tab ────────────────────────────────────────────────────────────────
 
-function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTransition, onSwitchToChat }: {
+function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTransition, onSwitchToChat, onSchedule }: {
   lead: any
   loading: boolean
   journeyState: JourneyState
@@ -204,6 +216,7 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
   nextStates: JourneyState[]
   onTransition: (state: JourneyState) => void
   onSwitchToChat: () => void
+  onSchedule: () => void
 }) {
   const primaryNextStates = nextStates.filter(s => s !== "PERDIDO" && s !== "PROSPECTO")
   const lostState = nextStates.includes("PERDIDO") ? "PERDIDO" : null
@@ -258,6 +271,17 @@ function ResumenTab({ lead, loading, journeyState, stateConfig, nextStates, onTr
         <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wider">
           Acciones rápidas
         </p>
+
+        {journeyState === "CALIFICADO" && (
+          <button
+            onClick={onSchedule}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors text-sm text-indigo-700 font-medium"
+          >
+            <CalendarCheck className="w-4 h-4 text-indigo-500" />
+            Agendar cita
+          </button>
+        )}
+
         <button
           onClick={onSwitchToChat}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft hover:bg-canvas transition-colors text-sm text-ink-secondary"

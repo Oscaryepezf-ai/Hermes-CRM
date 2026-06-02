@@ -145,6 +145,103 @@ export async function createAppointmentFromCalendar(
   return { success: true, data: appointment }
 }
 
+const ScheduleLeadSchema = z.object({
+  leadId:      z.string(),
+  dentistId:   z.string(),
+  procedure:   z.string().min(1),
+  scheduledAt: z.string().datetime(),
+  value:       z.number().optional(),
+  notes:       z.string().optional(),
+})
+
+export async function scheduleLeadAppointment(
+  data: z.infer<typeof ScheduleLeadSchema>
+) {
+  const guard = await requirePermission("agenda", "create")
+  if (!guard.authorized) return { success: false, error: guard.error }
+  const session = await auth()
+  if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
+
+  const parsed = ScheduleLeadSchema.safeParse(data)
+  if (!parsed.success) return { success: false, error: 'Datos inválidos' }
+
+  const lead = await db.lead.findUnique({
+    where:  { id: data.leadId },
+    select: { fullName: true, phone: true, email: true, clinicId: true, journeyState: true },
+  })
+
+  if (!lead) return { success: false, error: 'Lead no encontrado' }
+  if (lead.clinicId !== session.user.clinicId) return { success: false, error: 'No autorizado' }
+  if (lead.journeyState !== 'CALIFICADO') {
+    return { success: false, error: 'El lead debe estar en estado Calificado' }
+  }
+
+  // Upsert patient from lead data
+  let patient = await db.patient.findFirst({
+    where: { phone: lead.phone, clinicId: session.user.clinicId },
+  })
+  if (!patient) {
+    patient = await db.patient.create({
+      data: {
+        fullName: lead.fullName,
+        phone:    lead.phone,
+        email:    lead.email,
+        clinicId: session.user.clinicId,
+      },
+    })
+  }
+
+  const scheduledAt = new Date(data.scheduledAt)
+
+  const [appointment] = await db.$transaction([
+    db.appointment.create({
+      data: {
+        patientId:   patient.id,
+        clinicId:    session.user.clinicId,
+        dentistId:   data.dentistId,
+        procedure:   data.procedure,
+        scheduledAt,
+        value:       data.value,
+        notes:       data.notes,
+        status:      'SCHEDULED',
+      },
+    }),
+    db.lead.update({
+      where: { id: data.leadId },
+      data: {
+        journeyState:     'CITA_AGENDADA',
+        lastActivityAt:   new Date(),
+        totalTouchpoints: { increment: 1 },
+        patientId:        patient.id,
+      },
+    }),
+    db.journeyEvent.create({
+      data: {
+        leadId:    data.leadId,
+        userId:    session.user.id,
+        type:      'APPOINTMENT_CREATED',
+        fromState: 'CALIFICADO',
+        toState:   'CITA_AGENDADA',
+        metadata:  { procedure: data.procedure, scheduledAt: scheduledAt.toISOString(), value: data.value },
+      },
+    }),
+  ])
+
+  sendPushToClinicAdmins(
+    session.user.clinicId,
+    appointmentCreatedNotification({
+      patientName: lead.fullName,
+      procedure:   data.procedure,
+      scheduledAt,
+      appointmentId: appointment.id,
+    })
+  ).catch(console.error)
+
+  revalidatePath('/agenda')
+  revalidatePath('/pipeline')
+  return { success: true, data: appointment }
+}
+
 export async function updateAppointmentStatusFromCalendar(
   appointmentId: string,
   status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
