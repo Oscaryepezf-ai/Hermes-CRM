@@ -36,6 +36,7 @@ model Clinic {
   appointments   Appointment[]
   pipelineStages PipelineStage[]
   invitations    UserInvitation[]
+  aiUsageLogs    AiUsageLog[]
   channels       ClinicChannel[]
 }
 
@@ -468,4 +469,25 @@ enum ConversationStatus {
   HANDED_OFF
   COMPLETED
   ABANDONED
+}
+
+// ─── AI Usage Tracking ────────────────────────────────────────────────────────
+
+model AiUsageLog {
+  id            String   @id @default(cuid())
+  clinicId      String
+  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  agentKey      String
+  model         String
+  tokensInput   Int      @default(0)
+  tokensOutput  Int      @default(0)
+  audioDuration Float?
+  costUsd       Float
+  latencyMs     Int
+  success       Boolean
+  errorCode     String?
+  createdAt     DateTime @default(now())
+
+  @@index([clinicId, createdAt])
+  @@index([agentKey, createdAt])
 }

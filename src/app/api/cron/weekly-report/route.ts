@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         continue;
       }
 
-      const report = await generateAnalyticsReport(metrics);
+      const report = await generateAnalyticsReport(metrics, clinicId);
       const html = buildReportEmailHTML(metrics, report);
       const text = buildReportEmailText(metrics, report);
 

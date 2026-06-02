@@ -1,9 +1,8 @@
-import OpenAI from 'openai'
 import type { QualificationResult } from './qualification-engine'
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+import { callAI } from '@/lib/ai/client'
 
 export type ResponseContext = {
+  clinicId:      string
   clinicName:    string
   qualification: QualificationResult
   turnCount:     number
@@ -18,8 +17,8 @@ export type ResponseContext = {
 
 function buildSystemPrompt(ctx: ResponseContext): string {
   const channelLabel =
-    ctx.channel === 'WHATSAPP'  ? 'WhatsApp' :
-    ctx.channel === 'FACEBOOK'  ? 'Facebook Messenger' : 'Instagram DM'
+    ctx.channel === 'WHATSAPP' ? 'WhatsApp' :
+    ctx.channel === 'FACEBOOK' ? 'Facebook Messenger' : 'Instagram DM'
 
   return `Eres Hermes, el asistente virtual de ${ctx.clinicName}.
 Eres ${ctx.tone === 'amigable' ? 'amigable, cálido y cercano' : 'profesional y cordial'}.
@@ -64,27 +63,25 @@ export async function generateCaptadorResponse(
   history: { role: 'user' | 'assistant'; content: string }[],
   ctx:     ResponseContext
 ): Promise<string> {
-  try {
-    const res = await openai.chat.completions.create({
-      model:       'gpt-4o-mini',
-      temperature: 0.7,
-      max_tokens:  200,
-      messages: [
-        { role: 'system', content: buildSystemPrompt(ctx) },
-        ...history,
-      ],
-    })
-    return res.choices[0].message.content?.trim() ?? '¡Un momento, ya te atiendo! 😊'
-  } catch {
-    return '¡Hola! Gracias por escribirnos. En breve te atendemos. 😊'
-  }
+  const userPrompt = history.length > 0
+    ? history.map(m => `${m.role === 'user' ? 'Prospecto' : 'Hermes'}: ${m.content}`).join('\n')
+    : 'El prospecto acaba de escribir su primer mensaje.'
+
+  const result = await callAI({
+    agentKey:     'CAPTADOR_RESPONDER',
+    clinicId:     ctx.clinicId,
+    systemPrompt: buildSystemPrompt(ctx),
+    userPrompt,
+  })
+
+  return result.success ? result.data.trim() : '¡Hola! Gracias por escribirnos. En breve te atendemos. 😊'
 }
 
 export function getHandoffMessage(clinicName: string, reason: string): string {
   const msgs: Record<string, string> = {
-    urgencia:  `Entiendo que es urgente. Te conecto ahora con nuestra especialista para que te atienda de inmediato. 🦷`,
-    max_turns: `Gracias por tu paciencia. Un miembro del equipo de ${clinicName} se comunicará contigo en breve con toda la información. 😊`,
-    queja:     `Lamento lo sucedido. Te transfiero con nuestra coordinadora para que te ayude personalmente. 🙏`,
+    urgencia:  `Entiendo que es urgente. Te conecto ahora con nuestra especialista. 🦷`,
+    max_turns: `Gracias por tu paciencia. Un miembro del equipo de ${clinicName} se comunicará contigo en breve. 😊`,
+    queja:     `Lamento lo sucedido. Te transfiero con nuestra coordinadora. 🙏`,
     solicitud: `Con gusto te conecto con alguien de nuestro equipo. Un momento.`,
   }
   return msgs[reason] ?? msgs.max_turns
@@ -92,9 +89,7 @@ export function getHandoffMessage(clinicName: string, reason: string): string {
 
 export function getOutOfHoursMessage(clinicName: string, businessHours: string): string {
   const timeCO = new Date().toLocaleTimeString('es-CO', {
-    timeZone: 'America/Bogota',
-    hour:     '2-digit',
-    minute:   '2-digit',
+    timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit',
   })
-  return `¡Hola! 👋 Gracias por escribirnos a ${clinicName}. Son las ${timeCO} y estamos fuera de horario.\n\nAtendemos ${businessHours}.\n\nTu mensaje quedó registrado y te contactaremos a primera hora. Si es urgente, visítanos durante nuestro horario. 😊`
+  return `¡Hola! 👋 Gracias por escribirnos a ${clinicName}. Son las ${timeCO} y estamos fuera de horario.\n\nAtendemos ${businessHours}.\n\nTu mensaje quedó registrado y te contactaremos a primera hora. 😊`
 }

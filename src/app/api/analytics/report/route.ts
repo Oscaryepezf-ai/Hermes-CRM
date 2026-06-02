@@ -14,7 +14,7 @@ export async function GET() {
 
   try {
     const metrics = await getClinicMetrics(session.user.clinicId);
-    const report = await generateAnalyticsReport(metrics);
+    const report = await generateAnalyticsReport(metrics, session.user.clinicId);
     return NextResponse.json({ success: true, metrics, report });
   } catch (error) {
     console.error("Error generating analytics report:", error);

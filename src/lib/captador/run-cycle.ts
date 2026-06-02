@@ -62,6 +62,7 @@ export async function runCaptadorCycle(params: {
     message:             params.message,
     conversationHistory: history.slice(-6),
     clinicName:          clinic.name,
+    clinicId:            clinic.id,
     collectedSoFar:      collectedData,
   })
 
@@ -98,6 +99,7 @@ export async function runCaptadorCycle(params: {
   const response = await generateCaptadorResponse(
     [...history, { role: 'user', content: params.message }],
     {
+      clinicId:      clinic.id,
       clinicName:    clinic.name,
       qualification,
       turnCount:     newTurnCount,
