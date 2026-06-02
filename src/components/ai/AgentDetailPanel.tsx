@@ -6,6 +6,7 @@ import { Bot, Zap, Clock, CheckCircle2, X, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentConfig } from "./AgentBubble";
 import { CaptadorConfig } from "@/components/hermes-ai/CaptadorConfig";
+import { ReactivadorConfig } from "@/components/hermes-ai/ReactivadorConfig";
 
 interface AgentDetailPanelProps {
   agent: AgentConfig;
@@ -147,6 +148,26 @@ export function AgentDetailPanel({ agent, onClose }: AgentDetailPanelProps) {
             {showConfig && (
               <div className="mt-4 border-t border-gray-100 pt-4">
                 <CaptadorConfig onClose={() => setShowConfig(false)} />
+              </div>
+            )}
+          </>
+        ) : agent.id === 'reactivador' ? (
+          <>
+            <button
+              onClick={() => setShowConfig(!showConfig)}
+              className={cn(
+                "w-full py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90",
+                agent.gradient
+              )}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Settings className="w-4 h-4" />
+                {showConfig ? 'Ocultar configuración' : agent.ctaLabel}
+              </div>
+            </button>
+            {showConfig && (
+              <div className="mt-4 border-t border-gray-100 pt-4 overflow-y-auto max-h-[60vh]">
+                <ReactivadorConfig />
               </div>
             )}
           </>
