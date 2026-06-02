@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { runCaptadorCycle } from '@/lib/captador/run-cycle'
+import { markCampaignAsResponded } from '@/lib/reactivador/response-tracker'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 30
@@ -82,6 +83,9 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
             where: { id: leadId },
             data:  { lastContactAt: new Date(), lastActivityAt: new Date(), totalTouchpoints: { increment: 1 } },
           })
+
+          // Si el lead tiene campaña de reactivación activa → marcar como respondida
+          markCampaignAsResponded(leadId).catch(console.error)
 
           // Run Captador cycle in background
           runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP' }).catch(console.error)

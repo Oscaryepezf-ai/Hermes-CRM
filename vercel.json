@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/check-inactive",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/reactivation-campaigns",
+      "schedule": "0 10 * * 2"
     }
   ]
 }

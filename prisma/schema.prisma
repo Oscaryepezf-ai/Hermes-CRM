@@ -30,14 +30,19 @@ model Clinic {
   captadorActive   Boolean @default(false)
   captadorConfig   Json?
 
-  users          User[]
-  leads          Lead[]
-  patients       Patient[]
-  appointments   Appointment[]
-  pipelineStages PipelineStage[]
-  invitations    UserInvitation[]
-  aiUsageLogs    AiUsageLog[]
-  channels       ClinicChannel[]
+  // ─── Hermes Reactivador ───────────────────────────────
+  reactivadorActive  Boolean @default(false)
+  reactivadorConfig  Json?
+
+  users                 User[]
+  leads                 Lead[]
+  patients              Patient[]
+  appointments          Appointment[]
+  pipelineStages        PipelineStage[]
+  invitations           UserInvitation[]
+  aiUsageLogs           AiUsageLog[]
+  channels              ClinicChannel[]
+  reactivationCampaigns ReactivationCampaign[]
 }
 
 model ClinicChannel {
@@ -147,12 +152,13 @@ model Lead {
 
   isAgentHandled    Boolean @default(false)
 
-  history           LeadHistory[]
-  messages          Message[]
-  clinicalHistory   ClinicalHistory?
-  journeyEvents     JourneyEvent[]
-  socialProfiles    SocialProfile[]
-  agentConversation AgentConversation?
+  history               LeadHistory[]
+  messages              Message[]
+  clinicalHistory       ClinicalHistory?
+  journeyEvents         JourneyEvent[]
+  socialProfiles        SocialProfile[]
+  agentConversation     AgentConversation?
+  reactivationCampaigns ReactivationCampaign[]
 }
 
 model ClinicalHistory {
@@ -490,4 +496,68 @@ model AiUsageLog {
 
   @@index([clinicId, createdAt])
   @@index([agentKey, createdAt])
+}
+
+// ─── Hermes Reactivador ───────────────────────────────────────────────────────
+
+model ReactivationCampaign {
+  id                 String              @id @default(cuid())
+  clinicId           String
+  clinic             Clinic              @relation(fields: [clinicId], references: [id])
+  leadId             String
+  lead               Lead                @relation(fields: [leadId], references: [id])
+
+  segment            ReactivationSegment
+  treatmentFocus     String?
+  daysSinceLastAppt  Int
+
+  status             CampaignStatus      @default(PENDING)
+  attemptCount       Int                 @default(0)
+  maxAttempts        Int                 @default(3)
+  lastAttemptAt      DateTime?
+  nextAttemptAt      DateTime?
+
+  responded          Boolean             @default(false)
+  respondedAt        DateTime?
+  convertedAt        DateTime?
+  revenue            Float?
+
+  messages           CampaignMessage[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@unique([clinicId, leadId])
+  @@index([clinicId, status])
+  @@index([nextAttemptAt])
+}
+
+model CampaignMessage {
+  id             String               @id @default(cuid())
+  campaignId     String
+  campaign       ReactivationCampaign @relation(fields: [campaignId], references: [id])
+  channel        MarketingChannel
+  content        String               @db.Text
+  attemptNumber  Int
+  sentAt         DateTime             @default(now())
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  repliedAt      DateTime?
+  externalMsgId  String?
+}
+
+enum ReactivationSegment {
+  TRATAMIENTO_INCOMPLETO
+  CONTROL_PENDIENTE
+  LARGO_PLAZO_INACTIVO
+  PERDIO_PRESUPUESTO
+  SIN_CLASIFICAR
+}
+
+enum CampaignStatus {
+  PENDING
+  ACTIVE
+  RESPONDED
+  CONVERTED
+  EXHAUSTED
+  CANCELLED
 }
