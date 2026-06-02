@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 import {
   getActiveClinics,
   getClinicMetrics,
@@ -23,6 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Resend no configurado" }, { status: 503 });
   }
 
+  const { Resend } = await import("resend");
   const resend = new Resend(process.env.RESEND_API_KEY);
   const clinicIds = await getActiveClinics();
   const results: {
