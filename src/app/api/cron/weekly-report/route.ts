@@ -10,8 +10,6 @@ import {
   buildReportEmailText,
 } from "@/lib/analytics/report-email";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
@@ -21,6 +19,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: "Resend no configurado" }, { status: 503 });
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const clinicIds = await getActiveClinics();
   const results: {
     clinicId: string;
