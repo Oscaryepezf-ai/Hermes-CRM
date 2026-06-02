@@ -61,7 +61,7 @@ export function StageColumn({
 
   return (
     <div
-      className="flex flex-col w-[280px] flex-shrink-0 rounded-[12px] overflow-hidden"
+      className="stage-col flex flex-col w-[280px] flex-shrink-0 rounded-[12px] overflow-hidden"
       style={{
         background:  stage.bgColor,
         border:      `1px solid ${borderColor}`,
@@ -72,7 +72,7 @@ export function StageColumn({
     >
       {/* Column header */}
       <div
-        className="flex items-center justify-between px-[14px] py-[11px] border-b"
+        className="stage-col-hdr flex items-center justify-between px-[14px] py-[11px] border-b"
         style={{ background: stage.headerBgColor, borderColor }}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -147,9 +147,10 @@ export function StageColumn({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "flex-1 flex flex-col gap-2 px-[10px] py-[12px]",
+              "stage-col-body flex-1 flex flex-col gap-2 px-[10px] py-[12px]",
               "min-h-[200px] overflow-y-auto scrollbar-thin",
-              "transition-colors duration-100"
+              "transition-colors duration-100",
+              snapshot.isDraggingOver && "is-dragging-over"
             )}
             style={{
               background:  snapshot.isDraggingOver ? "rgba(99,102,241,0.05)" : stage.bgColor,

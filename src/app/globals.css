@@ -119,24 +119,50 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 
-  /* ── Hermes dark mode overrides ──────────────────────── */
+  /* ── Hermes dark mode — superficie y fondos ─────────── */
   --color-canvas:  #0F1117;
   --color-surface: #1A1D27;
   --color-inset:   #13161F;
 
+  /* ── Textos en dark ─────────────────────────────────── */
   --color-ink-primary:   #F0F2F8;
   --color-ink-secondary: #9AA3B8;
   --color-ink-tertiary:  #5C6680;
   --color-ink-disabled:  #3A3F52;
 
+  /* ── Bordes en dark ─────────────────────────────────── */
   --color-line-subtle: #232736;
   --color-line-soft:   #2A2F42;
   --color-line-medium: #363C54;
   --color-line-strong: #4A5270;
 
+  /* ── Brand palette invertida para dark ──────────────── */
+  --color-brand-50:  #1e1b4b;
+  --color-brand-100: #23206a;
+  --color-brand-200: #2c2985;
+  --color-brand-600: #a5b4fc;
+  --color-brand-700: #c7d2fe;
+  --color-brand-900: #e0e7ff;
+
+  /* ── Sombras en dark ────────────────────────────────── */
+  --shadow-topbar:  0 1px 0 #232736;
+  --shadow-sidebar: 1px 0 0 #232736;
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.20);
+  --shadow-col:     0 2px 8px rgba(0,0,0,0.25);
+  --shadow-panel:   0 8px 32px rgba(0,0,0,0.40), 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-dropdown:0 8px 24px rgba(0,0,0,0.40);
+
+  /* ── Medical bg ─────────────────────────────────────── */
   --color-medical-bg:     #0F1117;
   --color-medical-card:   #1A1D27;
   --color-medical-border: #232736;
+
+  /* ── WhatsApp chat en dark ──────────────────────────── */
+  --color-wa-bg:        #1A2025;
+  --color-wa-bubble-in: #1E2730;
+  --color-wa-bubble-out:#0B4A35;
+  --color-wa-header:    #111B21;
+  --color-wa-input-bg:  #1A2025;
 }
 
 /* ── Hermes Design System — Premium Medical SaaS ────────── */
@@ -249,10 +275,10 @@
     font-size: 13px;
   }
 
-  h1 { font-size: 22px; font-weight: 600; color: #1A1D23; letter-spacing: -0.04em; line-height: 1.3; }
-  h2 { font-size: 18px; font-weight: 600; color: #1A1D23; letter-spacing: -0.03em; }
-  h3 { font-size: 15px; font-weight: 550; color: #1A1D23; letter-spacing: -0.02em; }
-  h4 { font-size: 13px; font-weight: 550; color: #4A5568; letter-spacing: 0; }
+  h1 { font-size: 22px; font-weight: 600; color: var(--color-ink-primary); letter-spacing: -0.04em; line-height: 1.3; }
+  h2 { font-size: 18px; font-weight: 600; color: var(--color-ink-primary); letter-spacing: -0.03em; }
+  h3 { font-size: 15px; font-weight: 550; color: var(--color-ink-primary); letter-spacing: -0.02em; }
+  h4 { font-size: 13px; font-weight: 550; color: var(--color-ink-secondary); letter-spacing: 0; }
 
   /* Scrollbar discreta */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -305,12 +331,12 @@
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #C8D0DC transparent;
+    scrollbar-color: var(--color-line-medium) transparent;
   }
   .scrollbar-thin::-webkit-scrollbar { width: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: #C8D0DC;
+    background-color: var(--color-line-medium);
     border-radius: 9999px;
   }
 
@@ -387,4 +413,56 @@
   color: #8896A8;
   font-size: 12px;
   text-decoration: none;
+}
+
+/* ── FullCalendar dark mode ─────────────────────────────── */
+.dark .fc .fc-toolbar-title {
+  color: #F0F2F8;
+}
+.dark .fc .fc-button {
+  background: #1A1D27 !important;
+  border: 1px solid #2A2F42 !important;
+  color: #9AA3B8 !important;
+  box-shadow: none !important;
+}
+.dark .fc .fc-button:hover {
+  background: #232736 !important;
+  border-color: #363C54 !important;
+  color: #F0F2F8 !important;
+}
+.dark .fc .fc-button-primary:not(:disabled).fc-button-active,
+.dark .fc .fc-button-primary:not(:disabled):active {
+  background: #1e1b4b !important;
+  color: #a5b4fc !important;
+  border-color: #312e81 !important;
+}
+.dark .fc .fc-col-header-cell-cushion {
+  color: #5C6680;
+}
+.dark .fc .fc-timegrid-axis-cushion {
+  color: #5C6680;
+}
+.dark .fc-theme-standard .fc-scrollgrid { border-color: #232736; }
+.dark .fc-theme-standard td,
+.dark .fc-theme-standard th { border-color: #232736; }
+.dark .fc .fc-list-event:hover td { background: #232736; }
+.dark .fc .fc-daygrid-day-number,
+.dark .fc .fc-daygrid-week-number { color: #5C6680; }
+.dark .fc .fc-day-today { background: rgba(99,102,241,0.06) !important; }
+.dark .fc .fc-timegrid-slot-label { color: #5C6680; }
+
+/* ── Kanban columnas en dark mode ───────────────────────── */
+.dark .stage-col {
+  background: #1A1D27 !important;
+  border-color: #2A2F42 !important;
+}
+.dark .stage-col-hdr {
+  background: #13161F !important;
+  border-color: #2A2F42 !important;
+}
+.dark .stage-col-body {
+  background: #1A1D27 !important;
+}
+.dark .stage-col-body.is-dragging-over {
+  background: rgba(99,102,241,0.08) !important;
 }

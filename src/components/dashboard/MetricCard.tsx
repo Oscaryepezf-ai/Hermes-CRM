@@ -42,7 +42,9 @@ export function MetricCard({
           <span
             className={cn(
               "inline-flex items-center gap-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded-[4px]",
-              changePositive ? "text-[#15694A] bg-[#EDFAF4]" : "text-[#9B2335] bg-[#FEF2F4]"
+              changePositive
+                  ? "text-[#15694A] bg-[#EDFAF4] dark:text-emerald-400 dark:bg-emerald-950/60"
+                  : "text-[#9B2335] bg-[#FEF2F4] dark:text-rose-400 dark:bg-rose-950/60"
             )}
           >
             {changePositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
