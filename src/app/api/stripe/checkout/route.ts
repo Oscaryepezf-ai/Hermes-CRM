@@ -3,17 +3,23 @@ import Stripe from "stripe";
 import { auth } from "../../../../../auth";
 import { db } from "@/lib/db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-04-22.dahlia",
-});
+export const dynamic = "force-dynamic";
 
 const PRICE_IDS: Record<string, string | undefined> = {
-  STARTER: process.env.STRIPE_STARTER_PRICE_ID,
+  STARTER:     process.env.STRIPE_STARTER_PRICE_ID,
   PROFESIONAL: process.env.STRIPE_PROFESIONAL_PRICE_ID,
-  CLINICA: process.env.STRIPE_CLINICA_PRICE_ID,
+  CLINICA:     process.env.STRIPE_CLINICA_PRICE_ID,
 };
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: "Stripe no configurado" }, { status: 503 });
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2026-04-22.dahlia",
+  });
+
   try {
     const session = await auth();
     if (!session?.user?.clinicId) {

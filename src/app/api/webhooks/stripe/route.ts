@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-04-22.dahlia",
-});
+export const dynamic = "force-dynamic";
 
 const PLAN_MAP: Record<string, "STARTER" | "PROFESIONAL" | "CLINICA"> = {
   STARTER: "STARTER",
@@ -13,6 +11,12 @@ const PLAN_MAP: Record<string, "STARTER" | "PROFESIONAL" | "CLINICA"> = {
 };
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: "Stripe no configurado" }, { status: 503 });
+  }
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2026-04-22.dahlia",
+  });
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
 
