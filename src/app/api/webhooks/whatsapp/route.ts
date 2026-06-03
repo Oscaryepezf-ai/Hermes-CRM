@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { runCaptadorCycle } from '@/lib/captador/run-cycle'
 import { markCampaignAsResponded } from '@/lib/reactivador/response-tracker'
+import { upsertInboxConversation } from '@/lib/inbox/conversations'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 30
@@ -83,6 +84,12 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
             where: { id: leadId },
             data:  { lastContactAt: new Date(), lastActivityAt: new Date(), totalTouchpoints: { increment: 1 } },
           })
+
+          // Create/update inbox conversation
+          const lead = await db.lead.findUnique({ where: { id: leadId }, select: { clinicId: true } })
+          if (lead) {
+            upsertInboxConversation({ clinicId: lead.clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true }).catch(console.error)
+          }
 
           // Si el lead tiene campaña de reactivación activa → marcar como respondida
           markCampaignAsResponded(leadId).catch(console.error)

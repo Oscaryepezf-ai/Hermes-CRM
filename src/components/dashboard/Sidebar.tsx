@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Kanban, Users, Bot, Settings,
   Stethoscope, CalendarDays, ChevronRight, ChevronLeft,
-  Star, ShieldCheck,
+  Star, ShieldCheck, Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_MODULES } from "@/lib/rbac/permissions";
@@ -15,6 +15,7 @@ import type { UserRole } from "@prisma/client";
 const ALL_NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard, module: "dashboard"  },
   { label: "Pipeline",   href: "/pipeline",  icon: Kanban,          module: "pipeline"   },
+  { label: "Bandeja",    href: "/inbox",     icon: Inbox,           module: "inbox"      },
   { label: "Agenda",     href: "/agenda",    icon: CalendarDays,    module: "agenda"     },
   { label: "Pacientes",  href: "/patients",  icon: Users,           module: "patients"   },
   { label: "Dr. Clinic", href: "/dr-clinic", icon: Stethoscope,     module: "dr_clinic"  },

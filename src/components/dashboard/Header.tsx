@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard":  "Dashboard",
   "/pipeline":   "Pipeline",
+  "/inbox":      "Bandeja de entrada",
   "/agenda":     "Agenda",
   "/patients":   "Pacientes",
   "/dr-clinic":  "Dr. Clinic",

@@ -253,6 +253,7 @@ export function ChatPanel({
       channel:           channel ?? "WHATSAPP",
       externalMessageId: null,
       isAutomatic:       false,
+      isNote:            false,
       isOptimistic: true,
     };
 

@@ -9,6 +9,7 @@ const PERMISSIONS: Record<UserRole, Permission[]> = {
     'agenda:view', 'agenda:create', 'agenda:edit', 'agenda:delete', 'agenda:view_others',
     'dr_clinic:view', 'dr_clinic:create', 'dr_clinic:edit',
     'hermes_ai:view', 'hermes_ai:configure',
+    'inbox:view', 'inbox:create', 'inbox:edit',
     'reports:view', 'reports:view_financial', 'reports:export',
     'settings:view', 'settings:configure', 'settings:edit',
     'users:view', 'users:create', 'users:edit', 'users:delete',
@@ -21,6 +22,7 @@ const PERMISSIONS: Record<UserRole, Permission[]> = {
     'agenda:view', 'agenda:create', 'agenda:edit', 'agenda:delete',
     'dr_clinic:view', 'dr_clinic:create', 'dr_clinic:edit',
     'hermes_ai:view',
+    'inbox:view', 'inbox:create', 'inbox:edit',
     'reports:view',
     'settings:configure',
   ],
@@ -30,6 +32,7 @@ const PERMISSIONS: Record<UserRole, Permission[]> = {
     'pipeline:view', 'pipeline:create', 'pipeline:edit',
     'patients:view', 'patients:create', 'patients:edit',
     'agenda:view', 'agenda:create', 'agenda:edit', 'agenda:delete', 'agenda:view_others',
+    'inbox:view', 'inbox:create', 'inbox:edit',
     'reports:view',
   ],
 }
@@ -59,7 +62,7 @@ export function getPermissionsForRole(role: UserRole): Permission[] {
 
 // Maps sidebar nav item key → module ID used for permission checks
 export const SIDEBAR_MODULES: Record<UserRole, string[]> = {
-  ADMIN:        ['dashboard', 'pipeline', 'agenda', 'patients', 'dr_clinic', 'hermes_ai', 'settings'],
-  DOCTOR:       ['dashboard', 'pipeline', 'agenda', 'patients', 'dr_clinic', 'hermes_ai'],
-  RECEPTIONIST: ['dashboard', 'pipeline', 'agenda', 'patients'],
+  ADMIN:        ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai', 'settings'],
+  DOCTOR:       ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai'],
+  RECEPTIONIST: ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients'],
 }

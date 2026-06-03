@@ -43,6 +43,8 @@ model Clinic {
   aiUsageLogs           AiUsageLog[]
   channels              ClinicChannel[]
   reactivationCampaigns ReactivationCampaign[]
+  inboxConversations    InboxConversation[]
+  inboxLabels           InboxLabel[]
 }
 
 model ClinicChannel {
@@ -80,13 +82,14 @@ model User {
   invitedAt           DateTime?
   lastLoginAt         DateTime?
 
-  leadHistory         LeadHistory[]
-  appointments        Appointment[]
-  assignedLeads       Lead[]                @relation("AssignedLeads")
-  googleCalendarToken GoogleCalendarToken?
-  pushSubscriptions   PushSubscription[]
-  sentInvitations     UserInvitation[]      @relation("SentInvitations")
-  journeyEvents       JourneyEvent[]
+  leadHistory                 LeadHistory[]
+  appointments                Appointment[]
+  assignedLeads               Lead[]                @relation("AssignedLeads")
+  googleCalendarToken         GoogleCalendarToken?
+  pushSubscriptions           PushSubscription[]
+  sentInvitations             UserInvitation[]      @relation("SentInvitations")
+  journeyEvents               JourneyEvent[]
+  assignedInboxConversations  InboxConversation[]   @relation("AssignedInboxConversations")
 }
 
 model GoogleCalendarToken {
@@ -173,6 +176,7 @@ model Lead {
   socialProfiles        SocialProfile[]
   agentConversation     AgentConversation?
   reactivationCampaigns ReactivationCampaign[]
+  inboxConversations    InboxConversation[]
 }
 
 model ClinicalHistory {
@@ -205,6 +209,7 @@ model Message {
   channel           MarketingChannel @default(WHATSAPP)
   externalMessageId String?          @db.Text
   isAutomatic       Boolean          @default(false)
+  isNote            Boolean          @default(false)
 
   @@index([externalMessageId])
 }
@@ -574,4 +579,60 @@ enum CampaignStatus {
   CONVERTED
   EXHAUSTED
   CANCELLED
+}
+
+// ─── Bandeja de Entrada (Inbox) ───────────────────────────────────────────────
+
+enum InboxStatus {
+  OPEN
+  PENDING
+  RESOLVED
+}
+
+model InboxConversation {
+  id                 String        @id @default(cuid())
+  clinicId           String
+  clinic             Clinic        @relation(fields: [clinicId], references: [id])
+  leadId             String
+  lead               Lead          @relation(fields: [leadId], references: [id])
+  channel            MarketingChannel
+  status             InboxStatus   @default(OPEN)
+  assignedToId       String?
+  assignedTo         User?         @relation("AssignedInboxConversations", fields: [assignedToId], references: [id])
+  isRead             Boolean       @default(false)
+  lastMessageAt      DateTime?
+  lastMessagePreview String?       @db.VarChar(200)
+  unreadCount        Int           @default(0)
+  isPinned           Boolean       @default(false)
+  labels             InboxConversationLabel[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@unique([leadId, channel])
+  @@index([clinicId, status, lastMessageAt])
+  @@index([clinicId, isRead])
+}
+
+model InboxLabel {
+  id            String                   @id @default(cuid())
+  clinicId      String
+  clinic        Clinic                   @relation(fields: [clinicId], references: [id])
+  name          String
+  color         String
+  emoji         String?
+  createdAt     DateTime                 @default(now())
+  conversations InboxConversationLabel[]
+
+  @@unique([clinicId, name])
+}
+
+model InboxConversationLabel {
+  id             String            @id @default(cuid())
+  conversationId String
+  conversation   InboxConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  labelId        String
+  label          InboxLabel        @relation(fields: [labelId], references: [id])
+  createdAt      DateTime          @default(now())
+
+  @@unique([conversationId, labelId])
 }

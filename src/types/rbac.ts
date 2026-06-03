@@ -7,6 +7,7 @@ export type Module =
   | 'agenda'
   | 'dr_clinic'
   | 'hermes_ai'
+  | 'inbox'
   | 'reports'
   | 'settings'
   | 'users'
