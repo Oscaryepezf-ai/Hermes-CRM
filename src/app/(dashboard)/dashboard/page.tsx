@@ -68,7 +68,7 @@ async function DashboardContent() {
       </div>
 
       {/* Fila 1: Métricas */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <MetricCard
           title="Total Leads"
           value={String(metrics.totalLeads)}
@@ -96,13 +96,13 @@ async function DashboardContent() {
       </div>
 
       {/* Fila 2: Gráficos */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         <RevenueChart data={metrics.revenueByMonth} />
         <ConversionChart data={metrics.leadsBySource} />
       </div>
 
       {/* Fila 3: Embudo + Actividad */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         <Card className="bg-surface shadow-card border-line-subtle">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold text-ink-secondary">

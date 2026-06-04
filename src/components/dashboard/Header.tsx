@@ -42,9 +42,9 @@ export function Header({ clinicName, userName }: HeaderProps) {
       style={{ boxShadow: "var(--shadow-topbar)" }}
     >
       {/* Breadcrumb */}
-      <nav className="flex items-center text-[12px]" aria-label="Breadcrumb">
-        <span className="font-medium text-ink-tertiary">{clinicName}</span>
-        <span className="mx-1.5 text-ink-disabled">/</span>
+      <nav className="flex items-center text-[12px] min-w-0" aria-label="Breadcrumb">
+        <span className="font-medium text-ink-tertiary hidden sm:block truncate max-w-[120px]">{clinicName}</span>
+        <span className="mx-1.5 text-ink-disabled hidden sm:block">/</span>
         <span className="font-[550] text-ink-primary">{pageLabel}</span>
       </nav>
 

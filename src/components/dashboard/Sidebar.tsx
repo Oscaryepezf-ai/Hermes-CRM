@@ -41,13 +41,22 @@ export function Sidebar({ userRole, plan = "STARTER", isSuperAdmin = false }: Si
   const pathname  = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Initialize from localStorage and set CSS variable — no polling, no re-renders in parent
   useEffect(() => {
     const saved = localStorage.getItem("sidebar-collapsed") === "true";
-    if (saved) {
-      setCollapsed(true);
-      applySidebarWidth(true);
+    // Only apply sidebar width on md+ screens
+    if (window.innerWidth >= 768) {
+      if (saved) { setCollapsed(true); applySidebarWidth(true); }
+      else applySidebarWidth(false);
+    } else {
+      document.documentElement.style.setProperty("--sidebar-w", "0px");
     }
+    const onResize = () => {
+      if (window.innerWidth >= 768) applySidebarWidth(collapsed);
+      else document.documentElement.style.setProperty("--sidebar-w", "0px");
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggle = () => {
@@ -67,7 +76,8 @@ export function Sidebar({ userRole, plan = "STARTER", isSuperAdmin = false }: Si
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen bg-surface border-r border-line-subtle flex flex-col z-40 transition-all duration-200 ease-in-out",
+        "fixed left-0 top-0 h-screen bg-surface border-r border-line-subtle flex-col z-40 transition-all duration-200 ease-in-out",
+        "hidden md:flex",
         collapsed ? "w-[60px]" : "w-[220px]"
       )}
       style={{ boxShadow: "var(--shadow-sidebar)" }}
