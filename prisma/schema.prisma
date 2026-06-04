@@ -188,6 +188,7 @@ model ClinicalHistory {
   medicalHistory    String?  @db.Text
   dentalHistory     String?  @db.Text
   odontogramNotes   String?  @db.Text
+  odontogramData    Json?
   proposedTreatment String?  @db.Text
   observations      String?  @db.Text
 

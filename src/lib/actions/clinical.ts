@@ -102,6 +102,43 @@ export async function saveClinicalHistory(
   }
 }
 
+// ── Save odontogram data ─────────────────────────────────────────────────────
+
+export async function saveOdontogramData(
+  data: { leadId: string; odontogramData: object }
+): Promise<ActionResponse<ClinicalHistory>> {
+  const guard = await requirePermission("dr_clinic", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  try {
+    const leadIdParsed = z.string().cuid().safeParse(data.leadId);
+    if (!leadIdParsed.success) return { success: false, error: "ID de lead inválido" };
+
+    const session = await getSession();
+    const lead = await db.lead.findUnique({
+      where: { id: leadIdParsed.data },
+      select: { clinicId: true },
+    });
+    if (!lead || lead.clinicId !== session.user.clinicId) {
+      return { success: false, error: "Lead no encontrado" };
+    }
+
+    // Cast to Prisma's expected JSON type
+    const jsonData = data.odontogramData as Parameters<typeof db.clinicalHistory.upsert>[0]["create"]["odontogramData"];
+
+    const history = await db.clinicalHistory.upsert({
+      where:  { leadId: leadIdParsed.data },
+      create: { leadId: leadIdParsed.data, odontogramData: jsonData },
+      update: { odontogramData: jsonData },
+    });
+
+    revalidatePath("/dr-clinic");
+    return { success: true, data: history };
+  } catch (error) {
+    console.error("[saveOdontogramData]", error);
+    return { success: false, error: "Error al guardar el odontograma" };
+  }
+}
+
 // ── Search leads/patients ────────────────────────────────────────────────────
 
 type LeadWithClinical = Lead & {
