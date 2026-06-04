@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
     `&code=${code}`
   )
   if (!tokenRes.ok) {
+    const errBody = await tokenRes.text().catch(() => "")
+    console.error("[fb-callback] token exchange failed:", tokenRes.status, errBody)
     return NextResponse.redirect(`${settingsUrl}?fb_error=token`)
   }
   const { access_token: shortToken } = await tokenRes.json() as { access_token: string }
@@ -76,11 +78,15 @@ export async function GET(request: NextRequest) {
     `${GRAPH}/me/accounts?fields=id,name,access_token,category,picture&access_token=${userToken}`
   )
   if (!pagesRes.ok) {
+    const errBody = await pagesRes.text().catch(() => "")
+    console.error("[fb-callback] pages fetch failed:", pagesRes.status, errBody)
     return NextResponse.redirect(`${settingsUrl}?fb_error=pages`)
   }
-  const { data: pages } = await pagesRes.json() as { data: FacebookPage[] }
+  const pagesJson = await pagesRes.json() as { data?: FacebookPage[]; error?: unknown }
+  console.log("[fb-callback] pages response:", JSON.stringify(pagesJson).slice(0, 200))
+  const pages = pagesJson.data ?? []
 
-  if (!pages || pages.length === 0) {
+  if (pages.length === 0) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=no_pages`)
   }
 

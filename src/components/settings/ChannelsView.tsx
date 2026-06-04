@@ -85,18 +85,19 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
   useEffect(() => {
     if (fbConnected) {
       toast.success("¡Facebook Messenger conectado correctamente!")
+      router.refresh()
       router.replace("/settings/channels")
     }
     if (fbError) {
       const msgs: Record<string, string> = {
         denied:   "Cancelaste la conexión con Facebook.",
         csrf:     "Error de seguridad. Intenta de nuevo.",
-        token:    "No se pudo obtener el token. Intenta de nuevo.",
-        pages:    "No se pudo obtener la lista de páginas.",
-        no_pages: "Tu cuenta no administra ninguna Página de Facebook.",
-        invalid:  "Respuesta inválida. Intenta de nuevo.",
+        token:    "No se pudo obtener el token de acceso. Verifica META_APP_ID y META_APP_SECRET.",
+        pages:    "No se pudo obtener la lista de páginas de Facebook.",
+        no_pages: "Tu cuenta de Facebook no administra ninguna Página.",
+        invalid:  "Respuesta inválida de Facebook. Intenta de nuevo.",
       }
-      toast.error(msgs[fbError] ?? "Error al conectar con Facebook")
+      toast.error(msgs[fbError] ?? `Error al conectar con Facebook (${fbError})`, { duration: 8000 })
       router.replace("/settings/channels")
     }
     if (igConnected) {
