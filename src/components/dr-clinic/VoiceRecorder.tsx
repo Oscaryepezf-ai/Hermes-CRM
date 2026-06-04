@@ -8,9 +8,10 @@ import type { RecorderStatus, DictationResult } from "@/types/clinical";
 const MAX_SECONDS = 300; // 5 minutes
 
 interface VoiceRecorderProps {
-  leadId:   string;
-  onResult: (result: DictationResult) => void;
-  onError:  (message: string) => void;
+  leadId:    string;
+  endpoint?: string;
+  onResult:  (result: Record<string, string>) => void;
+  onError:   (message: string) => void;
 }
 
 function formatTime(s: number): string {
@@ -19,7 +20,7 @@ function formatTime(s: number): string {
   return `${m}:${ss.toString().padStart(2, "0")}`;
 }
 
-export function VoiceRecorder({ leadId, onResult, onError }: VoiceRecorderProps) {
+export function VoiceRecorder({ leadId, endpoint = "/api/clinical/dictate", onResult, onError }: VoiceRecorderProps) {
   const [status,   setStatus]   = useState<RecorderStatus>("idle");
   const [seconds,  setSeconds]  = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -98,7 +99,7 @@ export function VoiceRecorder({ leadId, onResult, onError }: VoiceRecorderProps)
       form.append("audio",  new File([blob], "dictado.webm", { type: mimeType }));
       form.append("leadId", leadId);
 
-      const res = await fetch("/api/clinical/dictate", { method: "POST", body: form });
+      const res = await fetch(endpoint, { method: "POST", body: form });
       const json = await res.json();
 
       if (!json.success) {

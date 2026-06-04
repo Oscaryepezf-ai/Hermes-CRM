@@ -23,6 +23,37 @@ export type RecorderStatus =
   | "done"
   | "error";
 
+// ─── Visit history types ───────────────────────────────────────────────────
+
+export type VisitFields = {
+  visitDate:    string   // ISO date
+  procedures:   string
+  findings:     string
+  medications:  string
+  instructions: string
+  followUp:     string
+  notes:        string
+}
+
+export type VisitDictationResult = Partial<Omit<VisitFields, "visitDate">>
+
+export type VisitWithDoctor = {
+  id:           string
+  leadId:       string
+  clinicId:     string
+  doctorId:     string
+  visitDate:    Date
+  procedures:   string | null
+  findings:     string | null
+  medications:  string | null
+  instructions: string | null
+  followUp:     string | null
+  notes:        string | null
+  createdAt:    Date
+  updatedAt:    Date
+  doctor: { id: string; name: string; avatarUrl: string | null }
+}
+
 // ─── Odontogram types ──────────────────────────────────────────────────────
 
 export type ToothSurface = 'V' | 'M' | 'O' | 'D' | 'L'

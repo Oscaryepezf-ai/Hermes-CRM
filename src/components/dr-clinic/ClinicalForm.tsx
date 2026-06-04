@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { Mic2, ClipboardList, Stethoscope } from "lucide-react";
+import { Mic2, ClipboardList, Stethoscope, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { saveClinicalHistory } from "@/lib/actions/clinical";
 import { VoiceRecorder } from "./VoiceRecorder";
 import { Odontogram } from "./Odontogram";
+import { VisitHistory } from "./VisitHistory";
 import type { ClinicalFields, DictationResult, ClinicalHistoryWithLead, OdontogramData } from "@/types/clinical";
 
 const EMPTY_FIELDS: ClinicalFields = {
@@ -29,7 +30,7 @@ const FIELD_CONFIG: { key: keyof ClinicalFields; label: string; placeholder: str
   { key: "observations",      label: "Observaciones adicionales",     placeholder: "Notas del doctor para próximas sesiones..." },
 ];
 
-type Tab = "anamnesis" | "odontograma";
+type Tab = "anamnesis" | "odontograma" | "historial";
 
 interface ClinicalFormProps {
   history: ClinicalHistoryWithLead;
@@ -70,7 +71,7 @@ export function ClinicalForm({ history }: ClinicalFormProps) {
     return () => { timers.forEach(clearTimeout) };
   }, []);
 
-  const handleDictationResult = (result: DictationResult) => {
+  const handleDictationResult = (result: Record<string, string>) => {
     let filled = 0;
     setFields((prev) => {
       const next = { ...prev };
@@ -103,6 +104,10 @@ export function ClinicalForm({ history }: ClinicalFormProps) {
         <TabBtn active={tab === "odontograma"} onClick={() => setTab("odontograma")}>
           <Stethoscope className="w-3.5 h-3.5" />
           Odontograma
+        </TabBtn>
+        <TabBtn active={tab === "historial"} onClick={() => setTab("historial")}>
+          <Clock className="w-3.5 h-3.5" />
+          Historial de visitas
         </TabBtn>
       </div>
 
@@ -215,6 +220,13 @@ export function ClinicalForm({ history }: ClinicalFormProps) {
               initialData={odontogramData}
             />
           </>
+        )}
+
+        {tab === "historial" && (
+          <VisitHistory
+            leadId={history.leadId}
+            patientName={history.lead.fullName}
+          />
         )}
       </div>
     </div>

@@ -45,6 +45,7 @@ model Clinic {
   reactivationCampaigns ReactivationCampaign[]
   inboxConversations    InboxConversation[]
   inboxLabels           InboxLabel[]
+  clinicalVisits        ClinicalVisit[]
 }
 
 model ClinicChannel {
@@ -90,6 +91,7 @@ model User {
   sentInvitations             UserInvitation[]      @relation("SentInvitations")
   journeyEvents               JourneyEvent[]
   assignedInboxConversations  InboxConversation[]   @relation("AssignedInboxConversations")
+  clinicalVisits              ClinicalVisit[]       @relation("DoctorVisits")
 }
 
 model GoogleCalendarToken {
@@ -172,6 +174,7 @@ model Lead {
   history               LeadHistory[]
   messages              Message[]
   clinicalHistory       ClinicalHistory?
+  clinicalVisits        ClinicalVisit[]
   journeyEvents         JourneyEvent[]
   socialProfiles        SocialProfile[]
   agentConversation     AgentConversation?
@@ -580,6 +583,32 @@ enum CampaignStatus {
   CONVERTED
   EXHAUSTED
   CANCELLED
+}
+
+// ─── Historial de visitas clínicas ────────────────────────────────────────────
+
+model ClinicalVisit {
+  id           String   @id @default(cuid())
+  leadId       String
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  clinicId     String
+  clinic       Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId     String
+  doctor       User     @relation("DoctorVisits", fields: [doctorId], references: [id])
+  visitDate    DateTime @default(now())
+
+  procedures   String?  @db.Text   // Procedimientos realizados
+  findings     String?  @db.Text   // Hallazgos clínicos
+  medications  String?  @db.Text   // Medicamentos / recetas
+  instructions String?  @db.Text   // Indicaciones al paciente
+  followUp     String?  @db.Text   // Seguimiento / próxima cita
+  notes        String?  @db.Text   // Notas internas
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([leadId, visitDate])
+  @@index([clinicId, visitDate])
 }
 
 // ─── Bandeja de Entrada (Inbox) ───────────────────────────────────────────────

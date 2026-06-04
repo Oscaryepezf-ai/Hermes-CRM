@@ -6,7 +6,7 @@ import { auth } from "../../../auth";
 import { requirePermission } from "@/lib/rbac/guards";
 import { revalidatePath } from "next/cache";
 import type { ActionResponse } from "@/types";
-import type { ClinicalHistoryWithLead } from "@/types/clinical";
+import type { ClinicalHistoryWithLead, VisitWithDoctor } from "@/types/clinical";
 import type { ClinicalHistory, Lead } from "@prisma/client";
 
 async function getSession() {
@@ -170,5 +170,117 @@ export async function searchPatients(
   } catch (error) {
     console.error("[searchPatients]", error);
     return { success: false, error: "Error al buscar pacientes" };
+  }
+}
+
+// ── Visit history actions ────────────────────────────────────────────────────
+
+const VisitSchema = z.object({
+  leadId:       z.string().cuid(),
+  visitDate:    z.string().datetime().optional(),
+  procedures:   z.string().max(10000).optional(),
+  findings:     z.string().max(10000).optional(),
+  medications:  z.string().max(5000).optional(),
+  instructions: z.string().max(5000).optional(),
+  followUp:     z.string().max(5000).optional(),
+  notes:        z.string().max(5000).optional(),
+});
+
+export async function createVisit(
+  data: z.infer<typeof VisitSchema>
+): Promise<ActionResponse<VisitWithDoctor>> {
+  const guard = await requirePermission("dr_clinic", "create");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  try {
+    const parsed = VisitSchema.safeParse(data);
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+    const session = await getSession();
+    const lead = await db.lead.findUnique({ where: { id: parsed.data.leadId }, select: { clinicId: true } });
+    if (!lead || lead.clinicId !== session.user.clinicId) return { success: false, error: "Lead no encontrado" };
+
+    const { leadId, visitDate, ...fields } = parsed.data;
+    const visit = await db.clinicalVisit.create({
+      data: {
+        leadId,
+        clinicId:  session.user.clinicId,
+        doctorId:  session.user.id,
+        visitDate: visitDate ? new Date(visitDate) : new Date(),
+        ...fields,
+      },
+      include: { doctor: { select: { id: true, name: true, avatarUrl: true } } },
+    });
+
+    revalidatePath("/dr-clinic");
+    return { success: true, data: visit as VisitWithDoctor };
+  } catch (error) {
+    console.error("[createVisit]", error);
+    return { success: false, error: "Error al crear la visita" };
+  }
+}
+
+export async function updateVisit(
+  id: string,
+  data: Omit<z.infer<typeof VisitSchema>, "leadId">
+): Promise<ActionResponse<VisitWithDoctor>> {
+  const guard = await requirePermission("dr_clinic", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  try {
+    const session = await getSession();
+    const existing = await db.clinicalVisit.findFirst({ where: { id, clinicId: session.user.clinicId } });
+    if (!existing) return { success: false, error: "Visita no encontrada" };
+
+    const { visitDate, ...fields } = data;
+    const visit = await db.clinicalVisit.update({
+      where: { id },
+      data:  { ...fields, ...(visitDate ? { visitDate: new Date(visitDate) } : {}) },
+      include: { doctor: { select: { id: true, name: true, avatarUrl: true } } },
+    });
+
+    revalidatePath("/dr-clinic");
+    return { success: true, data: visit as VisitWithDoctor };
+  } catch (error) {
+    console.error("[updateVisit]", error);
+    return { success: false, error: "Error al actualizar la visita" };
+  }
+}
+
+export async function deleteVisit(id: string): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("dr_clinic", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  try {
+    const session = await getSession();
+    const existing = await db.clinicalVisit.findFirst({ where: { id, clinicId: session.user.clinicId } });
+    if (!existing) return { success: false, error: "Visita no encontrada" };
+
+    await db.clinicalVisit.delete({ where: { id } });
+    revalidatePath("/dr-clinic");
+    return { success: true, data: undefined };
+  } catch (error) {
+    console.error("[deleteVisit]", error);
+    return { success: false, error: "Error al eliminar la visita" };
+  }
+}
+
+export async function getVisitsByLead(
+  leadId: string
+): Promise<ActionResponse<VisitWithDoctor[]>> {
+  const guard = await requirePermission("dr_clinic", "view");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  try {
+    const session = await getSession();
+    const lead = await db.lead.findUnique({ where: { id: leadId }, select: { clinicId: true } });
+    if (!lead || lead.clinicId !== session.user.clinicId) return { success: false, error: "Lead no encontrado" };
+
+    const visits = await db.clinicalVisit.findMany({
+      where:   { leadId },
+      orderBy: { visitDate: "desc" },
+      include: { doctor: { select: { id: true, name: true, avatarUrl: true } } },
+    });
+
+    return { success: true, data: visits as VisitWithDoctor[] };
+  } catch (error) {
+    console.error("[getVisitsByLead]", error);
+    return { success: false, error: "Error al obtener las visitas" };
   }
 }
