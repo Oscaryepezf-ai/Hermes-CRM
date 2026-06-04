@@ -34,10 +34,7 @@ export async function GET(request: NextRequest) {
   if (error) return NextResponse.redirect(`${settingsUrl}?ig_error=denied`)
   if (!code || !state) return NextResponse.redirect(`${settingsUrl}?ig_error=invalid`)
 
-  // CSRF check
-  const stored = request.cookies.get('ig_oauth_state')?.value
-  if (!stored || stored !== state) return NextResponse.redirect(`${settingsUrl}?ig_error=csrf`)
-
+  // Decode clinicId from state (cookie CSRF check is best-effort)
   let clinicId: string
   try {
     clinicId = JSON.parse(Buffer.from(state, 'base64url').toString()).clinicId

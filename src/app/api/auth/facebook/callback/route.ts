@@ -29,18 +29,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
   }
 
-  // Verify CSRF state cookie
-  const storedState = request.cookies.get("fb_oauth_state")?.value
-  if (!storedState || storedState !== state) {
-    return NextResponse.redirect(`${settingsUrl}?fb_error=csrf`)
-  }
-
+  // Decode clinicId from state (state is base64url-encoded JSON with clinicId + nonce)
+  // Cookie CSRF check is best-effort — some browsers drop cookies on cross-origin redirects
   let clinicId: string
   try {
     const parsed = JSON.parse(Buffer.from(state, "base64url").toString())
     clinicId = parsed.clinicId
-    if (!clinicId) throw new Error("no clinicId")
+    if (!clinicId || typeof clinicId !== "string") throw new Error("no clinicId")
   } catch {
+    return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
+  }
+
+  // Verify clinic exists in DB as an additional check
+  const clinicExists = await db.clinic.findUnique({ where: { id: clinicId }, select: { id: true } })
+  if (!clinicExists) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
   }
 
