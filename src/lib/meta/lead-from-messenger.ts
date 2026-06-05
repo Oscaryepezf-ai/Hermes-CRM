@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { getMessengerUserProfile } from './messenger-client'
 import { getInstagramUserProfile } from './instagram-client'
+import { createDefaultStages } from '../pipeline/stage-manager'
 import type { ParsedMessengerEvent } from './parse-messenger-event'
 import type { MarketingChannel } from '@prisma/client'
 
@@ -116,13 +117,19 @@ async function processChannelMessage(params: {
   }
 
   // New lead
+  console.log(`[lead-processor] new lead from ${channel} PSID=${userId} clinic=${clinicId}`)
   const profile = await params.profileFetch(userId, accessToken)
   const name    = profile?.name ?? params.fallbackName(userId)
+  console.log(`[lead-processor] profile name="${name}"`)
+
+  // Auto-create default stages if the clinic was set up outside the register flow
+  await createDefaultStages(clinicId)
 
   const firstStage = await db.pipelineStage.findFirst({
     where: { clinicId }, orderBy: { order: 'asc' },
   })
   if (!firstStage) throw new Error(`No pipeline stages for clinic ${clinicId}`)
+  console.log(`[lead-processor] firstStage="${firstStage.name}" id=${firstStage.id}`)
 
   const lead = await db.$transaction(async (tx) => {
     const newLead = await tx.lead.create({
@@ -181,6 +188,7 @@ async function processChannelMessage(params: {
     return newLead
   })
 
+  console.log(`[lead-processor] lead created id=${lead.id} isNew=true`)
   return { leadId: lead.id, isNew: true }
 }
 
