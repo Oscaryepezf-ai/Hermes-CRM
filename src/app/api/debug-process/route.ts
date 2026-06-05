@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { getClinicByPageId, getChannelAccessToken } from "@/lib/meta/lead-from-messenger"
+import { getClinicByPageId, getChannelAccessToken, processMessengerMessage } from "@/lib/meta/lead-from-messenger"
 import { upsertInboxConversation } from "@/lib/inbox/conversations"
 import { createDefaultStages } from "@/lib/pipeline/stage-manager"
 
 export const dynamic = "force-dynamic"
+export const maxDuration = 30
 
 /**
  * Diagnostic endpoint — runs the full Facebook message processing pipeline
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic"
  * DELETE BEFORE SHIPPING TO REAL PRODUCTION.
  */
 export async function GET() {
-  const PAGE_ID  = "586633397864360"
+  const PAGE_ID   = "586633397864360"
   const TEST_PSID = `dbg_${Date.now()}`
   const steps: Record<string, unknown> = {}
 
@@ -103,10 +104,28 @@ export async function GET() {
     })
     steps.s8_inboxConversation = { ok: true, id: convId }
 
+    // ── Step 9: Full processMessengerMessage simulation ─────
+    // Tests the actual webhook code path with a fake event
+    const fakeEvent = {
+      type:      "message" as const,
+      pageId:    PAGE_ID,
+      senderId:  `dbg_sim_${Date.now()}`,
+      timestamp: Date.now(),
+      message:   { mid: `dbg_sim_mid_${Date.now()}`, text: "Mensaje de simulación directa" },
+      isEcho:    false,
+      postback:  undefined,
+    }
+    const tokenForSim = await getChannelAccessToken(clinic.id, "FACEBOOK") ?? ""
+    const { leadId: simLeadId, isNew: simIsNew } = await processMessengerMessage(
+      fakeEvent, tokenForSim, clinic.id
+    )
+    steps.s9_simulated_webhook = { ok: true, leadId: simLeadId, isNew: simIsNew }
+
     return NextResponse.json({
       success: true,
-      message: "All steps passed — check /pipeline and /inbox for the test lead",
-      leadId:  newLead.id,
+      message: "All steps passed — check /pipeline and /inbox for the test leads",
+      directLeadId:    newLead.id,
+      simulatedLeadId: simLeadId,
       steps,
     })
 

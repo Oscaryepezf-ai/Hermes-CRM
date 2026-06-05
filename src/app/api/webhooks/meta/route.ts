@@ -23,10 +23,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text()
+  console.log('[meta-webhook] POST received, body length:', rawBody.length, 'at', new Date().toISOString())
 
   const signature = request.headers.get('x-hub-signature-256') ?? ''
-  if (!verifyMetaWebhookSignature(rawBody, signature)) {
-    console.warn('[meta-webhook] invalid signature')
+  const sigOk = verifyMetaWebhookSignature(rawBody, signature)
+  console.log('[meta-webhook] signature header:', signature.slice(0, 20), '... valid:', sigOk)
+
+  if (!sigOk) {
+    console.warn('[meta-webhook] SIGNATURE FAILED — app secret mismatch or missing header')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
   }
 
@@ -35,11 +39,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
+  const platform = (body as Record<string, unknown>).object
+  console.log('[meta-webhook] object type:', platform)
+
   // Must await before returning — Vercel terminates the function when the response is sent
   await processWebhookEvents(body).catch(err =>
-    console.error('[meta-webhook] processing error:', err)
+    console.error('[meta-webhook] processing error:', err?.message ?? err)
   )
 
+  console.log('[meta-webhook] processing complete')
   return NextResponse.json({ status: 'ok' }, { status: 200 })
 }
 
