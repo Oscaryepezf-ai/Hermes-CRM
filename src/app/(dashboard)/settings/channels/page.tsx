@@ -4,6 +4,8 @@ import { db } from "@/lib/db"
 import { Radio } from "lucide-react"
 import { ChannelsView } from "@/components/settings/ChannelsView"
 
+export const dynamic = 'force-dynamic'
+
 export default async function ChannelsPage() {
   const session = await auth()
   if (!session?.user?.clinicId) redirect("/login")

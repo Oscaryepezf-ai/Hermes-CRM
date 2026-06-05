@@ -85,8 +85,9 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
   useEffect(() => {
     if (fbConnected) {
       toast.success("¡Facebook Messenger conectado correctamente!")
-      router.refresh()
-      router.replace("/settings/channels")
+      // Hard navigation ensures the server component re-fetches fresh DB data
+      window.location.replace("/settings/channels")
+      return
     }
     if (fbError) {
       const msgs: Record<string, string> = {
@@ -102,7 +103,8 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
     }
     if (igConnected) {
       toast.success("¡Instagram DM conectado correctamente!")
-      router.replace("/settings/channels")
+      window.location.replace("/settings/channels")
+      return
     }
     if (igError) {
       const msgs: Record<string, string> = {
