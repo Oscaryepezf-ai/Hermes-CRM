@@ -12,16 +12,20 @@ const PREDEFINED_COLORS = [
   "#3B82F6", "#8B5CF6", "#EC4899", "#14B8A6",
 ]
 
+type Label = { id: string; name: string; color: string; emoji: string | null }
+
 interface InboxSidebarProps {
   filters:        InboxFilters
   onFilterChange: (f: InboxFilters) => void
+  initialCounts?: { total: number; unread: number; channels: Record<string, number> }
+  initialLabels?: Label[]
 }
 
-type Label = { id: string; name: string; color: string; emoji: string | null }
-
-export function InboxSidebar({ filters, onFilterChange }: InboxSidebarProps) {
-  const [counts, setCounts]         = useState<{ total: number; unread: number; channels: Record<string, number> }>({ total: 0, unread: 0, channels: {} })
-  const [labels, setLabels]         = useState<Label[]>([])
+export function InboxSidebar({ filters, onFilterChange, initialCounts, initialLabels }: InboxSidebarProps) {
+  const [counts, setCounts]         = useState<{ total: number; unread: number; channels: Record<string, number> }>(
+    initialCounts ?? { total: 0, unread: 0, channels: {} }
+  )
+  const [labels, setLabels]         = useState<Label[]>(initialLabels ?? [])
   const [labelsOpen, setLabelsOpen] = useState(true)
   const [channelsOpen, setChannelsOpen] = useState(true)
   const [creating, setCreating]     = useState(false)
@@ -29,8 +33,10 @@ export function InboxSidebar({ filters, onFilterChange }: InboxSidebarProps) {
   const [newColor, setNewColor]     = useState(PREDEFINED_COLORS[4])
 
   useEffect(() => {
-    fetchInboxCounts().then(r => { if (r.success) setCounts(r.data) })
-    fetchClinicLabels().then(r => { if (r.success) setLabels(r.data) })
+    // Only fetch if not seeded with server-side data
+    if (!initialCounts) fetchInboxCounts().then(r => { if (r.success) setCounts(r.data) })
+    if (!initialLabels) fetchClinicLabels().then(r => { if (r.success) setLabels(r.data) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleCreateLabel = async () => {

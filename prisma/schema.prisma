@@ -180,6 +180,10 @@ model Lead {
   agentConversation     AgentConversation?
   reactivationCampaigns ReactivationCampaign[]
   inboxConversations    InboxConversation[]
+
+  @@index([clinicId, createdAt(sort: Desc)])
+  @@index([clinicId, stageId])
+  @@index([clinicId, status])
 }
 
 model ClinicalHistory {
@@ -216,6 +220,7 @@ model Message {
   isNote            Boolean          @default(false)
 
   @@index([externalMessageId])
+  @@index([leadId, channel, sentAt])
 }
 
 model LeadHistory {

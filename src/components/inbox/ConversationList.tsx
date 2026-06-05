@@ -8,10 +8,11 @@ import { ConversationItem } from "./ConversationItem"
 import type { InboxConversationItem, InboxFilters } from "@/lib/inbox/conversations"
 
 interface ConversationListProps {
-  filters:         InboxFilters
-  selectedId:      string | null
-  onSelect:        (id: string) => void
-  onFilterChange:  (f: InboxFilters) => void
+  filters:               InboxFilters
+  selectedId:            string | null
+  onSelect:              (id: string) => void
+  onFilterChange:        (f: InboxFilters) => void
+  initialConversations?: InboxConversationItem[]
 }
 
 function SkeletonRow() {
@@ -26,15 +27,23 @@ function SkeletonRow() {
   )
 }
 
-export function ConversationList({ filters, selectedId, onSelect, onFilterChange }: ConversationListProps) {
-  const [conversations, setConversations] = useState<InboxConversationItem[]>([])
-  const [loading, setLoading]             = useState(true)
+export function ConversationList({ filters, selectedId, onSelect, onFilterChange, initialConversations }: ConversationListProps) {
+  const [conversations, setConversations] = useState<InboxConversationItem[]>(initialConversations ?? [])
+  const [loading, setLoading]             = useState(false)
   const [search, setSearch]               = useState("")
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isFirstRender = useRef(true)
 
   const filtersKey = JSON.stringify(filters)
 
   useEffect(() => {
+    // Skip the very first render if we already have server-side data
+    if (isFirstRender.current && initialConversations) {
+      isFirstRender.current = false
+      return
+    }
+    isFirstRender.current = false
+
     setLoading(true)
     fetchConversations(filters).then(res => {
       if (res.success) setConversations(res.conversations)
