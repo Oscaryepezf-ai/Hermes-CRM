@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get("state")
   const error = searchParams.get("error")
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
+  const baseUrl     = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "")
+  const redirectUri = `${baseUrl}/api/auth/facebook/callback`
   const settingsUrl = `${baseUrl}/settings/channels`
 
-  // User denied permission
   if (error) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=denied`)
   }
@@ -29,8 +29,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
   }
 
-  // Decode clinicId from state (state is base64url-encoded JSON with clinicId + nonce)
-  // Cookie CSRF check is best-effort — some browsers drop cookies on cross-origin redirects
   let clinicId: string
   try {
     const parsed = JSON.parse(Buffer.from(state, "base64url").toString())
@@ -40,20 +38,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
   }
 
-  // Verify clinic exists in DB as an additional check
   const clinicExists = await db.clinic.findUnique({ where: { id: clinicId }, select: { id: true } })
   if (!clinicExists) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=invalid`)
   }
 
-  // 1. Exchange code for short-lived user token
-  const tokenRes = await fetch(
-    `${GRAPH}/oauth/access_token?` +
-    `client_id=${process.env.META_APP_ID}` +
-    `&client_secret=${process.env.META_APP_SECRET}` +
-    `&redirect_uri=${baseUrl}/api/auth/facebook/callback` +
-    `&code=${code}`
-  )
+  // 1. Exchange code for short-lived user token — POST with URLSearchParams (proper encoding)
+  const tokenBody = new URLSearchParams({
+    client_id:     process.env.META_APP_ID!,
+    client_secret: process.env.META_APP_SECRET!,
+    redirect_uri:  redirectUri,
+    code,
+  })
+
+  console.log("[fb-callback] exchanging code, redirect_uri:", redirectUri, "app_id:", process.env.META_APP_ID)
+
+  const tokenRes = await fetch(`${GRAPH}/oauth/access_token`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body:    tokenBody.toString(),
+  })
+
   if (!tokenRes.ok) {
     const errBody = await tokenRes.text().catch(() => "")
     console.error("[fb-callback] token exchange failed:", tokenRes.status, errBody)
@@ -62,13 +67,19 @@ export async function GET(request: NextRequest) {
   const { access_token: shortToken } = await tokenRes.json() as { access_token: string }
 
   // 2. Exchange for long-lived user token (60 days)
-  const llRes = await fetch(
-    `${GRAPH}/oauth/access_token?` +
-    `grant_type=fb_exchange_token` +
-    `&client_id=${process.env.META_APP_ID}` +
-    `&client_secret=${process.env.META_APP_SECRET}` +
-    `&fb_exchange_token=${shortToken}`
-  )
+  const llBody = new URLSearchParams({
+    grant_type:          "fb_exchange_token",
+    client_id:           process.env.META_APP_ID!,
+    client_secret:       process.env.META_APP_SECRET!,
+    fb_exchange_token:   shortToken,
+  })
+
+  const llRes = await fetch(`${GRAPH}/oauth/access_token`, {
+    method:  "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body:    llBody.toString(),
+  })
+
   const { access_token: userToken } = llRes.ok
     ? await llRes.json() as { access_token: string }
     : { access_token: shortToken }
@@ -83,14 +94,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=pages`)
   }
   const pagesJson = await pagesRes.json() as { data?: FacebookPage[]; error?: unknown }
-  console.log("[fb-callback] pages response:", JSON.stringify(pagesJson).slice(0, 200))
+  console.log("[fb-callback] pages response:", JSON.stringify(pagesJson).slice(0, 300))
   const pages = pagesJson.data ?? []
 
   if (pages.length === 0) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=no_pages`)
   }
 
-  // 4a. Single page → auto-connect immediately
+  // 4a. Single page → auto-connect
   if (pages.length === 1) {
     await savePage(clinicId, pages[0])
     const res = NextResponse.redirect(`${settingsUrl}?fb_connected=1`)
@@ -98,7 +109,7 @@ export async function GET(request: NextRequest) {
     return res
   }
 
-  // 4b. Multiple pages → store pages list + user token in cookies, show picker
+  // 4b. Multiple pages → show picker
   const pagesList = pages.map(p => ({
     id:       p.id,
     name:     p.name,
@@ -110,7 +121,6 @@ export async function GET(request: NextRequest) {
   const res = NextResponse.redirect(`${settingsUrl}?fb_select=1`)
   clearOAuthCookies(res)
 
-  // Store pages data in cookie (httpOnly, 10 min)
   res.cookies.set("fb_pages", JSON.stringify(pagesList), {
     httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
@@ -118,8 +128,6 @@ export async function GET(request: NextRequest) {
     maxAge:   600,
     path:     "/",
   })
-
-  // Store clinicId in cookie for the select-page handler
   res.cookies.set("fb_clinic_id", clinicId, {
     httpOnly: true,
     secure:   process.env.NODE_ENV === "production",
