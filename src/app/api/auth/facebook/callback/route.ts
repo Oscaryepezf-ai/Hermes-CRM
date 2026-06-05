@@ -165,6 +165,19 @@ async function savePage(clinicId: string, page: FacebookPage) {
       data:  { facebookPageId: page.id, messengerActive: true },
     }),
   ])
+
+  // Subscribe the page to our webhook so Meta sends us message events
+  const subBody = new URLSearchParams({
+    subscribed_fields: "messages,messaging_postbacks,message_deliveries,message_reads",
+    access_token:      page.access_token,
+  })
+  const subRes = await fetch(`${GRAPH}/${page.id}/subscribed_apps`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body:    subBody.toString(),
+  })
+  const subData = await subRes.json().catch(() => null)
+  console.log("[fb-callback] page subscription:", JSON.stringify(subData))
 }
 
 function clearOAuthCookies(res: NextResponse) {

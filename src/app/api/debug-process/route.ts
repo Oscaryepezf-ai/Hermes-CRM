@@ -121,6 +121,30 @@ export async function GET() {
     )
     steps.s9_simulated_webhook = { ok: true, leadId: simLeadId, isNew: simIsNew }
 
+    // ── Step 10: Verify & re-subscribe page to Meta webhook ─
+    const GRAPH  = "https://graph.facebook.com/v18.0"
+    const PAGE_TOKEN = await getChannelAccessToken(clinic.id, "FACEBOOK") ?? ""
+
+    // Check current subscriptions
+    const checkRes = await fetch(`${GRAPH}/${PAGE_ID}/subscribed_apps?access_token=${PAGE_TOKEN}`)
+    const checkData = await checkRes.json().catch(() => null)
+
+    // Re-subscribe (idempotent — safe to call even if already subscribed)
+    const subBody = new URLSearchParams({
+      subscribed_fields: "messages,messaging_postbacks,message_deliveries,message_reads",
+      access_token:      PAGE_TOKEN,
+    })
+    const subRes = await fetch(`${GRAPH}/${PAGE_ID}/subscribed_apps`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body:    subBody.toString(),
+    })
+    const subData = await subRes.json().catch(() => null)
+    steps.s10_page_subscription = {
+      current:   checkData,
+      resubscribe: subData,
+    }
+
     return NextResponse.json({
       success: true,
       message: "All steps passed — check /pipeline and /inbox for the test leads",
