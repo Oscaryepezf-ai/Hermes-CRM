@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  processWebhookEvents(body).catch(err =>
+  // Must await before returning — Vercel terminates the function when the response is sent
+  await processWebhookEvents(body).catch(err =>
     console.error('[meta-webhook] processing error:', err)
   )
 
@@ -85,7 +86,7 @@ async function processMessengerEvents(body: unknown): Promise<void> {
 
       // Inbox conversation
       if (event.message?.text) {
-        upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'FACEBOOK', preview: event.message.text, isInbound: true }).catch(console.error)
+        await upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'FACEBOOK', preview: event.message.text, isInbound: true }).catch(console.error)
         runCaptadorCycle({ leadId, message: event.message.text, channel: 'FACEBOOK' }).catch(console.error)
       }
     } catch (err) {
@@ -124,7 +125,7 @@ async function processInstagramEvents(body: unknown): Promise<void> {
       }
 
       if (event.message?.text) {
-        upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'INSTAGRAM', preview: event.message.text, isInbound: true }).catch(console.error)
+        await upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'INSTAGRAM', preview: event.message.text, isInbound: true }).catch(console.error)
         runCaptadorCycle({ leadId, message: event.message.text, channel: 'INSTAGRAM' }).catch(console.error)
       }
     } catch (err) {
