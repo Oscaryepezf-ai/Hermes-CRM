@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
   const params = new URLSearchParams({
     client_id:     process.env.META_APP_ID,
     redirect_uri:  redirectUri,
-    scope:         "pages_show_list,pages_messaging,pages_manage_metadata",
+    // business_management needed for pages inside a Business Portfolio
+    scope:         "pages_show_list,pages_messaging,pages_manage_metadata,business_management",
     response_type: "code",
     state,
   })

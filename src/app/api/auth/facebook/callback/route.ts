@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     ? await llRes.json() as { access_token: string }
     : { access_token: shortToken }
 
-  // 3. Fetch pages this user manages
+  // 3a. Fetch pages from personal account
   const pagesRes = await fetch(
     `${GRAPH}/me/accounts?fields=id,name,access_token,category,picture&access_token=${userToken}`
   )
@@ -94,10 +94,38 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${settingsUrl}?fb_error=pages`)
   }
   const pagesJson = await pagesRes.json() as { data?: FacebookPage[]; error?: unknown }
-  console.log("[fb-callback] pages response:", JSON.stringify(pagesJson).slice(0, 300))
-  const pages = pagesJson.data ?? []
+  console.log("[fb-callback] /me/accounts:", JSON.stringify(pagesJson).slice(0, 300))
+  let pages: FacebookPage[] = pagesJson.data ?? []
+
+  // 3b. If no personal pages, look inside Business Portfolios
+  if (pages.length === 0) {
+    console.log("[fb-callback] no personal pages — checking business portfolios")
+    try {
+      const bizRes  = await fetch(
+        `${GRAPH}/me/businesses?fields=id,name,owned_pages{id,name,access_token,category,picture}&access_token=${userToken}`
+      )
+      const bizJson = await bizRes.json() as {
+        data?: { id: string; name: string; owned_pages?: { data?: FacebookPage[] } }[]
+      }
+      console.log("[fb-callback] /me/businesses:", JSON.stringify(bizJson).slice(0, 500))
+
+      if (bizJson.data) {
+        for (const biz of bizJson.data) {
+          const bizPages = biz.owned_pages?.data ?? []
+          for (const p of bizPages) {
+            if (!pages.find(existing => existing.id === p.id)) {
+              pages.push(p)
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[fb-callback] business portfolio fetch failed:", err)
+    }
+  }
 
   if (pages.length === 0) {
+    console.warn("[fb-callback] no pages found in personal account or business portfolios")
     return NextResponse.redirect(`${settingsUrl}?fb_error=no_pages`)
   }
 
