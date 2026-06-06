@@ -54,7 +54,7 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
   useEffect(() => { load() }, [load])
 
   useEffect(() => {
-    pollingRef.current = setInterval(silentPoll, 4000)
+    pollingRef.current = setInterval(silentPoll, 6000)
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current)
     }

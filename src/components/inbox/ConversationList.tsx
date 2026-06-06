@@ -58,7 +58,7 @@ export function ConversationList({ filters, selectedId, onSelect, onFilterChange
       fetchConversations(filters).then(res => {
         if (res.success) setConversations(res.conversations)
       })
-    }, 10000)
+    }, 20000)
     return () => clearInterval(interval)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersKey])
