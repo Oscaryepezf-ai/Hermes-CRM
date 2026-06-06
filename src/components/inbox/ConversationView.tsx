@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { fetchConversationDetail, fetchClinicLabels, fetchClinicUsers } from "@/lib/actions/inbox"
 import { ConversationHeader } from "./ConversationHeader"
 import { MessageThread } from "./MessageThread"
@@ -21,6 +21,7 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
   const [labels, setLabels]     = useState<Label[]>([])
   const [users, setUsers]       = useState<User[]>([])
   const [loading, setLoading]   = useState(true)
+  const pollingRef              = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -38,7 +39,26 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
     setLoading(false)
   }, [conversationId])
 
+  const silentPoll = useCallback(async () => {
+    const res = await fetchConversationDetail(conversationId)
+    if (res.success) {
+      setConv(res.conversation as any)
+      setMessages(prev => {
+        const incoming = res.messages
+        if (incoming.length !== prev.length) return incoming
+        return prev
+      })
+    }
+  }, [conversationId])
+
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    pollingRef.current = setInterval(silentPoll, 4000)
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current)
+    }
+  }, [silentPoll])
 
   const handleMessageSent = (content: string, isNote: boolean) => {
     const optimistic = {

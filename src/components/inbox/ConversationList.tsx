@@ -52,6 +52,17 @@ export function ConversationList({ filters, selectedId, onSelect, onFilterChange
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtersKey])
 
+  // Silent polling — refresh list every 10s to show new incoming conversations
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchConversations(filters).then(res => {
+        if (res.success) setConversations(res.conversations)
+      })
+    }, 10000)
+    return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtersKey])
+
   const handleSearch = (val: string) => {
     setSearch(val)
     if (debounceRef.current) clearTimeout(debounceRef.current)
