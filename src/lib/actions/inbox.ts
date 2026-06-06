@@ -10,7 +10,7 @@ import {
 } from "@/lib/inbox/conversations"
 import type { InboxFilters } from "@/lib/inbox/conversations"
 import type { InboxStatus } from "@prisma/client"
-import { sendWhatsAppTextMessage } from "@/lib/whatsapp/client"
+import { sendWhatsAppMessageForClinic } from "@/lib/whatsapp/client"
 
 // ── Obtener conversaciones ────────────────────────────────
 export async function fetchConversations(filters: InboxFilters = {}, page = 1) {
@@ -78,7 +78,7 @@ export async function replyToConversation(data: z.infer<typeof ReplySchema>) {
     })
 
     if (conv.channel === 'WHATSAPP') {
-      sendWhatsAppTextMessage(conv.lead.phone, data.content).catch(console.error)
+      sendWhatsAppMessageForClinic(guard.user.clinicId, conv.lead.phone, data.content).catch(console.error)
     }
   }
 

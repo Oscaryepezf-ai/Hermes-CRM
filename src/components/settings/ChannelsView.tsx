@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   MessageCircle, Globe, Camera, CheckCircle2,
   ExternalLink, AlertCircle, WifiOff, Loader2,
-  Info, ChevronRight, Building2,
+  Info, ChevronRight, Building2, Eye, EyeOff,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { disconnectChannel } from "@/lib/actions/channels"
+import { disconnectChannel, connectWhatsApp } from "@/lib/actions/channels"
 import { toast } from "sonner"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -32,9 +32,7 @@ type StoredPage = {
 }
 
 interface ChannelsViewProps {
-  channels:  ChannelRecord[]
-  waStatus:  "configured" | "missing"
-  waPhoneId: string | null
+  channels: ChannelRecord[]
 }
 
 // ─── Channel visual config ────────────────────────────────────────────────────
@@ -71,7 +69,7 @@ const CHANNEL_META = {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProps) {
+export function ChannelsView({ channels }: ChannelsViewProps) {
   const searchParams = useSearchParams()
   const router       = useRouter()
 
@@ -121,12 +119,13 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
     }
   }, [fbConnected, fbError, igConnected, igError, router])
 
+  const whatsappChannel  = channels.find(c => c.channel === "WHATSAPP" && c.isActive)
   const facebookChannel  = channels.find(c => c.channel === "FACEBOOK")
   const instagramChannel = channels.find(c => c.channel === "INSTAGRAM")
 
   return (
     <div className="space-y-3">
-      <WhatsAppCard status={waStatus} phoneId={waPhoneId} />
+      <WhatsAppCard channel={whatsappChannel ?? null} />
 
       <FacebookCard
         channel={facebookChannel ?? null}
@@ -151,39 +150,121 @@ export function ChannelsView({ channels, waStatus, waPhoneId }: ChannelsViewProp
 
 // ─── WhatsApp Card ────────────────────────────────────────────────────────────
 
-function WhatsAppCard({ status, phoneId }: { status: "configured" | "missing"; phoneId: string | null }) {
+function WhatsAppCard({ channel }: { channel: ChannelRecord | null }) {
   const meta      = CHANNEL_META.WHATSAPP
-  const Icon      = meta.icon
-  const connected = status === "configured"
+  const connected = channel?.isActive ?? false
+  const waMeta    = channel?.metadata as { phoneNumber?: string; displayName?: string } | null
+
+  const [showForm,    setShowForm]    = useState(false)
+  const [saving,      setSaving]      = useState(false)
+  const [showToken,   setShowToken]   = useState(false)
+  const [phoneNumId,  setPhoneNumId]  = useState("")
+  const [token,       setToken]       = useState("")
+
+  const handleConnect = async () => {
+    if (!phoneNumId.trim() || !token.trim()) {
+      toast.error("Completa ambos campos")
+      return
+    }
+    setSaving(true)
+    const res = await connectWhatsApp({ phoneNumberId: phoneNumId.trim(), accessToken: token.trim() })
+    setSaving(false)
+    if (res.success) {
+      toast.success("¡WhatsApp Business conectado correctamente!")
+      window.location.replace("/settings/channels")
+    } else {
+      toast.error(res.error ?? "Error al conectar WhatsApp")
+    }
+  }
+
+  const handleDisconnect = async () => {
+    setSaving(true)
+    await disconnectChannel("WHATSAPP")
+    setSaving(false)
+    window.location.replace("/settings/channels")
+  }
 
   return (
     <ChannelCard meta={meta} connected={connected} badge={connected ? "Activo" : "Sin configurar"}>
       {connected ? (
-        <div className="mt-4 space-y-2">
+        <div className="mt-4 space-y-3">
           <StatusBanner
             type="success"
-            title="WhatsApp Cloud API conectado"
-            detail={phoneId ? `Phone ID: ${phoneId.slice(0, 6)}••••••` : undefined}
+            title={waMeta?.displayName ?? "WhatsApp Business conectado"}
+            detail={waMeta?.phoneNumber ? `Número: ${waMeta.phoneNumber}` : channel?.pageId ? `Phone ID: ${channel.pageId.slice(0, 8)}••••` : undefined}
           />
-          <p className="text-[11px] text-ink-tertiary leading-relaxed">
-            La configuración de WhatsApp se gestiona por variables de entorno.
-            Para cambiarla, actualiza <code className="font-mono bg-inset px-1 rounded">WHATSAPP_PHONE_ID</code> en Vercel.
+          <p className="text-[11px] text-ink-tertiary">
+            Webhook URL: <code className="font-mono bg-inset px-1 rounded">/api/webhooks/whatsapp</code>
           </p>
+          <Button variant="outline" size="sm" onClick={handleDisconnect} disabled={saving} className="text-red-500 border-red-200 hover:bg-red-50">
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <WifiOff className="w-3.5 h-3.5 mr-1.5" />}
+            Desconectar
+          </Button>
+        </div>
+      ) : showForm ? (
+        <div className="mt-4 space-y-3">
+          <p className="text-[11px] text-ink-tertiary leading-relaxed">
+            Ingresa las credenciales de tu app en{" "}
+            <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">Meta for Developers</a>
+            {" "}→ WhatsApp → API Setup.
+          </p>
+          <div className="space-y-2">
+            <div>
+              <label className="text-[11px] font-medium text-ink-secondary block mb-1">Phone Number ID</label>
+              <input
+                value={phoneNumId}
+                onChange={e => setPhoneNumId(e.target.value)}
+                placeholder="123456789012345"
+                className="w-full text-xs px-3 py-2 rounded-lg border border-line-soft bg-inset text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-brand-400"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-medium text-ink-secondary block mb-1">Access Token</label>
+              <div className="relative">
+                <input
+                  type={showToken ? "text" : "password"}
+                  value={token}
+                  onChange={e => setToken(e.target.value)}
+                  placeholder="EAAxxxxxxx..."
+                  className="w-full text-xs px-3 py-2 pr-8 rounded-lg border border-line-soft bg-inset text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-brand-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken(v => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-tertiary hover:text-ink-secondary"
+                >
+                  {showToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleConnect} disabled={saving} className="bg-[#25D366] hover:bg-[#1da851] text-white border-0">
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />}
+              Conectar
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowForm(false)} disabled={saving}>
+              Cancelar
+            </Button>
+          </div>
+          <div className="bg-inset rounded-lg p-2.5 space-y-1">
+            <p className="text-[10px] font-semibold text-ink-tertiary uppercase tracking-wide">Configurar webhook en Meta</p>
+            <p className="text-[11px] text-ink-secondary">URL: <code className="font-mono bg-surface px-1 rounded">/api/webhooks/whatsapp</code></p>
+            <p className="text-[11px] text-ink-secondary">Token: el valor de <code className="font-mono bg-surface px-1 rounded">META_VERIFY_TOKEN</code> en Vercel</p>
+            <p className="text-[11px] text-ink-secondary">Campo: <code className="font-mono bg-surface px-1 rounded">messages</code></p>
+          </div>
         </div>
       ) : (
         <div className="mt-4 space-y-3">
           <StatusBanner
             type="warning"
-            title="WHATSAPP_PHONE_ID no configurado"
-            detail="Agrega las variables de entorno en Vercel para activar este canal."
+            title="WhatsApp no configurado"
+            detail="Conecta tu número de WhatsApp Business para recibir mensajes en el pipeline."
           />
-          <a
-            href="https://developers.facebook.com/docs/whatsapp/cloud-api/get-started"
-            target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[12px] text-brand-600 font-medium hover:underline"
-          >
-            Ver guía de WhatsApp Cloud API <ExternalLink className="w-3 h-3" />
-          </a>
+          <Button size="sm" onClick={() => setShowForm(true)} className="bg-[#25D366] hover:bg-[#1da851] text-white border-0">
+            <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+            Conectar WhatsApp
+          </Button>
         </div>
       )}
     </ChannelCard>

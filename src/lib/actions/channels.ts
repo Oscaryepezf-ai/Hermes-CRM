@@ -80,6 +80,59 @@ export async function connectFacebook(data: z.infer<typeof FacebookConnectSchema
   return { success: true as const, message: "Facebook Messenger conectado correctamente" }
 }
 
+// ── Conectar WhatsApp Cloud API ──────────────────────────
+const WhatsAppConnectSchema = z.object({
+  phoneNumberId: z.string().min(5,  "Phone Number ID requerido"),
+  accessToken:   z.string().min(20, "Access Token requerido"),
+})
+
+export async function connectWhatsApp(data: z.infer<typeof WhatsAppConnectSchema>) {
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) return unauthorizedResponse(guard.error)
+
+  const parsed = WhatsAppConnectSchema.safeParse(data)
+  if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message }
+
+  // Validate by sending a test query to the phone number endpoint
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v18.0/${parsed.data.phoneNumberId}`,
+      { headers: { Authorization: `Bearer ${parsed.data.accessToken}` } }
+    )
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { error?: { message: string } }
+      return { success: false as const, error: err.error?.message ?? "Token o Phone Number ID inválido." }
+    }
+    const phone = await res.json() as { display_phone_number?: string; verified_name?: string }
+    const meta  = { phoneNumber: phone.display_phone_number, displayName: phone.verified_name }
+
+    await db.clinicChannel.upsert({
+      where:  { clinicId_channel: { clinicId: guard.user.clinicId, channel: "WHATSAPP" } },
+      create: {
+        clinicId:    guard.user.clinicId,
+        channel:     "WHATSAPP",
+        isActive:    true,
+        pageId:      parsed.data.phoneNumberId,
+        accessToken: parsed.data.accessToken,
+        connectedAt: new Date(),
+        metadata:    meta,
+      },
+      update: {
+        isActive:    true,
+        pageId:      parsed.data.phoneNumberId,
+        accessToken: parsed.data.accessToken,
+        connectedAt: new Date(),
+        metadata:    meta,
+      },
+    })
+
+    revalidatePath("/settings/channels")
+    return { success: true as const, displayName: phone.verified_name, phoneNumber: phone.display_phone_number }
+  } catch {
+    return { success: false as const, error: "No se pudo verificar el token con Meta. Intenta de nuevo." }
+  }
+}
+
 // ── Desconectar un canal ─────────────────────────────────
 export async function disconnectChannel(channel: MarketingChannel) {
   const guard = await requirePermission("settings", "configure")

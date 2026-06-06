@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { runCaptadorCycle } from '@/lib/captador/run-cycle'
 import { markCampaignAsResponded } from '@/lib/reactivador/response-tracker'
 import { upsertInboxConversation } from '@/lib/inbox/conversations'
+import { createDefaultStages } from '@/lib/pipeline/stage-manager'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 30
@@ -27,8 +28,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  processWhatsAppEvents(body).catch(err =>
-    console.error('[wa-webhook] error:', err)
+  // Must await — Vercel terminates function once response is sent
+  await processWhatsAppEvents(body).catch(err =>
+    console.error('[wa-webhook] error:', err?.message ?? err)
   )
 
   return NextResponse.json({ status: 'ok' }, { status: 200 })
@@ -43,6 +45,11 @@ type WAMessage = {
   errors?:   unknown[]
 }
 
+type WAMetadata = {
+  display_phone_number: string
+  phone_number_id:      string
+}
+
 async function processWhatsAppEvents(body: unknown): Promise<void> {
   const payload = body as Record<string, unknown>
   if (payload.object !== 'whatsapp_business_account') return
@@ -52,21 +59,24 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
       const value = change.value as Record<string, unknown> | undefined
       if (!value || value.messaging_product !== 'whatsapp') continue
 
+      const metadata = value.metadata as WAMetadata | undefined
+      const phoneNumberId = metadata?.phone_number_id
+
       const messages = (value.messages as WAMessage[]) ?? []
-      const contacts = (value.contacts as { wa_id: string; profile: { name: string } }[]) ?? []
+      const contacts  = (value.contacts as { wa_id: string; profile: { name: string } }[]) ?? []
 
       for (const msg of messages) {
         if (msg.type !== 'text' || !msg.text?.body) continue
 
-        const phone    = msg.from
-        const text     = msg.text.body
+        const phone       = msg.from
+        const text        = msg.text.body
         const contactName = contacts.find(c => c.wa_id === phone)?.profile.name
 
-        try {
-          // Find or create lead by phone
-          const { leadId, isNew } = await findOrCreateWhatsAppLead(phone, contactName)
+        console.log(`[wa-webhook] message from ${phone}, phoneNumberId=${phoneNumberId ?? 'unknown'}`)
 
-          // Save inbound message
+        try {
+          const { leadId, clinicId } = await findOrCreateWhatsAppLead(phone, contactName, phoneNumberId)
+
           await db.message.create({
             data: {
               leadId,
@@ -79,24 +89,17 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
             },
           })
 
-          // Update lead activity
           await db.lead.update({
             where: { id: leadId },
             data:  { lastContactAt: new Date(), lastActivityAt: new Date(), totalTouchpoints: { increment: 1 } },
           })
 
-          // Create/update inbox conversation
-          const lead = await db.lead.findUnique({ where: { id: leadId }, select: { clinicId: true } })
-          if (lead) {
-            upsertInboxConversation({ clinicId: lead.clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true }).catch(console.error)
-          }
+          await upsertInboxConversation({ clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true })
 
-          // Si el lead tiene campaña de reactivación activa → marcar como respondida
           markCampaignAsResponded(leadId).catch(console.error)
-
-          // Run Captador cycle in background
           runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP' }).catch(console.error)
 
+          console.log(`[wa-webhook] lead=${leadId} processed`)
         } catch (err) {
           console.error(`[wa-webhook] error processing msg from ${phone}:`, err)
         }
@@ -106,64 +109,69 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
 }
 
 async function findOrCreateWhatsAppLead(
-  phone:    string,
-  name?:    string
-): Promise<{ leadId: string; isNew: boolean }> {
-  // Find existing lead by phone in any clinic (use first match)
-  // In a real multi-tenant setup, you'd also filter by phoneNumberId
+  phone:         string,
+  name?:         string,
+  phoneNumberId?: string,
+): Promise<{ leadId: string; clinicId: string; isNew: boolean }> {
+  const cleanPhone = phone.replace(/\D/g, '')
+
+  // ── Find the clinic via ClinicChannel (multi-tenant) ────
+  let clinicId: string | null = null
+  if (phoneNumberId) {
+    const channel = await db.clinicChannel.findFirst({
+      where: { pageId: phoneNumberId, channel: 'WHATSAPP', isActive: true },
+    })
+    if (channel) clinicId = channel.clinicId
+  }
+
+  // Fallback: env var phone ID → any clinic (legacy / dev setup)
+  if (!clinicId && process.env.WHATSAPP_PHONE_ID) {
+    const first = await db.clinic.findFirst({ select: { id: true } })
+    if (first) clinicId = first.id
+  }
+
+  if (!clinicId) throw new Error(`No clinic configured for WhatsApp phoneNumberId=${phoneNumberId}`)
+
+  // ── Find existing lead by phone + clinic ─────────────────
   const existing = await db.lead.findFirst({
-    where:  { phone: phone.replace(/\D/g, '') },
+    where:  { phone: cleanPhone, clinicId },
     select: { id: true },
     orderBy: { createdAt: 'desc' },
   })
+  if (existing) return { leadId: existing.id, clinicId, isNew: false }
 
-  if (existing) return { leadId: existing.id, isNew: false }
-
-  // Need to find the clinic linked to this WhatsApp number
-  // For now, use the first clinic with captadorActive (demo setup)
-  // Production: filter by WHATSAPP_PHONE_ID matched to Clinic
-  const clinic = await db.clinic.findFirst({
-    where:   { captadorActive: true },
-    include: { pipelineStages: { orderBy: { order: 'asc' }, take: 1 } },
+  // ── Auto-init pipeline stages if needed ─────────────────
+  await createDefaultStages(clinicId)
+  const firstStage = await db.pipelineStage.findFirst({
+    where: { clinicId }, orderBy: { order: 'asc' },
   })
-
-  if (!clinic) {
-    // Fallback: any clinic
-    const anyClinic = await db.clinic.findFirst({
-      include: { pipelineStages: { orderBy: { order: 'asc' }, take: 1 } },
-    })
-    if (!anyClinic) throw new Error('No clinic found')
-
-    const lead = await db.lead.create({
-      data: {
-        clinicId:      anyClinic.id,
-        fullName:      name ?? `WhatsApp (${phone.slice(-4)})`,
-        phone:         phone.replace(/\D/g, ''),
-        source:        'WHATSAPP',
-        channel:       'WHATSAPP',
-        status:        'NUEVO',
-        journeyState:  'PROSPECTO',
-        stageId:       anyClinic.pipelineStages[0]?.id,
-        lastContactAt: new Date(),
-        lastActivityAt:new Date(),
-      },
-    })
-    return { leadId: lead.id, isNew: true }
-  }
+  if (!firstStage) throw new Error(`No pipeline stages for clinic ${clinicId}`)
 
   const lead = await db.lead.create({
     data: {
-      clinicId:      clinic.id,
-      fullName:      name ?? `WhatsApp (${phone.slice(-4)})`,
-      phone:         phone.replace(/\D/g, ''),
+      clinicId,
+      fullName:      name ?? `WhatsApp (${cleanPhone.slice(-4)})`,
+      phone:         cleanPhone,
       source:        'WHATSAPP',
       channel:       'WHATSAPP',
       status:        'NUEVO',
       journeyState:  'PROSPECTO',
-      stageId:       clinic.pipelineStages[0]?.id,
+      stageId:       firstStage.id,
       lastContactAt: new Date(),
-      lastActivityAt:new Date(),
+      lastActivityAt: new Date(),
     },
   })
-  return { leadId: lead.id, isNew: true }
+
+  await db.journeyEvent.create({
+    data: {
+      leadId:      lead.id,
+      type:        'MESSAGE_RECEIVED',
+      toState:     'PROSPECTO',
+      isAutomatic: true,
+      metadata:    { source: 'whatsapp', phone: cleanPhone },
+      note:        'Lead creado automáticamente desde WhatsApp',
+    },
+  })
+
+  return { leadId: lead.id, clinicId, isNew: true }
 }

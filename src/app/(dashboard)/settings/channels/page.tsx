@@ -10,17 +10,10 @@ export default async function ChannelsPage() {
   const session = await auth()
   if (!session?.user?.clinicId) redirect("/login")
 
-  const [channels, waPhoneId] = await Promise.all([
-    db.clinicChannel.findMany({
-      where:  { clinicId: session.user.clinicId },
-      select: { id: true, channel: true, isActive: true, pageId: true, connectedAt: true, metadata: true },
-    }),
-    Promise.resolve(process.env.WHATSAPP_PHONE_ID ?? null),
-  ])
-
-  const waStatus = waPhoneId && waPhoneId !== "tu-numero-id"
-    ? "configured" as const
-    : "missing" as const
+  const channels = await db.clinicChannel.findMany({
+    where:  { clinicId: session.user.clinicId },
+    select: { id: true, channel: true, isActive: true, pageId: true, connectedAt: true, metadata: true },
+  })
 
   return (
     <div className="space-y-5">
@@ -37,11 +30,7 @@ export default async function ChannelsPage() {
         </div>
       </div>
 
-      <ChannelsView
-        channels={channels}
-        waStatus={waStatus}
-        waPhoneId={waPhoneId}
-      />
+      <ChannelsView channels={channels} />
     </div>
   )
 }
