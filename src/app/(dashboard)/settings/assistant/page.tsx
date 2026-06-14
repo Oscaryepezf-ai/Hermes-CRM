@@ -20,7 +20,7 @@ export default async function AssistantSettingsPage() {
           <Bot className="w-5 h-5 text-brand-600" />
         </div>
         <div>
-          <h2 className="text-[16px] font-bold text-ink-primary leading-tight">Yana — Asistente IA (Captador)</h2>
+          <h2 className="text-[16px] font-bold text-ink-primary leading-tight">Captador IA</h2>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
             Responde automáticamente a nuevos prospectos en WhatsApp, Facebook e Instagram
           </p>

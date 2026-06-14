@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 const NAV_ITEMS = [
   { href: "/settings",          label: "Plan",       icon: CreditCard },
   { href: "/settings/channels", label: "Canales",    icon: Radio      },
-  { href: "/settings/assistant", label: "Yana IA",   icon: Bot        },
+  { href: "/settings/assistant", label: "Captador IA", icon: Bot      },
   { href: "/settings/calendar", label: "Agendador",  icon: Calendar   },
   { href: "/settings/users",    label: "Equipo",     icon: Users      },
 ]

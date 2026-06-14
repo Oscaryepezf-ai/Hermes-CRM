@@ -45,7 +45,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
     startTransition(async () => {
       const result = await updateCaptadorSettings({ active, config })
       if (result.success) {
-        toast.success("Configuración de Yana guardada")
+        toast.success("Configuración del Captador guardada")
       } else {
         toast.error(result.error)
       }
@@ -61,7 +61,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">Disponible en el plan Elite</h3>
           <p className="text-[12px] text-ink-tertiary mt-1 max-w-md">
-            Yana — el asistente de IA que califica y responde a tus prospectos automáticamente — está incluido
+            El Captador IA — el asistente que califica y responde a tus prospectos automáticamente — está incluido
             en el plan Elite. Actualiza tu plan para activarlo.
           </p>
         </div>
@@ -78,9 +78,9 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
             <Bot className="w-5 h-5 text-brand-600" />
           </div>
           <div>
-            <h3 className="text-[14px] font-bold text-ink-primary">Activar Yana</h3>
+            <h3 className="text-[14px] font-bold text-ink-primary">Activar Captador</h3>
             <p className="text-[12px] text-ink-tertiary mt-0.5">
-              Cuando esté activo, Yana responderá automáticamente a nuevos mensajes de prospectos
+              Cuando esté activo, el Captador responderá automáticamente a nuevos mensajes de prospectos
             </p>
           </div>
         </div>
@@ -174,7 +174,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">Tratamientos que ofreces</h3>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
-            Yana mencionará estos tratamientos al conversar con los prospectos
+            El Captador mencionará estos tratamientos al conversar con los prospectos
           </p>
         </div>
 
@@ -213,7 +213,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">Información de la clínica</h3>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
-            Precios orientativos, ubicación, políticas, promociones — Yana usará esta información para
+            Precios orientativos, ubicación, políticas, promociones — el Captador usará esta información para
             responder preguntas frecuentes sin inventar datos.
           </p>
         </div>
