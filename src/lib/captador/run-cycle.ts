@@ -3,7 +3,7 @@ import { routeIncomingMessage } from './conversation-router'
 import { qualifyMessage }       from './qualification-engine'
 import { generateCaptadorResponse, getHandoffMessage, getOutOfHoursMessage } from './response-generator'
 import { handoffToHuman }       from './handoff'
-import { sendWhatsAppTextMessage } from '@/lib/whatsapp/client'
+import { sendWhatsAppMessageForClinic } from '@/lib/whatsapp/client'
 import { sendMessengerMessage }    from '@/lib/meta/messenger-client'
 import { sendInstagramMessage }    from '@/lib/meta/instagram-client'
 import { getChannelAccessToken }   from '@/lib/meta/lead-from-messenger'
@@ -110,6 +110,7 @@ export async function runCaptadorCycle(params: {
       specialties:   config.specialties,
       businessHours: `${config.businessHours.start}:00 AM - ${config.businessHours.end}:00`,
       maxTurns:      config.maxTurns,
+      knowledgeBase: config.knowledgeBase,
     }
   )
 
@@ -147,7 +148,7 @@ async function sendAgentReply(
 ): Promise<void> {
   if (channel === 'WHATSAPP') {
     const lead = await db.lead.findUnique({ where: { id: leadId }, select: { phone: true } })
-    if (lead?.phone) await sendWhatsAppTextMessage(lead.phone, content)
+    if (lead?.phone) await sendWhatsAppMessageForClinic(clinicId, lead.phone, content)
   } else {
     const profile = await db.socialProfile.findFirst({
       where: { leadId, channel },

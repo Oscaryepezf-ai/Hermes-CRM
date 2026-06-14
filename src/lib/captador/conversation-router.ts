@@ -15,6 +15,7 @@ export type CaptadorConfig = {
   maxTurns:      number
   tone:          'formal' | 'amigable'
   specialties:   string[]
+  knowledgeBase: string
 }
 
 function getColombiaHour(): number {
@@ -32,6 +33,7 @@ function parseConfig(raw: unknown): CaptadorConfig {
     maxTurns:   (c.maxTurns   as number | undefined) ?? parseInt(process.env.CAPTADOR_MAX_TURNS ?? '4'),
     tone:       (c.tone       as 'formal' | 'amigable' | undefined) ?? 'amigable',
     specialties: (c.specialties as string[] | undefined) ?? ['Ortodoncia', 'Implantes', 'Blanqueamiento', 'Limpieza', 'Cirugía'],
+    knowledgeBase: (c.knowledgeBase as string | undefined) ?? '',
   }
 }
 

@@ -13,6 +13,7 @@ export type ResponseContext = {
   specialties:   string[]
   businessHours: string
   maxTurns:      number
+  knowledgeBase: string
 }
 
 function buildSystemPrompt(ctx: ResponseContext): string {
@@ -28,6 +29,7 @@ CANAL: ${channelLabel}
 TRATAMIENTOS QUE OFRECEMOS: ${ctx.specialties.join(', ')}
 HORARIO DE ATENCIÓN: ${ctx.businessHours}
 TURNO ACTUAL: ${ctx.turnCount} de ${ctx.maxTurns}
+${ctx.knowledgeBase ? `\nINFORMACIÓN DE LA CLÍNICA (úsala para responder dudas, nunca la inventes):\n${ctx.knowledgeBase}\n` : ''}
 
 DATOS RECOPILADOS:
 ${JSON.stringify(ctx.collectedData, null, 2)}
