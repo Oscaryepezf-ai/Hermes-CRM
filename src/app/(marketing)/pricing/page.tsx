@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import { Check, Stethoscope, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +20,7 @@ const plans = [
       "Soporte por email",
     ],
     cta: "Elegir Básico",
+    paymentLink: process.env.NEXT_PUBLIC_PAYPHONE_BASICO_LINK ?? "#",
     popular: false,
   },
   {
@@ -39,6 +37,7 @@ const plans = [
       "Soporte por chat",
     ],
     cta: "Elegir Intermedio",
+    paymentLink: process.env.NEXT_PUBLIC_PAYPHONE_INTERMEDIO_LINK ?? "#",
     popular: true,
   },
   {
@@ -55,30 +54,12 @@ const plans = [
       "Acceso anticipado a nuevas funciones",
     ],
     cta: "Elegir Elite",
+    paymentLink: process.env.NEXT_PUBLIC_PAYPHONE_ELITE_LINK ?? "#",
     popular: false,
   },
 ];
 
 export default function PricingPage() {
-  const [loading, setLoading] = useState<string | null>(null);
-
-  const handleCheckout = async (planId: string) => {
-    setLoading(planId);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
-    } catch {
-      setLoading(null);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -154,18 +135,18 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Button
-                onClick={() => handleCheckout(plan.id)}
-                disabled={loading === plan.id}
-                className={cn(
-                  "w-full",
-                  plan.popular
-                    ? "bg-indigo-600 hover:bg-indigo-700"
-                    : "bg-gray-900 hover:bg-gray-800"
-                )}
-              >
-                {loading === plan.id ? "Redirigiendo..." : plan.cta}
-              </Button>
+              <a href={plan.paymentLink} target="_blank" rel="noopener noreferrer">
+                <Button
+                  className={cn(
+                    "w-full",
+                    plan.popular
+                      ? "bg-indigo-600 hover:bg-indigo-700"
+                      : "bg-gray-900 hover:bg-gray-800"
+                  )}
+                >
+                  {plan.cta}
+                </Button>
+              </a>
             </div>
           ))}
         </div>
