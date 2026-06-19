@@ -101,7 +101,11 @@ export function StageTransitionModal({
           {toState === "PERDIDO" && (
             <div className="space-y-1.5">
               <Label>Motivo de pérdida <span className="text-red-500">*</span></Label>
-              <Select value={lostReason} onValueChange={v => setLostReason(v as LostReason)}>
+              <Select
+                items={Object.entries(LOST_REASON_LABELS).map(([value, label]) => ({ value, label }))}
+                value={lostReason}
+                onValueChange={v => setLostReason(v as LostReason)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar motivo..." />
                 </SelectTrigger>

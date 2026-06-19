@@ -116,6 +116,7 @@ export function LeadFormModal({ stages, onClose, onCreated }: LeadFormModalProps
             <div className="space-y-1.5">
               <Label>Fuente *</Label>
               <Select
+                items={sources}
                 value={form.source}
                 onValueChange={(v) => setForm({ ...form, source: (v ?? "REFERIDO") as any })}
               >
@@ -135,6 +136,7 @@ export function LeadFormModal({ stages, onClose, onCreated }: LeadFormModalProps
             <div className="space-y-1.5">
               <Label>Etapa inicial</Label>
               <Select
+                items={stages.map((s) => ({ value: s.id, label: s.name }))}
                 value={form.stageId}
                 onValueChange={(v) => setForm({ ...form, stageId: v ?? "" })}
               >

@@ -139,6 +139,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select
+              items={STATUS_OPTIONS}
               value={statusFilter}
               onValueChange={(v) => setStatusFilter((v ?? "ALL") as LeadStatus | "ALL")}
             >
@@ -154,6 +155,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
               </SelectContent>
             </Select>
             <Select
+              items={CHANNEL_OPTIONS}
               value={channelFilter}
               onValueChange={(v) =>
                 setChannelFilter((v ?? "ALL") as MarketingChannel | "ALL")
