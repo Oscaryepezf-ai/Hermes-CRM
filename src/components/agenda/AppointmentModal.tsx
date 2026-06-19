@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { X, User, Calendar, Stethoscope, DollarSign, FileText, CheckCircle, XCircle } from "lucide-react"
@@ -52,6 +53,7 @@ const PROCEDURE_OPTIONS = [
 ]
 
 export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
+  const router = useRouter()
   const [patients, setPatients] = useState<Patient[]>([])
   const [dentists, setDentists] = useState<Dentist[]>([])
   const [loading, setLoading] = useState(false)
@@ -60,7 +62,7 @@ export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
     patientId: "",
     dentistId: "",
     procedure: "Consulta general",
-    scheduledAt: start ?? new Date().toISOString(),
+    scheduledAt: start ? new Date(start).toISOString() : new Date().toISOString(),
     value: "",
     notes: "",
   })
@@ -94,7 +96,12 @@ export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
     setLoading(false)
     if (result.success) {
       toast.success("Cita agendada correctamente")
-      onClose()
+      if (result.missionJustCompleted) {
+        toast.success("¡Misión completada! Revisa tu checklist de activación")
+        router.push("/dashboard")
+      } else {
+        onClose()
+      }
     } else {
       toast.error(result.error ?? "Error al crear la cita")
     }

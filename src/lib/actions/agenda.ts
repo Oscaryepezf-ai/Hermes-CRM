@@ -143,7 +143,8 @@ export async function createAppointmentFromCalendar(
   ).catch(console.error)
 
   revalidatePath('/agenda')
-  return { success: true, data: appointment }
+  const missionJustCompleted = await completeMission(session.user.clinicId, 'CREAR_CITA')
+  return { success: true, data: appointment, missionJustCompleted }
 }
 
 const ScheduleLeadSchema = z.object({

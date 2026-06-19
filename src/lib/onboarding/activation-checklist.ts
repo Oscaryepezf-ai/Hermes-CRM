@@ -51,14 +51,17 @@ export async function getActivationChecklist(clinicId: string) {
 
 // ── Marcar una misión como completada ────────────────────
 // Llamar desde las Server Actions reales (crear cita, registrar evolución, etc.)
+// Devuelve true solo la primera vez que se completa (para disparar
+// la celebración/redirect al Dashboard una sola vez, no en cada acción).
 export async function completeMission(
   clinicId:   string,
   missionKey: Exclude<MissionKey, "CUENTA_CREADA">
-): Promise<void> {
-  await db.activationMission.updateMany({
+): Promise<boolean> {
+  const result = await db.activationMission.updateMany({
     where: { clinicId, missionKey, completed: false },
     data:  { completed: true, completedAt: new Date() },
   })
+  return result.count > 0
 }
 
 // ── Reclamar la recompensa ────────────────────────────────
