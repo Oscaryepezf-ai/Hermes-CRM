@@ -181,6 +181,22 @@ model Lead {
   reactivationCampaigns ReactivationCampaign[]
   inboxConversations    InboxConversation[]
 
+  // ─── Filiación (ficha 360) ────────────────────────────────
+  nickname       String?
+  documentType   DocumentType? @default(CEDULA)
+  documentNumber String?
+  birthDate      DateTime?
+  birthCountry   String?
+  landline       String?
+  address        String?
+  sex            Sex?
+  insurer        String?
+  businessLine   String?
+  patientGroup   String?
+  occupation     String?
+  additionalInfo String?
+  hcNumber       String?
+
   @@index([clinicId, createdAt(sort: Desc)])
   @@index([clinicId, stageId])
   @@index([clinicId, status])
@@ -334,6 +350,18 @@ enum MarketingChannel {
   REFERIDO
   TIKTOK
   OTRO
+}
+
+enum DocumentType {
+  CEDULA
+  PASAPORTE
+  RUC
+  OTRO
+}
+
+enum Sex {
+  HOMBRE
+  MUJER
 }
 
 enum MsgDirection {

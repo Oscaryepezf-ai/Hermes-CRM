@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Link from "next/link"
 import { format, formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
-import { Search, Filter, AlertCircle, Users, Mic } from "lucide-react"
+import { Search, Filter, AlertCircle, Users, Mic, ExternalLink } from "lucide-react"
 import { DictationDialog } from "./DictationDialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -211,6 +212,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                   <TableHead className="hidden md:table-cell">Canal</TableHead>
                   <TableHead>Asignado</TableHead>
                   <TableHead>Último contacto</TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -310,6 +312,23 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                         ) : (
                           <span className="text-xs text-muted-foreground">Sin contacto</span>
                         )}
+                      </TableCell>
+
+                      {/* Abrir ficha 360 */}
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={
+                              <Link
+                                href={`/patients/${lead.id}`}
+                                className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-muted transition-colors"
+                              />
+                            }
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>Abrir ficha 360</TooltipContent>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   )
