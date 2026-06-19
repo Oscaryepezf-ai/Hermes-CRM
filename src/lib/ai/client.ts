@@ -138,6 +138,7 @@ export async function transcribeAudio(options: TranscriptionOptions): Promise<Ai
 // ── Helpers ───────────────────────────────────────────────
 function mapError(error: unknown): string {
   const e = error as { status?: number; code?: string; name?: string }
+  if (e.code === 'insufficient_quota')                      return 'INSUFFICIENT_QUOTA'
   if (e.status === 429 || e.code === 'rate_limit_exceeded') return 'RATE_LIMIT'
   if (e.status === 401 || e.code === 'invalid_api_key')     return 'INVALID_API_KEY'
   if (e.status === 400 && e.code === 'context_length_exceeded') return 'CONTEXT_TOO_LONG'
@@ -153,6 +154,7 @@ function isRetryable(code: string): boolean {
 function readable(code: string): string {
   const msgs: Record<string, string> = {
     RATE_LIMIT:      'El servicio de IA está ocupado. Intenta en unos segundos.',
+    INSUFFICIENT_QUOTA: 'La cuenta de OpenAI no tiene saldo disponible. Revisa la facturación en platform.openai.com/settings/organization/billing.',
     INVALID_API_KEY: 'La API key de OpenAI no es válida.',
     CONTEXT_TOO_LONG:'El texto es demasiado largo para procesar.',
     CONTENT_FILTERED:'Contenido filtrado por políticas de seguridad.',

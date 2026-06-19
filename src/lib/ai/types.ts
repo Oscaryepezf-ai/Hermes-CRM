@@ -2,6 +2,7 @@ import type { AgentConfigKey, AiModel } from './models'
 
 export type AiErrorCode =
   | 'RATE_LIMIT'
+  | 'INSUFFICIENT_QUOTA'
   | 'INVALID_API_KEY'
   | 'CONTEXT_TOO_LONG'
   | 'CONTENT_FILTERED'
