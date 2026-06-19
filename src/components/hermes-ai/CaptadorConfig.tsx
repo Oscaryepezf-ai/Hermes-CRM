@@ -161,7 +161,7 @@ export function CaptadorConfig({ onClose }: { onClose?: () => void }) {
             </select>
           </div>
         </div>
-        <p className="text-[11px] text-ink-tertiary">Zona horaria: Colombia (UTC-5). Fuera de horario envía mensaje informativo.</p>
+        <p className="text-[11px] text-ink-tertiary">Zona horaria: Ecuador (UTC-5). Fuera de horario envía mensaje informativo.</p>
       </Section>
 
       {/* Channels */}

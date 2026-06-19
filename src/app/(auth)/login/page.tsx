@@ -62,7 +62,7 @@ export default function LoginPage() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="dr.garcia@miClinica.co"
+                  placeholder="dr.garcia@miClinica.ec"
                   required
                   autoComplete="email"
                 />

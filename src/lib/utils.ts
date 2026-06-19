@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(value: number, currency = "USD"): string {
-  return new Intl.NumberFormat("es-CO", {
+  return new Intl.NumberFormat("es-EC", {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
@@ -14,7 +14,7 @@ export function formatCurrency(value: number, currency = "USD"): string {
 }
 
 export function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat("es-CO", {
+  return new Intl.DateTimeFormat("es-EC", {
     day: "numeric",
     month: "short",
     year: "numeric",

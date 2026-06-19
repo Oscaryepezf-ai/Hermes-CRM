@@ -102,7 +102,7 @@ export async function getDashboardMetrics(): Promise<ActionResponse<DashboardMet
             select: { value: true },
           })
           .then((appts) => ({
-            month: date.toLocaleDateString("es-CO", { month: "short", year: "2-digit" }),
+            month: date.toLocaleDateString("es-EC", { month: "short", year: "2-digit" }),
             value: appts.reduce((sum, a) => sum + (a.value ?? 0), 0),
           }));
       })

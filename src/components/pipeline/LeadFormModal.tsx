@@ -96,7 +96,7 @@ export function LeadFormModal({ stages, onClose, onCreated }: LeadFormModalProps
               id="phone"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="+57 300 123 4567"
+              placeholder="+593 99 123 4567"
               required
             />
           </div>
@@ -165,13 +165,13 @@ export function LeadFormModal({ stages, onClose, onCreated }: LeadFormModalProps
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="estimatedValue">Valor estimado (COP)</Label>
+            <Label htmlFor="estimatedValue">Valor estimado (USD)</Label>
             <Input
               id="estimatedValue"
               type="number"
               value={form.estimatedValue}
               onChange={(e) => setForm({ ...form, estimatedValue: e.target.value })}
-              placeholder="3500000"
+              placeholder="1800"
             />
           </div>
 

@@ -29,8 +29,8 @@ export async function createCalendarEvent(
     requestBody: {
       summary: params.title,
       description: params.description,
-      start: { dateTime: params.startIso, timeZone: "America/Bogota" },
-      end: { dateTime: params.endIso, timeZone: "America/Bogota" },
+      start: { dateTime: params.startIso, timeZone: "America/Guayaquil" },
+      end: { dateTime: params.endIso, timeZone: "America/Guayaquil" },
       attendees,
       location: params.location,
       reminders: {
@@ -84,8 +84,8 @@ export async function rescheduleCalendarEvent(
     calendarId,
     eventId: googleEventId,
     requestBody: {
-      start: { dateTime: newStartIso, timeZone: "America/Bogota" },
-      end: { dateTime: newEndIso, timeZone: "America/Bogota" },
+      start: { dateTime: newStartIso, timeZone: "America/Guayaquil" },
+      end: { dateTime: newEndIso, timeZone: "America/Guayaquil" },
     },
   });
 }

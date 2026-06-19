@@ -18,8 +18,8 @@ export type CaptadorConfig = {
   knowledgeBase: string
 }
 
-function getColombiaHour(): number {
-  const dateStr = new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' })
+function getEcuadorHour(): number {
+  const dateStr = new Date().toLocaleString('en-US', { timeZone: 'America/Guayaquil' })
   return new Date(dateStr).getHours()
 }
 
@@ -57,7 +57,7 @@ export async function routeIncomingMessage(params: {
     return { ...base, shouldAgentRespond: false, reason: 'agent_disabled' }
   }
 
-  const hour = getColombiaHour()
+  const hour = getEcuadorHour()
   const isBusinessHours = hour >= config.businessHours.start && hour < config.businessHours.end
 
   if (conv?.status === 'HANDED_OFF') {

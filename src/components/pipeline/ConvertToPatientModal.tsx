@@ -47,7 +47,7 @@ export function ConvertToPatientModal({
 
     if (res.success) {
       toast.success(
-        `¡Paciente creado! +$${numValue.toLocaleString("es-CO")} USD registrados`
+        `¡Paciente creado! +$${numValue.toLocaleString("es-EC")} USD registrados`
       )
       onSuccess("patientId" in res ? (res as any).patientId : undefined)
       onClose()

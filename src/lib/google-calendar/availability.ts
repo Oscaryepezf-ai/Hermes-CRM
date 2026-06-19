@@ -3,16 +3,16 @@ import { getAuthenticatedClient } from "./oauth";
 import { addDays, addMinutes, isBefore, isAfter, format } from "date-fns";
 import { es } from "date-fns/locale";
 
-// Colombia = UTC-5, no DST
-const COLOMBIA_OFFSET_MS = -5 * 60 * 60 * 1000;
+// Ecuador = UTC-5, no DST
+const ECUADOR_OFFSET_MS = -5 * 60 * 60 * 1000;
 
-function toColombiaDate(utc: Date): Date {
-  return new Date(utc.getTime() - COLOMBIA_OFFSET_MS);
+function toEcuadorDate(utc: Date): Date {
+  return new Date(utc.getTime() - ECUADOR_OFFSET_MS);
 }
 
-function fromColombiaHour(dayUtc: Date, hour: number, minute = 0): Date {
-  // Build "day at hour:minute in Colombia" as a UTC Date
-  const col = toColombiaDate(dayUtc);
+function fromEcuadorHour(dayUtc: Date, hour: number, minute = 0): Date {
+  // Build "day at hour:minute in Ecuador" as a UTC Date
+  const col = toEcuadorDate(dayUtc);
   const local = new Date(
     Date.UTC(
       col.getUTCFullYear(),
@@ -25,7 +25,7 @@ function fromColombiaHour(dayUtc: Date, hour: number, minute = 0): Date {
     )
   );
   // Convert back to UTC
-  return new Date(local.getTime() + COLOMBIA_OFFSET_MS);
+  return new Date(local.getTime() + ECUADOR_OFFSET_MS);
 }
 
 export type AvailableSlot = {
@@ -68,7 +68,7 @@ export async function getAvailableSlots(
     requestBody: {
       timeMin,
       timeMax,
-      timeZone: "America/Bogota",
+      timeZone: "America/Guayaquil",
       items: [{ id: calendarId }],
     },
   });
@@ -80,7 +80,7 @@ export async function getAvailableSlots(
 
   for (let d = 0; d < daysAhead; d++) {
     const day = addDays(now, d);
-    const dayOfWeek = toColombiaDate(day).getUTCDay();
+    const dayOfWeek = toEcuadorDate(day).getUTCDay();
 
     if (!hours.workDays.includes(dayOfWeek)) continue;
 
@@ -93,7 +93,7 @@ export async function getAvailableSlots(
       const slotHour = Math.floor(totalMinutes / 60);
       const slotMinute = totalMinutes % 60;
 
-      const slotStart = fromColombiaHour(day, slotHour, slotMinute);
+      const slotStart = fromEcuadorHour(day, slotHour, slotMinute);
       const slotEnd = addMinutes(slotStart, hours.slotMinutes);
 
       if (isBefore(slotStart, now)) continue;
@@ -105,7 +105,7 @@ export async function getAvailableSlots(
       });
 
       if (!isBusy) {
-        const colStart = toColombiaDate(slotStart);
+        const colStart = toEcuadorDate(slotStart);
         allSlots.push({
           start: slotStart,
           end: slotEnd,

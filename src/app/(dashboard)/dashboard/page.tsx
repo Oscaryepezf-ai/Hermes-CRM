@@ -85,7 +85,7 @@ async function DashboardContent() {
         />
         <MetricCard
           title="Ingresos este mes"
-          value={formatCurrency(metrics.monthlyRevenue, "COP")}
+          value={formatCurrency(metrics.monthlyRevenue, "USD")}
           icon={DollarSign}
          
         />

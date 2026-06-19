@@ -30,12 +30,12 @@ export function appointmentCreatedNotification(params: {
   scheduledAt: Date
   appointmentId: string
 }): PushPayload {
-  const time = params.scheduledAt.toLocaleTimeString('es-CO', {
+  const time = params.scheduledAt.toLocaleTimeString('es-EC', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true,
   })
-  const date = params.scheduledAt.toLocaleDateString('es-CO', {
+  const date = params.scheduledAt.toLocaleDateString('es-EC', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',

@@ -14,7 +14,7 @@ model Clinic {
   phone                String?
   address              String?
   city                 String?
-  country              String   @default("CO")
+  country              String   @default("EC")
   plan                 Plan     @default(STARTER)
   stripeCustomerId     String?
   stripeSubscriptionId String?

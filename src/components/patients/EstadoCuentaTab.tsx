@@ -41,7 +41,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
             <DollarSign className="w-4 h-4 text-emerald-600" />
             <span className="text-[11px] text-ink-tertiary font-medium">Total invertido</span>
           </div>
-          <p className="text-[16px] font-bold text-ink-primary">{formatCurrency(totalRevenue, "COP")}</p>
+          <p className="text-[16px] font-bold text-ink-primary">{formatCurrency(totalRevenue, "USD")}</p>
         </div>
 
         <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
@@ -82,7 +82,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
                         <p className="text-[13px] font-semibold text-ink-primary">{appt.procedure}</p>
                         {appt.value && (
                           <p className="text-[13px] font-semibold text-ink-secondary">
-                            {formatCurrency(appt.value, "COP")}
+                            {formatCurrency(appt.value, "USD")}
                           </p>
                         )}
                       </div>

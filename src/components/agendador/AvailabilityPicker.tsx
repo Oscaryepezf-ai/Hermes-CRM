@@ -32,7 +32,7 @@ type Props = {
 function groupSlotsByDay(slots: Slot[]): { day: string; slots: Slot[] }[] {
   const map = new Map<string, Slot[]>();
   for (const slot of slots) {
-    const day = new Date(slot.isoStart).toLocaleDateString("es-CO", {
+    const day = new Date(slot.isoStart).toLocaleDateString("es-EC", {
       weekday: "long",
       day: "numeric",
       month: "long",
@@ -159,7 +159,7 @@ export function AvailabilityPicker({
               <div className="flex flex-wrap gap-2">
                 {daySlots.map((slot) => {
                   const time = new Date(slot.isoStart).toLocaleTimeString(
-                    "es-CO",
+                    "es-EC",
                     { hour: "2-digit", minute: "2-digit", hour12: true }
                   );
                   const isSelected = selectedSlot?.isoStart === slot.isoStart;

@@ -67,7 +67,7 @@ export default async function AppointmentsPage() {
             </div>
             {appt.value && (
               <p className="text-sm font-semibold text-gray-700 flex-shrink-0 ml-4">
-                {formatCurrency(appt.value, "COP")}
+                {formatCurrency(appt.value, "USD")}
               </p>
             )}
           </div>

@@ -317,7 +317,7 @@ function FacebookCard({
             title={pageName ? `Página: ${pageName}` : "Messenger activo"}
             detail={channel?.pageId ? `Page ID: ${channel.pageId}` : undefined}
             extra={channel?.connectedAt
-              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}`
+              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" })}`
               : undefined
             }
           />
@@ -513,7 +513,7 @@ function InstagramCard({
             title={igName ?? igUsername ?? "Instagram conectado"}
             detail={igUsername ? `@${igUsername}` : undefined}
             extra={channel?.connectedAt
-              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}`
+              ? `Conectado el ${new Date(channel.connectedAt).toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" })}`
               : undefined}
           />
           <div className="bg-inset border border-line-subtle rounded-[8px] px-3 py-2.5">

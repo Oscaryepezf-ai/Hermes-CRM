@@ -90,8 +90,8 @@ export function getHandoffMessage(clinicName: string, reason: string): string {
 }
 
 export function getOutOfHoursMessage(clinicName: string, businessHours: string): string {
-  const timeCO = new Date().toLocaleTimeString('es-CO', {
-    timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit',
+  const timeEC = new Date().toLocaleTimeString('es-EC', {
+    timeZone: 'America/Guayaquil', hour: '2-digit', minute: '2-digit',
   })
-  return `¡Hola! 👋 Gracias por escribirnos a ${clinicName}. Son las ${timeCO} y estamos fuera de horario.\n\nAtendemos ${businessHours}.\n\nTu mensaje quedó registrado y te contactaremos a primera hora. 😊`
+  return `¡Hola! 👋 Gracias por escribirnos a ${clinicName}. Son las ${timeEC} y estamos fuera de horario.\n\nAtendemos ${businessHours}.\n\nTu mensaje quedó registrado y te contactaremos a primera hora. 😊`
 }

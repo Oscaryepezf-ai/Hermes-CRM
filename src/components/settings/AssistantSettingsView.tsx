@@ -165,7 +165,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
         </div>
 
         <p className="text-[11px] text-ink-tertiary">
-          Las horas se interpretan en zona horaria de Colombia (ej: 8 a 20 = 8am a 8pm)
+          Las horas se interpretan en zona horaria de Ecuador (ej: 8 a 20 = 8am a 8pm)
         </p>
       </div>
 
