@@ -40,6 +40,7 @@ export const authConfig: NextAuthConfig = {
         pathname.startsWith("/settings") ||
         pathname.startsWith("/ai") ||
         pathname.startsWith("/dr-clinic") ||
+        pathname.startsWith("/wizard") ||
         pathname.startsWith("/super-admin");
 
       const isAuthRoute =

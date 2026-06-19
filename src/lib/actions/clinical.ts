@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResponse } from "@/types";
 import type { ClinicalHistoryWithLead, VisitWithDoctor } from "@/types/clinical";
 import type { ClinicalHistory, Lead } from "@prisma/client";
+import { completeMission } from "@/lib/onboarding/activation-checklist";
 
 async function getSession() {
   const session = await auth();
@@ -212,6 +213,7 @@ export async function createVisit(
     });
 
     revalidatePath("/dr-clinic");
+    completeMission(session.user.clinicId, "REGISTRAR_EVOLUCION").catch(() => {});
     return { success: true, data: visit as VisitWithDoctor };
   } catch (error) {
     console.error("[createVisit]", error);

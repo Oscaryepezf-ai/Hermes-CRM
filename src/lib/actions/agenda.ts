@@ -10,6 +10,7 @@ import {
   appointmentCreatedNotification,
   appointmentCancelledNotification,
 } from "@/lib/push/notification-templates"
+import { completeMission } from "@/lib/onboarding/activation-checklist"
 
 export type CalendarEvent = {
   id: string
@@ -239,6 +240,7 @@ export async function scheduleLeadAppointment(
 
   revalidatePath('/agenda')
   revalidatePath('/pipeline')
+  completeMission(session.user.clinicId, 'CREAR_CITA').catch(() => {})
   return { success: true, data: appointment }
 }
 

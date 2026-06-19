@@ -13,6 +13,7 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { ConversionChart } from "@/components/dashboard/ConversionChart";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
+import { ActivationChecklist } from "@/components/dashboard/ActivationChecklist";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { mockMetrics, mockActivityFeed } from "@/lib/mock-data";
@@ -66,6 +67,8 @@ async function DashboardContent() {
           Resumen de actividad de tu clínica
         </p>
       </div>
+
+      <ActivationChecklist />
 
       {/* Fila 1: Métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">

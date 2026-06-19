@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
         name: clinicName,
         slug,
         plan: "STARTER",
+        onboardingCompleted: true,
       },
     });
 
@@ -61,6 +62,16 @@ export async function POST(req: NextRequest) {
         role: "ADMIN",
         clinicId: clinic.id,
       },
+    });
+
+    await db.activationMission.create({
+      data: { clinicId: clinic.id, missionKey: "CUENTA_CREADA", completed: true, completedAt: new Date() },
+    });
+    await db.activationMission.createMany({
+      data: (["CREAR_CITA", "REGISTRAR_EVOLUCION"] as const).map((missionKey) => ({
+        clinicId: clinic.id,
+        missionKey,
+      })),
     });
 
     return NextResponse.json({ success: true }, { status: 201 });

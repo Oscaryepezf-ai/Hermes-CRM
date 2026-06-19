@@ -14,6 +14,7 @@ import {
   getAuthorizationUrl,
 } from "@/lib/google-calendar/oauth";
 import { buildConfirmationMessage } from "@/lib/agendador/whatsapp-templates";
+import { completeMission } from "@/lib/onboarding/activation-checklist";
 
 export async function checkCalendarConnection() {
   const session = await auth();
@@ -117,6 +118,8 @@ export async function createAppointmentWithSync(
 
     revalidatePath("/pipeline");
     revalidatePath("/appointments");
+
+    completeMission(session.user.clinicId, "CREAR_CITA").catch(() => {});
 
     return { success: true, data: appointment };
   } catch (error) {

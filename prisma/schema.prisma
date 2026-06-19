@@ -34,6 +34,14 @@ model Clinic {
   reactivadorActive  Boolean @default(false)
   reactivadorConfig  Json?
 
+  // ─── Onboarding / activación ──────────────────────────
+  practiceType        PracticeType?
+  currentTools        CurrentTools?
+  onboardingStep      Int           @default(0)
+  onboardingCompleted Boolean       @default(false)
+  rewardClaimed       Boolean       @default(false)
+  rewardClaimedAt     DateTime?
+
   users                 User[]
   leads                 Lead[]
   patients              Patient[]
@@ -46,6 +54,7 @@ model Clinic {
   inboxConversations    InboxConversation[]
   inboxLabels           InboxLabel[]
   clinicalVisits        ClinicalVisit[]
+  activationMissions    ActivationMission[]
 }
 
 model ClinicChannel {
@@ -82,6 +91,11 @@ model User {
   invitedByUserId     String?
   invitedAt           DateTime?
   lastLoginAt         DateTime?
+
+  // ─── Registro por WhatsApp ─────────────────────────────
+  phone             String?           @unique
+  phoneVerified     Boolean           @default(false)
+  selfReportedRole  SelfReportedRole?
 
   leadHistory                 LeadHistory[]
   appointments                Appointment[]
@@ -698,4 +712,60 @@ model InboxConversationLabel {
   createdAt      DateTime          @default(now())
 
   @@unique([conversationId, labelId])
+}
+
+// ─── Registro por WhatsApp ────────────────────────────────────────────────────
+
+model PhoneVerification {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  attempts  Int      @default(0)
+  verified  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+// ─── Checklist gamificado de activación ───────────────────────────────────────
+
+model ActivationMission {
+  id          String      @id @default(cuid())
+  clinicId    String
+  clinic      Clinic      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  missionKey  MissionKey
+  completed   Boolean     @default(false)
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@unique([clinicId, missionKey])
+}
+
+enum MissionKey {
+  CUENTA_CREADA
+  CREAR_CITA
+  REGISTRAR_EVOLUCION
+}
+
+enum PracticeType {
+  ODONTOLOGIA
+  ORTODONCIA_ESPECIALIZADA
+  RED_DENTAL
+  OTRO
+}
+
+enum CurrentTools {
+  PAPEL
+  HERRAMIENTAS_SUELTAS
+  SOFTWARE_ESPECIALIZADO
+}
+
+enum SelfReportedRole {
+  DUENO_CONSULTORIO
+  ADMINISTRADOR
+  RECEPCIONISTA
+  PROFESIONAL_MULTISEDE
+  ESTUDIANTE
+  OTRO
 }
