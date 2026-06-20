@@ -50,6 +50,7 @@ export async function createLead(
         phone: parsed.data.phone,
         email: parsed.data.email || null,
         source: parsed.data.source,
+        channel: parsed.data.source,
         interest: parsed.data.interest || null,
         estimatedValue: parsed.data.estimatedValue || null,
         notes: parsed.data.notes || null,
