@@ -62,7 +62,7 @@ export function getPermissionsForRole(role: UserRole): Permission[] {
 
 // Maps sidebar nav item key → module ID used for permission checks
 export const SIDEBAR_MODULES: Record<UserRole, string[]> = {
-  ADMIN:        ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai', 'settings'],
-  DOCTOR:       ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai'],
-  RECEPTIONIST: ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients'],
+  ADMIN:        ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai', 'reports', 'settings'],
+  DOCTOR:       ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'dr_clinic', 'hermes_ai', 'reports'],
+  RECEPTIONIST: ['dashboard', 'pipeline', 'inbox', 'agenda', 'patients', 'reports'],
 }

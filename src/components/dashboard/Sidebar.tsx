@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Kanban, Users, Bot, Settings,
   Stethoscope, CalendarDays, ChevronRight, ChevronLeft,
-  Star, ShieldCheck, Inbox,
+  Star, ShieldCheck, Inbox, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SIDEBAR_MODULES } from "@/lib/rbac/permissions";
@@ -20,6 +20,7 @@ const ALL_NAV_ITEMS = [
   { label: "Pacientes",  href: "/patients",  icon: Users,           module: "patients"   },
   { label: "Dr. Clinic", href: "/dr-clinic", icon: Stethoscope,     module: "dr_clinic"  },
   { label: "Hermes AI",  href: "/ai",        icon: Bot,             module: "hermes_ai", badge: "Pro" },
+  { label: "Reportes",   href: "/reportes",  icon: BarChart3,       module: "reports"    },
   { label: "Ajustes",    href: "/settings",  icon: Settings,        module: "settings"   },
 ];
 

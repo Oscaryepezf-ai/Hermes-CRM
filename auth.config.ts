@@ -9,17 +9,18 @@ const ROUTE_MODULE_MAP: Record<string, string> = {
   "/patients":      "patients",
   "/dr-clinic":     "dr_clinic",
   "/ai":            "hermes_ai",
+  "/reportes":      "reports",
   "/settings":      "settings",
 }
 
 const ROLE_ALLOWED_MODULES: Record<string, string[]> = {
-  ADMIN:        ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "settings"],
-  DOCTOR:       ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai"],
-  RECEPTIONIST: ["dashboard", "pipeline", "agenda", "patients"],
+  ADMIN:        ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports", "settings"],
+  DOCTOR:       ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports"],
+  RECEPTIONIST: ["dashboard", "pipeline", "agenda", "patients", "reports"],
   // Legacy JWT values — users with old tokens before the role rename
-  OWNER:   ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "settings"],
-  DENTIST: ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai"],
-  STAFF:   ["dashboard", "pipeline", "agenda", "patients"],
+  OWNER:   ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports", "settings"],
+  DENTIST: ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports"],
+  STAFF:   ["dashboard", "pipeline", "agenda", "patients", "reports"],
 }
 
 export const authConfig: NextAuthConfig = {
@@ -51,6 +52,7 @@ export const authConfig: NextAuthConfig = {
         pathname.startsWith("/appointments") ||
         pathname.startsWith("/settings") ||
         pathname.startsWith("/ai") ||
+        pathname.startsWith("/reportes") ||
         pathname.startsWith("/dr-clinic") ||
         pathname.startsWith("/wizard") ||
         pathname.startsWith("/super-admin");

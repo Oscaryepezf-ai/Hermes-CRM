@@ -62,6 +62,9 @@ model Clinic {
   prescriptions         Prescription[]
   patientFiles          PatientFile[]
   activationMissions    ActivationMission[]
+  services              Service[]
+  payments              Payment[]
+  expenses              Expense[]
 }
 
 model ClinicChannel {
@@ -117,6 +120,7 @@ model User {
   prescriptions               Prescription[]        @relation("DoctorPrescriptions")
   uploadedFiles                PatientFile[]        @relation("UploadedFiles")
   superAdminActions            SuperAdminAuditLog[] @relation("SuperAdminActions")
+  doctorPayments                Payment[]            @relation("DoctorPayments")
 }
 
 model SuperAdminAuditLog {
@@ -319,6 +323,7 @@ model Patient {
   createdAt DateTime  @default(now())
 
   appointments Appointment[]
+  payments     Payment[]
 }
 
 model Appointment {
@@ -341,6 +346,88 @@ model Appointment {
   reminderStatus     ReminderStatus    @default(PENDING)
   confirmationCode   String?           @default(cuid())
   patientConfirmed   Boolean           @default(false)
+
+  payments           Payment[]
+}
+
+// ─── Reportes: catálogo de servicios, pagos y egresos ──────────────────────
+model Service {
+  id           String          @id @default(cuid())
+  clinicId     String
+  clinic       Clinic          @relation(fields: [clinicId], references: [id])
+  name         String
+  category     DentalTreatment @default(OTRO)
+  defaultPrice Float
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+
+  payments     Payment[]
+
+  @@unique([clinicId, name])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  clinicId        String
+  clinic          Clinic        @relation(fields: [clinicId], references: [id])
+  patientId       String
+  patient         Patient       @relation(fields: [patientId], references: [id])
+  appointmentId   String?
+  appointment     Appointment?  @relation(fields: [appointmentId], references: [id])
+  serviceId       String?
+  service         Service?      @relation(fields: [serviceId], references: [id])
+  doctorId        String
+  doctor          User          @relation("DoctorPayments", fields: [doctorId], references: [id])
+
+  amount          Float
+  paymentMethod   PaymentMethod
+  receiptType     ReceiptType   @default(RECIBO)
+  discount1       Float?
+  discount2       Float?
+  commissionPct   Float?
+  commissionValue Float?
+  comment         String?
+
+  paidAt          DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+
+  @@index([clinicId, paidAt])
+  @@index([clinicId, doctorId])
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  clinicId    String
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
+  category    ExpenseCategory
+  description String
+  amount      Float
+  expenseDate DateTime
+  createdAt   DateTime        @default(now())
+
+  @@index([clinicId, expenseDate])
+}
+
+enum PaymentMethod {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+  OTRO
+}
+
+enum ReceiptType {
+  RECIBO
+  FACTURA
+}
+
+enum ExpenseCategory {
+  INSUMOS
+  ARRIENDO
+  NOMINA
+  SERVICIOS_BASICOS
+  MARKETING
+  EQUIPAMIENTO
+  OTRO
 }
 
 // ─── Enums existentes ──────────────────────────────────────────────────────────

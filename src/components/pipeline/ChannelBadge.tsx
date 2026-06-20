@@ -1,7 +1,7 @@
 import { MessageCircle, Camera, Globe, Search, Users, Music, HelpCircle } from 'lucide-react'
 import type { MarketingChannel } from '@prisma/client'
 
-const CHANNEL_CONFIG: Record<MarketingChannel, {
+export const CHANNEL_CONFIG: Record<MarketingChannel, {
   label:     string
   dot:       string
   textColor: string
