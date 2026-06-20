@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { CreateButton } from "./CreateButton";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard":  "Dashboard",
@@ -21,9 +22,11 @@ interface HeaderProps {
   clinicName: string;
   userName:   string;
   plan:       string;
+  onCreateAppointment: () => void;
+  onCreatePatient: () => void;
 }
 
-export function Header({ clinicName, userName }: HeaderProps) {
+export function Header({ clinicName, userName, onCreateAppointment, onCreatePatient }: HeaderProps) {
   const pathname = usePathname();
   const initials = userName
     .split(" ")
@@ -50,6 +53,8 @@ export function Header({ clinicName, userName }: HeaderProps) {
 
       {/* Right actions */}
       <div className="flex items-center gap-1.5">
+        <CreateButton onCreateAppointment={onCreateAppointment} onCreatePatient={onCreatePatient} />
+
         <button
           aria-label="Buscar"
           className="w-7 h-7 flex items-center justify-center rounded-[7px] bg-inset text-ink-tertiary hover:text-ink-secondary transition-ui"
