@@ -5,14 +5,16 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import {
   LayoutDashboard, Building2, Users, CreditCard,
-  LogOut, ShieldCheck, Radio,
+  LogOut, ShieldCheck, Radio, ScrollText,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 const NAV = [
-  { href: "/super-admin",          label: "Overview",  icon: LayoutDashboard, exact: true  },
-  { href: "/super-admin/clinics",  label: "Clínicas",  icon: Building2,       exact: false },
+  { href: "/super-admin",          label: "Overview",   icon: LayoutDashboard, exact: true  },
+  { href: "/super-admin/clinics",  label: "Clínicas",   icon: Building2,       exact: false },
+  { href: "/super-admin/users",    label: "Usuarios",   icon: Users,           exact: false },
+  { href: "/super-admin/audit",    label: "Auditoría",  icon: ScrollText,      exact: false },
 ]
 
 export function PlatformShell({ children, adminName }: { children: React.ReactNode; adminName: string }) {

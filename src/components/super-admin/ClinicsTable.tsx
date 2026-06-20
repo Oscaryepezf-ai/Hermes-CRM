@@ -20,6 +20,7 @@ type Clinic = {
   plan: string
   country: string
   createdAt: Date
+  suspendedAt: Date | null
   captadorActive: boolean
   messengerActive: boolean
   instagramActive: boolean
@@ -55,13 +56,21 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
         <h2 className="text-[16px] font-bold text-ink-primary">
           Clínicas <span className="text-ink-tertiary font-normal text-[14px]">({filtered.length})</span>
         </h2>
-        <input
-          type="search"
-          placeholder="Buscar clínica..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-48 text-[12px] border border-line-soft rounded-[8px] px-3 py-1.5 bg-surface text-ink-primary placeholder:text-ink-disabled focus:outline-none focus:border-brand-400"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="search"
+            placeholder="Buscar clínica..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-48 text-[12px] border border-line-soft rounded-[8px] px-3 py-1.5 bg-surface text-ink-primary placeholder:text-ink-disabled focus:outline-none focus:border-brand-400"
+          />
+          <Link
+            href="/super-admin/clinics/new"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-[8px] bg-brand-600 text-white hover:bg-brand-700 transition-colors whitespace-nowrap"
+          >
+            + Nueva clínica
+          </Link>
+        </div>
       </div>
 
       <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
@@ -94,7 +103,14 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
                   <Building2 className="w-3.5 h-3.5 text-brand-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-[550] text-ink-primary truncate">{clinic.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[13px] font-[550] text-ink-primary truncate">{clinic.name}</p>
+                    {clinic.suspendedAt && (
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-[4px] bg-red-50 text-red-600 flex-shrink-0">
+                        Suspendida
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-[11px] text-ink-tertiary">{clinic.country}</span>
                     {clinic.captadorActive && <Bot className="w-3 h-3 text-violet-400" />}

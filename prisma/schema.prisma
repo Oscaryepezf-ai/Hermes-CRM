@@ -42,6 +42,10 @@ model Clinic {
   rewardClaimed       Boolean       @default(false)
   rewardClaimedAt     DateTime?
 
+  // ─── Super Admin: suspensión de la clínica completa ──
+  suspendedAt     DateTime?
+  suspendedReason String?
+
   users                 User[]
   leads                 Lead[]
   patients              Patient[]
@@ -112,6 +116,33 @@ model User {
   orthodonticVisits           OrthodonticVisit[]    @relation("OrthoDoctorVisits")
   prescriptions               Prescription[]        @relation("DoctorPrescriptions")
   uploadedFiles                PatientFile[]        @relation("UploadedFiles")
+  superAdminActions            SuperAdminAuditLog[] @relation("SuperAdminActions")
+}
+
+model SuperAdminAuditLog {
+  id          String           @id @default(cuid())
+  adminUserId String
+  adminUser   User             @relation("SuperAdminActions", fields: [adminUserId], references: [id])
+  action      SuperAdminAction
+  targetType  String
+  targetId    String
+  targetLabel String
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+
+  @@index([adminUserId, createdAt])
+  @@index([targetType, targetId])
+}
+
+enum SuperAdminAction {
+  CLINIC_CREATED
+  CLINIC_PLAN_CHANGED
+  CLINIC_SUSPENDED
+  CLINIC_REACTIVATED
+  USER_ROLE_CHANGED
+  USER_PASSWORD_RESET
+  USER_ACTIVATED
+  USER_DEACTIVATED
 }
 
 model GoogleCalendarToken {

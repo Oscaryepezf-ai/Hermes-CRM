@@ -11,7 +11,10 @@ import {
 import { formatDistanceToNow, format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
-import { toggleUserActive, updateClinicPlan } from "@/lib/actions/super-admin"
+import {
+  toggleUserActive, updateClinicPlan, changeUserRole,
+  resetUserPassword, suspendClinic, reactivateClinic,
+} from "@/lib/actions/super-admin"
 import { toast } from "sonner"
 
 const PLAN_CONFIG: Record<string, { label: string; bg: string; text: string; price: number }> = {
@@ -31,6 +34,11 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
   const router = useRouter()
   const [togglingId, setTogglingId]   = useState<string | null>(null)
   const [updatingPlan, setUpdatingPlan] = useState(false)
+  const [changingRoleId, setChangingRoleId] = useState<string | null>(null)
+  const [resettingId, setResettingId] = useState<string | null>(null)
+  const [suspending, setSuspending] = useState(false)
+  const [suspendReason, setSuspendReason] = useState("")
+  const [showSuspendForm, setShowSuspendForm] = useState(false)
   const planCfg = PLAN_CONFIG[clinic.plan] ?? PLAN_CONFIG.STARTER
 
   const handleToggleUser = async (userId: string, currentActive: boolean) => {
@@ -55,6 +63,55 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
       toast.error("Error al actualizar plan")
     }
     setUpdatingPlan(false)
+  }
+
+  const handleRoleChange = async (userId: string, newRole: "ADMIN" | "DOCTOR" | "RECEPTIONIST") => {
+    setChangingRoleId(userId)
+    const res = await changeUserRole(userId, newRole)
+    if (res.success) {
+      toast.success("Rol actualizado")
+      router.refresh()
+    } else {
+      toast.error("Error al cambiar el rol")
+    }
+    setChangingRoleId(null)
+  }
+
+  const handleResetPassword = async (userId: string) => {
+    setResettingId(userId)
+    const res = await resetUserPassword(userId)
+    if (res.success) {
+      navigator.clipboard.writeText(res.tempPassword).catch(() => {})
+      toast.success(`Contraseña temporal: ${res.tempPassword} (copiada al portapapeles)`, { duration: 10000 })
+    } else {
+      toast.error("Error al resetear contraseña")
+    }
+    setResettingId(null)
+  }
+
+  const handleSuspendClinic = async () => {
+    setSuspending(true)
+    const res = await suspendClinic(clinic.id, suspendReason || "Sin motivo especificado")
+    if (res.success) {
+      toast.success("Clínica suspendida")
+      setShowSuspendForm(false)
+      router.refresh()
+    } else {
+      toast.error("Error al suspender")
+    }
+    setSuspending(false)
+  }
+
+  const handleReactivateClinic = async () => {
+    setSuspending(true)
+    const res = await reactivateClinic(clinic.id)
+    if (res.success) {
+      toast.success("Clínica reactivada")
+      router.refresh()
+    } else {
+      toast.error("Error al reactivar")
+    }
+    setSuspending(false)
   }
 
   return (
@@ -109,6 +166,44 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
               })}
             </div>
           </div>
+
+          {/* Suspend / reactivate */}
+          <div className="flex-shrink-0 space-y-1.5">
+            <p className="text-[11px] text-ink-tertiary font-medium uppercase tracking-[0.04em]">Estado</p>
+            {clinic.suspendedAt ? (
+              <button
+                onClick={handleReactivateClinic}
+                disabled={suspending}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-[6px] border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                Reactivar clínica
+              </button>
+            ) : showSuspendForm ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  autoFocus
+                  placeholder="Motivo..."
+                  value={suspendReason}
+                  onChange={(e) => setSuspendReason(e.target.value)}
+                  className="w-32 h-7 px-2 text-[11px] border border-line-soft rounded-[6px] bg-surface focus:outline-none focus:border-brand-400"
+                />
+                <button
+                  onClick={handleSuspendClinic}
+                  disabled={suspending}
+                  className="text-[11px] font-medium px-2 py-1 rounded-[6px] bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  Confirmar
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowSuspendForm(true)}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-[6px] border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+              >
+                Suspender clínica
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stats row */}
@@ -146,7 +241,7 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
 
         <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
           {/* Header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_80px] px-4 py-2.5 border-b border-line-subtle bg-inset">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_180px] px-4 py-2.5 border-b border-line-subtle bg-inset">
             {["Usuario", "Rol", "Estado", "Última conexión", ""].map(h => (
               <p key={h} className="text-[11px] font-medium text-ink-tertiary uppercase tracking-[0.04em]">{h}</p>
             ))}
@@ -154,14 +249,15 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
 
           {clinic.users.map((user: any, i: number) => {
             const roleCfg = ROLE_LABELS[user.role] ?? ROLE_LABELS.RECEPTIONIST
-            const RoleIcon = roleCfg.icon
             const isToggling = togglingId === user.id
+            const isChangingRole = changingRoleId === user.id
+            const isResetting = resettingId === user.id
 
             return (
               <div
                 key={user.id}
                 className={cn(
-                  "grid grid-cols-[2fr_1fr_1fr_1fr_80px] px-4 py-3 items-center",
+                  "grid grid-cols-[2fr_1fr_1fr_1fr_180px] px-4 py-3 items-center",
                   i < clinic.users.length - 1 && "border-b border-line-subtle",
                   !user.isActive && "opacity-50"
                 )}
@@ -181,10 +277,16 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
                 </div>
 
                 {/* Role */}
-                <span className={cn("inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-[4px] w-fit", roleCfg.color)}>
-                  <RoleIcon className="w-2.5 h-2.5" />
-                  {roleCfg.label}
-                </span>
+                <select
+                  value={user.role}
+                  disabled={isChangingRole}
+                  onChange={(e) => handleRoleChange(user.id, e.target.value as "ADMIN" | "DOCTOR" | "RECEPTIONIST")}
+                  className={cn("text-[11px] font-medium px-2 py-0.5 rounded-[4px] w-fit border-none focus:outline-none focus:ring-1 focus:ring-brand-400", roleCfg.color)}
+                >
+                  <option value="ADMIN">Admin</option>
+                  <option value="DOCTOR">Doctor</option>
+                  <option value="RECEPTIONIST">Recepcionista</option>
+                </select>
 
                 {/* Status */}
                 <div className="flex items-center gap-1.5">
@@ -204,19 +306,29 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
                   </span>
                 </div>
 
-                {/* Toggle */}
-                <button
-                  onClick={() => handleToggleUser(user.id, user.isActive)}
-                  disabled={isToggling}
-                  className={cn(
-                    "text-[11px] font-medium px-2.5 py-1 rounded-[6px] border transition-ui",
-                    user.isActive
-                      ? "border-red-200 text-red-600 hover:bg-red-50"
-                      : "border-green-200 text-green-600 hover:bg-green-50"
-                  )}
-                >
-                  {isToggling ? "..." : user.isActive ? "Desactivar" : "Activar"}
-                </button>
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 justify-end">
+                  <button
+                    onClick={() => handleResetPassword(user.id)}
+                    disabled={isResetting}
+                    title="Resetear contraseña"
+                    className="text-[11px] font-medium px-2 py-1 rounded-[6px] border border-line-soft text-ink-secondary hover:bg-inset transition-colors disabled:opacity-50"
+                  >
+                    {isResetting ? "..." : "🔑"}
+                  </button>
+                  <button
+                    onClick={() => handleToggleUser(user.id, user.isActive)}
+                    disabled={isToggling}
+                    className={cn(
+                      "text-[11px] font-medium px-2.5 py-1 rounded-[6px] border transition-ui",
+                      user.isActive
+                        ? "border-red-200 text-red-600 hover:bg-red-50"
+                        : "border-green-200 text-green-600 hover:bg-green-50"
+                    )}
+                  >
+                    {isToggling ? "..." : user.isActive ? "Desactivar" : "Activar"}
+                  </button>
+                </div>
               </div>
             )
           })}
