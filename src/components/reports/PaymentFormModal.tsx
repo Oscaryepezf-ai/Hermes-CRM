@@ -98,7 +98,9 @@ export function PaymentFormModal({ onClose }: { onClose: () => void }) {
             <select className="input" value={form.patientId} onChange={(e) => setForm((f) => ({ ...f, patientId: e.target.value }))}>
               <option value="">Seleccionar paciente…</option>
               {patients.map((p) => (
-                <option key={p.id} value={p.id}>{p.fullName}</option>
+                <option key={p.id} value={p.id}>
+                  {p.fullName}{p.kind === "lead" ? " (lead, aún no es paciente)" : ""}
+                </option>
               ))}
             </select>
           </Field>
