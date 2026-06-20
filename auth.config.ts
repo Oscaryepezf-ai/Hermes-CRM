@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import type { UserRole } from "@prisma/client";
 
 // Route → module key — used for role-based access in middleware
 const ROUTE_MODULE_MAP: Record<string, string> = {
@@ -27,6 +28,17 @@ export const authConfig: NextAuthConfig = {
     error: "/login",
   },
   callbacks: {
+    session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string;
+        session.user.clinicId = token.clinicId as string;
+        session.user.role = token.role as UserRole;
+        session.user.avatarUrl = token.avatarUrl as string | null;
+        (session.user as any).isActive = (token.isActive as boolean) ?? true;
+        (session.user as any).isSuperAdmin = (token.isSuperAdmin as boolean) ?? false;
+      }
+      return session;
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;

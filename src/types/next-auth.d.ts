@@ -9,6 +9,7 @@ declare module 'next-auth' {
       role: UserRole
       clinicId: string
       isActive: boolean
+      isSuperAdmin: boolean
       avatarUrl?: string | null
     }
   }
@@ -20,6 +21,7 @@ declare module 'next-auth/jwt' {
     role: UserRole
     clinicId: string
     isActive: boolean
+    isSuperAdmin: boolean
     avatarUrl?: string | null
   }
 }

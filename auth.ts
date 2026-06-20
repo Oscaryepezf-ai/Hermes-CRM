@@ -70,17 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return token;
     },
-    session({ session, token }) {
-      if (token) {
-        session.user.id        = token.id as string;
-        session.user.clinicId  = token.clinicId as string;
-        session.user.role      = token.role as any;
-        session.user.avatarUrl = token.avatarUrl as string | null;
-        (session.user as any).isActive     = (token.isActive     as boolean) ?? true;
-        (session.user as any).isSuperAdmin = (token.isSuperAdmin as boolean) ?? false;
-      }
-      return session;
-    },
+    session: authConfig.callbacks!.session,
     authorized: authConfig.callbacks!.authorized,
   },
   pages: {
