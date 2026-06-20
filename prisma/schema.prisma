@@ -54,6 +54,7 @@ model Clinic {
   inboxConversations    InboxConversation[]
   inboxLabels           InboxLabel[]
   clinicalVisits        ClinicalVisit[]
+  orthodonticVisits     OrthodonticVisit[]
   activationMissions    ActivationMission[]
 }
 
@@ -106,6 +107,7 @@ model User {
   journeyEvents               JourneyEvent[]
   assignedInboxConversations  InboxConversation[]   @relation("AssignedInboxConversations")
   clinicalVisits              ClinicalVisit[]       @relation("DoctorVisits")
+  orthodonticVisits           OrthodonticVisit[]    @relation("OrthoDoctorVisits")
 }
 
 model GoogleCalendarToken {
@@ -189,6 +191,8 @@ model Lead {
   messages              Message[]
   clinicalHistory       ClinicalHistory?
   clinicalVisits        ClinicalVisit[]
+  orthodonticHistory    OrthodonticHistory?
+  orthodonticVisits     OrthodonticVisit[]
   journeyEvents         JourneyEvent[]
   socialProfiles        SocialProfile[]
   agentConversation     AgentConversation?
@@ -653,6 +657,103 @@ model ClinicalVisit {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([leadId, visitDate])
+  @@index([clinicId, visitDate])
+}
+
+// ─── Historia clínica de ortodoncia ───────────────────────────────────────────
+
+model OrthodonticHistory {
+  id     String @id @default(cuid())
+  leadId String @unique
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  // Motivo de consulta y antecedentes
+  chiefComplaint      String? @db.Text
+  priorOrthoTreatment String? @db.Text
+
+  // Análisis facial (extraoral)
+  facialType      String?
+  facialSymmetry  String?
+  profileType     String?
+  lipCompetence   String?
+  nasolabialAngle String?
+  facialNotes     String? @db.Text
+
+  // Análisis funcional
+  breathingType   String?
+  swallowingType  String?
+  habits          String[]
+  tmjFindings     String? @db.Text
+  functionalNotes String? @db.Text
+
+  // Análisis dental y oclusal (intraoral)
+  angleClassRight       String?
+  angleClassLeft        String?
+  molarRelationRight    String?
+  molarRelationLeft     String?
+  canineRelationRight   String?
+  canineRelationLeft    String?
+  overjetMm             Float?
+  overbiteMm            Float?
+  upperMidlineDeviation String?
+  lowerMidlineDeviation String?
+  crowdingUpperMm       Float?
+  crowdingLowerMm       Float?
+  spacingUpperMm        Float?
+  spacingLowerMm        Float?
+  crossbite             String[]
+  openBite              Boolean? @default(false)
+  curveOfSpee           String?
+  missingTeeth          String? @db.Text
+  impactedTeeth         String? @db.Text
+  occlusalNotes         String? @db.Text
+
+  // Análisis cefalométrico
+  snaAngle           Float?
+  snbAngle           Float?
+  anbAngle           Float?
+  fmaAngle           Float?
+  skeletalClass      String?
+  cephalometricNotes String? @db.Text
+
+  // Diagnóstico ortodóntico
+  skeletalDiagnosis   String? @db.Text
+  dentalDiagnosis     String? @db.Text
+  functionalDiagnosis String? @db.Text
+
+  // Plan de tratamiento
+  treatmentPhase          String?
+  applianceType           String?
+  extractionsPlanned      String? @db.Text
+  treatmentObjectives     String? @db.Text
+  estimatedDurationMonths Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrthodonticVisit {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId  String
+  doctor    User     @relation("OrthoDoctorVisits", fields: [doctorId], references: [id])
+  visitDate DateTime @default(now())
+
+  upperArchwire   String?
+  lowerArchwire   String?
+  elastics        String?
+  proceduresDone  String?   @db.Text
+  oralHygiene     String?
+  observations    String?   @db.Text
+  nextAppointment DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([leadId, visitDate])
   @@index([clinicId, visitDate])

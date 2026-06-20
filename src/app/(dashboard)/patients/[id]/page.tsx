@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "../../../../../auth";
 import { db } from "@/lib/db";
 import { getClinicalHistory } from "@/lib/actions/clinical";
+import { getOrthodonticHistory, getOrthodonticVisitsByLead } from "@/lib/actions/orthodontics";
 import { Patient360View } from "@/components/patients/Patient360View";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +21,10 @@ export default async function Patient360Page({
 
   const canViewClinico = session.user.role === "ADMIN" || session.user.role === "DOCTOR";
 
-  const [clinicalRes, patient] = await Promise.all([
+  const [clinicalRes, orthoHistoryRes, orthoVisitsRes, patient] = await Promise.all([
     canViewClinico ? getClinicalHistory(id) : Promise.resolve(null),
+    canViewClinico ? getOrthodonticHistory(id) : Promise.resolve(null),
+    canViewClinico ? getOrthodonticVisitsByLead(id) : Promise.resolve(null),
     lead.patientId
       ? db.patient.findUnique({
           where: { id: lead.patientId },
@@ -61,6 +64,8 @@ export default async function Patient360Page({
         additionalInfo: lead.additionalInfo,
       }}
       clinicalHistory={clinicalRes?.success ? clinicalRes.data : null}
+      orthodonticHistory={orthoHistoryRes?.success ? orthoHistoryRes.data : null}
+      orthodonticVisits={orthoVisitsRes?.success ? orthoVisitsRes.data : []}
       patient={patient}
       canViewClinico={canViewClinico}
     />

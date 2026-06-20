@@ -13,8 +13,10 @@ import { EstadoCuentaTab } from "./EstadoCuentaTab"
 import { ComingSoonTab } from "./ComingSoonTab"
 import { ClinicalForm } from "@/components/dr-clinic/ClinicalForm"
 import { Odontogram } from "@/components/dr-clinic/Odontogram"
+import { OrthodonticsForm } from "./OrthodonticsForm"
 import type { JourneyState, DocumentType, MarketingChannel, Sex } from "@prisma/client"
 import type { ClinicalHistoryWithLead, OdontogramData } from "@/types/clinical"
+import type { OrthodonticHistoryWithLead, OrthodonticVisitWithDoctor } from "@/types/orthodontics"
 import type { Patient, Appointment, User as DentistUser } from "@prisma/client"
 
 type Tab =
@@ -52,6 +54,8 @@ export type Patient360Lead = {
 interface Patient360ViewProps {
   lead: Patient360Lead
   clinicalHistory: ClinicalHistoryWithLead | null
+  orthodonticHistory: OrthodonticHistoryWithLead | null
+  orthodonticVisits: OrthodonticVisitWithDoctor[]
   patient: PatientWithAppointments | null
   canViewClinico: boolean
 }
@@ -72,7 +76,7 @@ const NAV_ITEMS: { id: Tab; label: string; icon: typeof User; requiresClinico?: 
   { id: "archivos",        label: "Archivos",          icon: TAB_ICONS.archivos },
 ]
 
-export function Patient360View({ lead, clinicalHistory, patient, canViewClinico }: Patient360ViewProps) {
+export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orthodonticVisits, patient, canViewClinico }: Patient360ViewProps) {
   const [tab, setTab] = useState<Tab>("filiacion")
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.requiresClinico || canViewClinico)
@@ -173,7 +177,9 @@ export function Patient360View({ lead, clinicalHistory, patient, canViewClinico 
           )}
 
           {tab === "ortodoncia" && canViewClinico && (
-            <ComingSoonTab title="Ortodoncia" description="El seguimiento de tratamientos de ortodoncia estará disponible próximamente." />
+            orthodonticHistory
+              ? <OrthodonticsForm leadId={lead.id} history={orthodonticHistory} visits={orthodonticVisits} />
+              : <ComingSoonTab title="Ortodoncia" description="No se pudo cargar la historia de ortodoncia." />
           )}
 
           {tab === "cuenta" && <EstadoCuentaTab patient={patient} />}
