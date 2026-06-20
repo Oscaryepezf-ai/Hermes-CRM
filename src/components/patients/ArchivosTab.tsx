@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react"
 import { Loader2, Upload, Trash2, FileText, Image as ImageIcon, File as FileIcon, Download, Paperclip, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { formatDate, cn } from "@/lib/utils"
 import { uploadPatientFile, deletePatientFile } from "@/lib/actions/files"
 import { FILE_CATEGORY_OPTIONS } from "@/types/files"
@@ -31,6 +32,7 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
   const [category, setCategory] = useState("")
   const [notes, setNotes] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewFile, setPreviewFile] = useState<PatientFileWithUploader | null>(null)
   const [isPending, startTransition] = useTransition()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -142,9 +144,21 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
               <div key={f.id}>
                 {idx > 0 && <div className="border-t border-line-subtle mb-3" />}
                 <div className="flex items-start gap-3">
-                  <div className={cn("w-9 h-9 rounded-[10px] bg-inset flex items-center justify-center flex-shrink-0")}>
-                    <FileTypeIcon mimeType={f.mimeType} />
-                  </div>
+                  {f.mimeType?.startsWith("image/") ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewFile(f)}
+                      className="w-9 h-9 rounded-[10px] overflow-hidden flex-shrink-0 border border-line-subtle hover:opacity-80 transition-opacity"
+                      title="Ver vista previa"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={f.fileUrl} alt={f.fileName} className="w-full h-full object-cover" />
+                    </button>
+                  ) : (
+                    <div className="w-9 h-9 rounded-[10px] bg-inset flex items-center justify-center flex-shrink-0">
+                      <FileTypeIcon mimeType={f.mimeType} />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-ink-primary truncate">{f.fileName}</p>
                     <p className="text-[11px] text-ink-tertiary mt-0.5">
@@ -179,6 +193,16 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
           </div>
         )}
       </div>
+
+      {previewFile && (
+        <Dialog open onOpenChange={() => setPreviewFile(null)}>
+          <DialogContent className="max-w-2xl p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={previewFile.fileUrl} alt={previewFile.fileName} className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
+            <p className="text-[12px] text-ink-tertiary text-center pb-1">{previewFile.fileName}</p>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }
