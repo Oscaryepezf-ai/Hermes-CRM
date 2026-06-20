@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useTransition } from "react"
-import { Loader2, Upload, Trash2, FileText, Image as ImageIcon, File as FileIcon, Download } from "lucide-react"
+import { Loader2, Upload, Trash2, FileText, Image as ImageIcon, File as FileIcon, Download, Paperclip, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { formatDate, cn } from "@/lib/utils"
@@ -84,8 +84,28 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
               ref={fileInputRef}
               type="file"
               onChange={handleFileSelected}
-              className="w-full text-[13px] text-ink-secondary file:mr-3 file:h-9 file:rounded-lg file:border file:border-line-subtle file:bg-inset file:px-3 file:text-[12px] file:font-medium file:text-ink-primary file:cursor-pointer"
+              className="hidden"
             />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-9 rounded-lg border border-dashed border-line-subtle bg-inset px-3 text-[13px] text-ink-secondary flex items-center gap-2 hover:bg-brand-50 hover:border-brand-200 hover:text-brand-600 transition-colors"
+            >
+              <Paperclip className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="flex-1 text-left truncate">
+                {selectedFile ? selectedFile.name : "Seleccionar archivo de tu computadora..."}
+              </span>
+              {selectedFile && (
+                <X
+                  className="w-3.5 h-3.5 flex-shrink-0 text-ink-tertiary hover:text-ink-primary"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedFile(null)
+                    if (fileInputRef.current) fileInputRef.current.value = ""
+                  }}
+                />
+              )}
+            </button>
           </div>
           <select
             className="h-9 rounded-lg border border-line-subtle bg-transparent px-2.5 text-[13px] text-ink-primary outline-none"
