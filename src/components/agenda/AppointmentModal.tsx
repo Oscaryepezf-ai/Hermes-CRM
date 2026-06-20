@@ -11,6 +11,7 @@ import {
   createAppointmentFromCalendar,
   updateAppointmentStatusFromCalendar,
 } from "@/lib/actions/agenda"
+import { PROCEDURE_OPTIONS, getEventColors } from "@/lib/agenda/colors"
 
 type Patient = { id: string; fullName: string; phone: string; kind?: "patient" | "lead" }
 type Dentist = { id: string; name: string }
@@ -21,6 +22,12 @@ interface Props {
   end?: string
   event?: CalendarEvent
   onClose: () => void
+  // When provided, called with a locally-built event right after a successful
+  // create, so the calendar can show it immediately instead of waiting on a
+  // full refetch round-trip.
+  onCreated?: (event: CalendarEvent) => void
+  // Same idea for status changes on an existing event (confirm/cancel/etc).
+  onStatusChanged?: (id: string, status: string) => void
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -39,20 +46,7 @@ const STATUS_COLORS: Record<string, string> = {
   NO_SHOW: "bg-amber-100 text-amber-700",
 }
 
-const PROCEDURE_OPTIONS = [
-  "Ortodoncia",
-  "Implantes",
-  "Blanqueamiento",
-  "Endodoncia",
-  "Limpieza",
-  "Cirugía oral",
-  "Prótesis",
-  "Consulta general",
-  "Control",
-  "Otro",
-]
-
-export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
+export function AppointmentModal({ mode, start, end, event, onClose, onCreated, onStatusChanged }: Props) {
   const router = useRouter()
   const [patients, setPatients] = useState<Patient[]>([])
   const [dentists, setDentists] = useState<Dentist[]>([])
@@ -94,8 +88,40 @@ export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
       notes: form.notes || undefined,
     })
     setLoading(false)
-    if (result.success) {
+    if (result.success && result.data) {
       toast.success("Cita agendada correctamente")
+
+      if (onCreated) {
+        const selectedPatient = patients.find((p) => p.id === form.patientId)
+        const selectedDentist = dentists.find((d) => d.id === form.dentistId)
+        const start = new Date(form.scheduledAt)
+        const end = new Date(start.getTime() + 60 * 60 * 1000)
+        const colors = getEventColors(form.procedure, form.dentistId)
+
+        onCreated({
+          id: result.data.id,
+          title: `${selectedPatient?.fullName ?? ""} — ${form.procedure}`,
+          start: start.toISOString(),
+          end: end.toISOString(),
+          backgroundColor: colors.backgroundColor,
+          borderColor: colors.borderColor,
+          textColor: colors.textColor,
+          extendedProps: {
+            patientId: form.patientId,
+            patientName: selectedPatient?.fullName ?? "",
+            patientPhone: selectedPatient?.phone ?? "",
+            procedure: form.procedure,
+            dentistId: form.dentistId,
+            dentistName: selectedDentist?.name ?? "",
+            status: "SCHEDULED",
+            value: form.value ? parseFloat(form.value) : undefined,
+            notes: form.notes || undefined,
+            reminderStatus: "PENDING",
+            patientConfirmed: false,
+          },
+        })
+      }
+
       if (result.missionJustCompleted) {
         toast.success("¡Misión completada! Revisa tu checklist de activación")
         router.push("/dashboard")
@@ -114,6 +140,7 @@ export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
     setLoading(false)
     if (result.success) {
       toast.success("Estado actualizado")
+      onStatusChanged?.(event.id, status)
       onClose()
     } else {
       toast.error("Error al actualizar")

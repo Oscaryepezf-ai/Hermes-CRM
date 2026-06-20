@@ -6,7 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import timeGridPlugin from "@fullcalendar/timegrid"
 import listPlugin from "@fullcalendar/list"
 import interactionPlugin from "@fullcalendar/interaction"
-import type { DateSelectArg, EventClickArg, EventInput } from "@fullcalendar/core"
+import type { DateSelectArg, EventClickArg, EventInput, EventContentArg } from "@fullcalendar/core"
 import esLocale from "@fullcalendar/core/locales/es"
 import { getCalendarEvents } from "@/lib/actions/agenda"
 import type { CalendarEvent } from "@/lib/actions/agenda"
@@ -61,7 +61,25 @@ export function AgendaCalendar() {
 
   const handleModalClose = () => {
     setModal(null)
-    calendarRef.current?.getApi().refetchEvents()
+  }
+
+  // Shows the just-created appointment immediately, without waiting on a
+  // full refetchEvents() round-trip to the server.
+  const handleAppointmentCreated = (event: CalendarEvent) => {
+    calendarRef.current?.getApi().addEvent(event)
+    setModal(null)
+  }
+
+  const handleStatusChanged = (id: string, status: string) => {
+    calendarRef.current?.getApi().getEventById(id)?.setExtendedProp("status", status)
+  }
+
+  const eventClassNames = (arg: EventContentArg) => {
+    const base = ["rounded-md", "text-xs", "font-medium", "cursor-pointer"]
+    const status = arg.event.extendedProps.status as string
+    if (status === "CANCELLED") return [...base, "opacity-50", "line-through"]
+    if (status === "NO_SHOW") return [...base, "opacity-60"]
+    return base
   }
 
   return (
@@ -95,7 +113,7 @@ export function AgendaCalendar() {
           events={fetchEvents}
           select={handleSelect}
           eventClick={handleEventClick}
-          eventClassNames="rounded-md text-xs font-medium cursor-pointer"
+          eventClassNames={eventClassNames}
         />
       </div>
 
@@ -106,6 +124,8 @@ export function AgendaCalendar() {
           end={modal.mode === "create" ? modal.end : undefined}
           event={modal.mode === "view" ? modal.event : undefined}
           onClose={handleModalClose}
+          onCreated={handleAppointmentCreated}
+          onStatusChanged={handleStatusChanged}
         />
       )}
     </>

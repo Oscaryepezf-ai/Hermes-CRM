@@ -4,19 +4,7 @@ import { useState, useEffect } from "react"
 import { CalendarCheck, X } from "lucide-react"
 import { toast } from "sonner"
 import { scheduleLeadAppointment } from "@/lib/actions/agenda"
-
-const PROCEDURE_OPTIONS = [
-  "Consulta de valoración",
-  "Ortodoncia",
-  "Implantes",
-  "Blanqueamiento",
-  "Endodoncia",
-  "Limpieza",
-  "Cirugía oral",
-  "Prótesis",
-  "Control",
-  "Otro",
-]
+import { PROCEDURE_OPTIONS } from "@/lib/agenda/colors"
 
 type Dentist = { id: string; name: string }
 

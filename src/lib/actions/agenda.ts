@@ -11,6 +11,7 @@ import {
   appointmentCancelledNotification,
 } from "@/lib/push/notification-templates"
 import { completeMission } from "@/lib/onboarding/activation-checklist"
+import { getEventColors } from "@/lib/agenda/colors"
 
 export type CalendarEvent = {
   id: string
@@ -25,6 +26,7 @@ export type CalendarEvent = {
     patientName: string
     patientPhone: string
     procedure: string
+    dentistId: string
     dentistName: string
     status: string
     value?: number
@@ -32,14 +34,6 @@ export type CalendarEvent = {
     reminderStatus: string
     patientConfirmed: boolean
   }
-}
-
-const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  SCHEDULED: { bg: '#EFF6FF', border: '#4A90E2', text: '#1D4ED8' },
-  CONFIRMED: { bg: '#D1FAE5', border: '#10B981', text: '#065F46' },
-  COMPLETED: { bg: '#F3F4F6', border: '#9CA3AF', text: '#4B5563' },
-  CANCELLED: { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B' },
-  NO_SHOW: { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E' },
 }
 
 export async function getCalendarEvents(params: {
@@ -65,7 +59,7 @@ export async function getCalendarEvents(params: {
   })
 
   const events: CalendarEvent[] = appointments.map((appt) => {
-    const colors = STATUS_COLORS[appt.status] ?? STATUS_COLORS.SCHEDULED
+    const colors = getEventColors(appt.procedure, appt.dentistId)
     const endTime = new Date(appt.scheduledAt.getTime() + 60 * 60 * 1000)
 
     return {
@@ -73,14 +67,15 @@ export async function getCalendarEvents(params: {
       title: `${appt.patient.fullName} — ${appt.procedure}`,
       start: appt.scheduledAt.toISOString(),
       end: endTime.toISOString(),
-      backgroundColor: colors.bg,
-      borderColor: colors.border,
-      textColor: colors.text,
+      backgroundColor: colors.backgroundColor,
+      borderColor: colors.borderColor,
+      textColor: colors.textColor,
       extendedProps: {
         patientId: appt.patient.id,
         patientName: appt.patient.fullName,
         patientPhone: appt.patient.phone,
         procedure: appt.procedure,
+        dentistId: appt.dentistId,
         dentistName: appt.dentist.name,
         status: appt.status,
         value: appt.value ?? undefined,
