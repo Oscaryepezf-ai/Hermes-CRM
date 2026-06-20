@@ -114,14 +114,47 @@ export async function createAppointmentFromCalendar(
   const parsed = CreateSchema.safeParse(data)
   if (!parsed.success) return { success: false, error: 'Datos inválidos' }
 
-  const patient = await db.patient.findUniqueOrThrow({
+  // `data.patientId` may reference either an existing Patient, or a Lead
+  // that hasn't been converted to a Patient yet (e.g. selected from the
+  // global "Agendar cita" quick-create button). Resolve/upsert accordingly.
+  let patientId = data.patientId
+  let patient = await db.patient.findUnique({
     where: { id: data.patientId },
-    select: { fullName: true },
+    select: { id: true, fullName: true },
   })
+
+  if (!patient) {
+    const lead = await db.lead.findUnique({
+      where: { id: data.patientId },
+      select: { id: true, fullName: true, phone: true, email: true, clinicId: true },
+    })
+    if (!lead || lead.clinicId !== session.user.clinicId) {
+      return { success: false, error: 'Paciente no encontrado' }
+    }
+
+    patient = await db.patient.findFirst({
+      where: { phone: lead.phone, clinicId: session.user.clinicId },
+      select: { id: true, fullName: true },
+    })
+    if (!patient) {
+      patient = await db.patient.create({
+        data: {
+          fullName: lead.fullName,
+          phone: lead.phone,
+          email: lead.email,
+          clinicId: session.user.clinicId,
+        },
+        select: { id: true, fullName: true },
+      })
+    }
+
+    await db.lead.update({ where: { id: lead.id }, data: { patientId: patient.id } })
+    patientId = patient.id
+  }
 
   const appointment = await db.appointment.create({
     data: {
-      patientId: data.patientId,
+      patientId,
       clinicId: session.user.clinicId,
       dentistId: data.dentistId,
       procedure: data.procedure,

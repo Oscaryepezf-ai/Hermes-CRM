@@ -8,9 +8,14 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const [patients, dentists] = await Promise.all([
+  const [patients, leadsWithoutPatient, dentists] = await Promise.all([
     db.patient.findMany({
       where: { clinicId: session.user.clinicId },
+      select: { id: true, fullName: true, phone: true },
+      orderBy: { fullName: "asc" },
+    }),
+    db.lead.findMany({
+      where: { clinicId: session.user.clinicId, patientId: null },
       select: { id: true, fullName: true, phone: true },
       orderBy: { fullName: "asc" },
     }),
@@ -24,5 +29,10 @@ export async function GET() {
     }),
   ])
 
-  return NextResponse.json({ patients, dentists })
+  const contacts = [
+    ...patients.map((p) => ({ ...p, kind: "patient" as const })),
+    ...leadsWithoutPatient.map((l) => ({ ...l, kind: "lead" as const })),
+  ].sort((a, b) => a.fullName.localeCompare(b.fullName))
+
+  return NextResponse.json({ patients: contacts, dentists })
 }

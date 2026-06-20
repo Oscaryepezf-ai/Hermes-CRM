@@ -12,7 +12,7 @@ import {
   updateAppointmentStatusFromCalendar,
 } from "@/lib/actions/agenda"
 
-type Patient = { id: string; fullName: string; phone: string }
+type Patient = { id: string; fullName: string; phone: string; kind?: "patient" | "lead" }
 type Dentist = { id: string; name: string }
 
 interface Props {
@@ -151,9 +151,16 @@ export function AppointmentModal({ mode, start, end, event, onClose }: Props) {
                 >
                   <option value="">Seleccionar paciente…</option>
                   {patients.map((p) => (
-                    <option key={p.id} value={p.id}>{p.fullName}</option>
+                    <option key={p.id} value={p.id}>
+                      {p.fullName}{p.kind === "lead" ? " (lead, aún no es paciente)" : ""}
+                    </option>
                   ))}
                 </select>
+                {patients.length === 0 && (
+                  <p className="text-[11px] text-gray-400 pt-0.5">
+                    No hay contactos disponibles. Crea un lead primero desde Pipeline o el botón Crear.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1">
