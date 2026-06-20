@@ -55,25 +55,30 @@ export function PaymentFormModal({ onClose }: { onClose: () => void }) {
       return
     }
     setLoading(true)
-    const result = await registerPayment({
-      patientId: form.patientId,
-      doctorId: form.doctorId,
-      serviceId: form.serviceId || undefined,
-      amount: parseFloat(form.amount),
-      paymentMethod: form.paymentMethod,
-      receiptType: form.receiptType,
-      discount1: form.discount1 ? parseFloat(form.discount1) : undefined,
-      discount2: form.discount2 ? parseFloat(form.discount2) : undefined,
-      commissionPct: form.commissionPct ? parseFloat(form.commissionPct) : undefined,
-      comment: form.comment || undefined,
-    })
-    setLoading(false)
-    if (result.success) {
-      toast.success("Pago registrado")
-      router.refresh()
-      onClose()
-    } else {
-      toast.error(result.error ?? "Error al registrar el pago")
+    try {
+      const result = await registerPayment({
+        patientId: form.patientId,
+        doctorId: form.doctorId,
+        serviceId: form.serviceId || undefined,
+        amount: parseFloat(form.amount),
+        paymentMethod: form.paymentMethod,
+        receiptType: form.receiptType,
+        discount1: form.discount1 ? parseFloat(form.discount1) : undefined,
+        discount2: form.discount2 ? parseFloat(form.discount2) : undefined,
+        commissionPct: form.commissionPct ? parseFloat(form.commissionPct) : undefined,
+        comment: form.comment || undefined,
+      })
+      if (result.success) {
+        toast.success("Pago registrado")
+        router.refresh()
+        onClose()
+      } else {
+        toast.error(result.error ?? "Error al registrar el pago")
+      }
+    } catch {
+      toast.error("Error inesperado al registrar el pago")
+    } finally {
+      setLoading(false)
     }
   }
 

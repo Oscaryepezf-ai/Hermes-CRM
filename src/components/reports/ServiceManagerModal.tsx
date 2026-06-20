@@ -31,18 +31,23 @@ export function ServiceManagerModal({ services, onClose }: { services: Service[]
       return
     }
     setLoading(true)
-    const result = await createService({
-      name: form.name,
-      category: form.category,
-      defaultPrice: parseFloat(form.defaultPrice),
-    })
-    setLoading(false)
-    if (result.success) {
-      toast.success("Servicio agregado")
-      setForm({ name: "", category: "OTRO", defaultPrice: "" })
-      router.refresh()
-    } else {
-      toast.error(result.error ?? "Error al agregar el servicio")
+    try {
+      const result = await createService({
+        name: form.name,
+        category: form.category,
+        defaultPrice: parseFloat(form.defaultPrice),
+      })
+      if (result.success) {
+        toast.success("Servicio agregado")
+        setForm({ name: "", category: "OTRO", defaultPrice: "" })
+        router.refresh()
+      } else {
+        toast.error(result.error ?? "Error al agregar el servicio")
+      }
+    } catch {
+      toast.error("Error inesperado al agregar el servicio")
+    } finally {
+      setLoading(false)
     }
   }
 

@@ -26,6 +26,44 @@ export async function registerPayment(data: z.infer<typeof RegisterPaymentSchema
   const parsed = RegisterPaymentSchema.safeParse(data)
   if (!parsed.success) return { success: false, error: "Datos inválidos" }
 
+  // `patientId` may reference either an existing Patient, or a Lead that
+  // hasn't been converted yet (the payment form lists both) — resolve/upsert
+  // the same way createAppointmentFromCalendar does.
+  let patientId = parsed.data.patientId
+  let patient = await db.patient.findUnique({
+    where: { id: parsed.data.patientId },
+    select: { id: true },
+  })
+
+  if (!patient) {
+    const lead = await db.lead.findUnique({
+      where: { id: parsed.data.patientId },
+      select: { id: true, fullName: true, phone: true, email: true, clinicId: true },
+    })
+    if (!lead || lead.clinicId !== guard.user.clinicId) {
+      return { success: false, error: "Paciente no encontrado" }
+    }
+
+    patient = await db.patient.findFirst({
+      where: { phone: lead.phone, clinicId: guard.user.clinicId },
+      select: { id: true },
+    })
+    if (!patient) {
+      patient = await db.patient.create({
+        data: {
+          fullName: lead.fullName,
+          phone: lead.phone,
+          email: lead.email,
+          clinicId: guard.user.clinicId,
+        },
+        select: { id: true },
+      })
+    }
+
+    await db.lead.update({ where: { id: lead.id }, data: { patientId: patient.id } })
+    patientId = patient.id
+  }
+
   const commissionValue = parsed.data.commissionPct
     ? parsed.data.amount * (parsed.data.commissionPct / 100)
     : null
@@ -33,7 +71,7 @@ export async function registerPayment(data: z.infer<typeof RegisterPaymentSchema
   await db.payment.create({
     data: {
       clinicId: guard.user.clinicId,
-      patientId: parsed.data.patientId,
+      patientId,
       appointmentId: parsed.data.appointmentId,
       serviceId: parsed.data.serviceId,
       doctorId: parsed.data.doctorId,

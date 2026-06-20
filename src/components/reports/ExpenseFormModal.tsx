@@ -33,19 +33,24 @@ export function ExpenseFormModal({ onClose }: { onClose: () => void }) {
       return
     }
     setLoading(true)
-    const result = await registerExpense({
-      category: form.category,
-      description: form.description,
-      amount: parseFloat(form.amount),
-      expenseDate: new Date(form.expenseDate),
-    })
-    setLoading(false)
-    if (result.success) {
-      toast.success("Egreso registrado")
-      router.refresh()
-      onClose()
-    } else {
-      toast.error(result.error ?? "Error al registrar el egreso")
+    try {
+      const result = await registerExpense({
+        category: form.category,
+        description: form.description,
+        amount: parseFloat(form.amount),
+        expenseDate: new Date(form.expenseDate),
+      })
+      if (result.success) {
+        toast.success("Egreso registrado")
+        router.refresh()
+        onClose()
+      } else {
+        toast.error(result.error ?? "Error al registrar el egreso")
+      }
+    } catch {
+      toast.error("Error inesperado al registrar el egreso")
+    } finally {
+      setLoading(false)
     }
   }
 
