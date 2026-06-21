@@ -52,10 +52,10 @@ export async function qualifyMessage(params: {
 
   const consultiveFields = params.consultiveMode
     ? `,
-  "detectedNeed": "necesidad nueva detectada en este mensaje, breve, o null",
-  "newObjection": "objeción/duda nueva planteada en este mensaje, o null",
-  "resolvedObjection": "texto EXACTO de una objeción anterior que este mensaje resuelve, tomado de 'Objeciones sin resolver' abajo, o null",
-  "emotionalState": "una palabra: ansioso|curioso|escéptico|entusiasmado|neutro|frustrado"`
+  "detectedNeed": "<resume en pocas palabras la necesidad real del prospecto, ej. 'mejorar sonrisa para su boda', o null si no hay ninguna nueva>",
+  "newObjection": "<resume en pocas palabras la objeción/duda real que plantea, ej. 'le parece caro', o null si no hay ninguna nueva>",
+  "resolvedObjection": "<copia el texto EXACTO de una de las 'Objeciones sin resolver' abajo si este mensaje la resuelve, o null>",
+  "emotionalState": "ansioso|curioso|escéptico|entusiasmado|neutro|frustrado"`
     : `,
   "detectedNeed": null, "newObjection": null, "resolvedObjection": null, "emotionalState": null`
 
