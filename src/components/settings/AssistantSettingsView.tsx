@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { updateCaptadorSettings } from "@/lib/actions/captador"
+import { KnowledgeBaseUpload, type KnowledgeDoc } from "@/components/hermes-ai/KnowledgeBaseUpload"
 import { toast } from "sonner"
 
 type Config = {
@@ -14,15 +15,17 @@ type Config = {
   tone: "formal" | "amigable"
   specialties: string[]
   knowledgeBase: string
+  mode: "basico" | "consultivo"
 }
 
 interface AssistantSettingsViewProps {
   plan: string
   initialActive: boolean
   initialConfig: Config
+  initialKnowledgeDocuments: KnowledgeDoc[]
 }
 
-export function AssistantSettingsView({ plan, initialActive, initialConfig }: AssistantSettingsViewProps) {
+export function AssistantSettingsView({ plan, initialActive, initialConfig, initialKnowledgeDocuments }: AssistantSettingsViewProps) {
   const [active, setActive] = useState(initialActive)
   const [config, setConfig] = useState(initialConfig)
   const [newSpecialty, setNewSpecialty] = useState("")
@@ -208,25 +211,57 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig }: As
         </div>
       </div>
 
-      {/* Knowledge base */}
+      {/* Modo del agente */}
       <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
         <div>
-          <h3 className="text-[14px] font-bold text-ink-primary">Información de la clínica</h3>
+          <h3 className="text-[14px] font-bold text-ink-primary">Modo del agente</h3>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
-            Precios orientativos, ubicación, políticas, promociones — el Captador usará esta información para
-            responder preguntas frecuentes sin inventar datos.
+            Básico responde rápido con un límite de turnos. Consultivo indaga antes de vender, recuerda toda la
+            conversación y busca respuestas en tu base de conocimiento.
           </p>
         </div>
-        <Textarea
-          value={config.knowledgeBase}
-          onChange={(e) => setConfig({ ...config, knowledgeBase: e.target.value })}
-          rows={8}
-          maxLength={4000}
-          placeholder={`Ej:\n- Ubicación: Av. Amazonas N34-12, Quito\n- Limpieza dental desde $30\n- Aceptamos seguros: Salud S.A., SaludPlan\n- Promoción: 20% de descuento en blanqueamiento durante diciembre`}
-          className="text-[13px]"
-        />
-        <p className="text-[11px] text-ink-tertiary text-right">{config.knowledgeBase.length} / 4000</p>
+        <div className="grid grid-cols-2 gap-2">
+          {(["basico", "consultivo"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setConfig({ ...config, mode: m })}
+              className={cn(
+                "h-9 rounded-lg border text-[13px] font-medium transition-colors",
+                config.mode === m
+                  ? "bg-brand-50 border-brand-300 text-brand-700"
+                  : "border-line-subtle text-ink-secondary hover:bg-inset"
+              )}
+            >
+              {m === "basico" ? "Básico" : "Consultivo"}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Knowledge base */}
+      {config.mode === "consultivo" ? (
+        <KnowledgeBaseUpload initialDocuments={initialKnowledgeDocuments} />
+      ) : (
+        <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+          <div>
+            <h3 className="text-[14px] font-bold text-ink-primary">Información de la clínica</h3>
+            <p className="text-[12px] text-ink-tertiary mt-0.5">
+              Precios orientativos, ubicación, políticas, promociones — el Captador usará esta información para
+              responder preguntas frecuentes sin inventar datos.
+            </p>
+          </div>
+          <Textarea
+            value={config.knowledgeBase}
+            onChange={(e) => setConfig({ ...config, knowledgeBase: e.target.value })}
+            rows={8}
+            maxLength={4000}
+            placeholder={`Ej:\n- Ubicación: Av. Amazonas N34-12, Quito\n- Limpieza dental desde $30\n- Aceptamos seguros: Salud S.A., SaludPlan\n- Promoción: 20% de descuento en blanqueamiento durante diciembre`}
+            className="text-[13px]"
+          />
+          <p className="text-[11px] text-ink-tertiary text-right">{config.knowledgeBase.length} / 4000</p>
+        </div>
+      )}
 
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={isPending}>

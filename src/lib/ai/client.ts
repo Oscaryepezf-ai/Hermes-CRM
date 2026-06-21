@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { AGENT_CONFIG, type AgentConfigKey } from './models'
 import { logAiUsage, calculateCost } from './usage-tracker'
 import { canMakeAiCall } from './guards'
-import type { AiResponse, AiCallOptions, TranscriptionOptions } from './types'
+import type { AiResponse, AiCallOptions, TranscriptionOptions, ImageAnalysisOptions, EmbeddingOptions } from './types'
 
 // ── Singleton — created once, shared across all agents ───
 let _client: OpenAI | null = null
@@ -132,6 +132,112 @@ export async function transcribeAudio(options: TranscriptionOptions): Promise<Ai
       model: 'whisper-1', latencyMs, success: false, errorCode,
     })
     return { success: false, error: readable(errorCode), errorCode: errorCode as import('./types').AiErrorCode, retryable: false }
+  }
+}
+
+// ── Image analysis (vision) — Agente de Ventas Consultivo ─
+export async function analyzeImage(options: ImageAnalysisOptions): Promise<AiResponse<string>> {
+  const config = AGENT_CONFIG.SALES_AGENT_VISION
+  const start  = Date.now()
+
+  const guard = await canMakeAiCall({ clinicId: options.clinicId, promptLength: options.context.length })
+  if (!guard.allowed) {
+    return { success: false, error: guard.reason, errorCode: 'BUDGET_EXCEEDED', retryable: false }
+  }
+
+  try {
+    const res = await getClient().chat.completions.create({
+      model:      config.model,
+      max_tokens: config.maxTokens,
+      messages: [
+        {
+          role: 'system',
+          content: `Analiza esta imagen enviada por un prospecto en una conversación de ventas. ${options.context}
+Describe SOLO lo relevante para entender su necesidad o situación — no describas estética genérica.
+Si es una radiografía o foto dental: describe lo que un asistente (no diagnóstico médico) notaría.
+Si es una captura de pantalla: describe qué información contiene.
+Si es un comprobante de pago: extrae el monto y la fecha si son legibles.
+Máximo 3 oraciones.`,
+        },
+        {
+          role: 'user',
+          content: [{ type: 'image_url', image_url: { url: options.imageUrl } }],
+        },
+      ],
+    })
+
+    const latencyMs    = Date.now() - start
+    const tokensInput  = res.usage?.prompt_tokens     ?? 0
+    const tokensOutput = res.usage?.completion_tokens ?? 0
+    const content      = res.choices[0]?.message?.content ?? 'Imagen recibida'
+
+    logAiUsage({
+      clinicId: options.clinicId, agentKey: 'SALES_AGENT_VISION',
+      model: config.model, tokensInput, tokensOutput, latencyMs, success: true,
+    })
+
+    return {
+      success:    true,
+      data:       content,
+      model:      config.model,
+      tokensUsed: { input: tokensInput, output: tokensOutput, total: tokensInput + tokensOutput },
+      costUsd:    calculateCost({ model: config.model, tokensInput, tokensOutput }),
+      latencyMs,
+    }
+  } catch (error: unknown) {
+    const latencyMs = Date.now() - start
+    const errorCode = mapError(error)
+    logAiUsage({
+      clinicId: options.clinicId, agentKey: 'SALES_AGENT_VISION',
+      model: config.model, latencyMs, success: false, errorCode,
+    })
+    console.error('[ai] SALES_AGENT_VISION failed:', (error as Error).message)
+    return { success: false, error: readable(errorCode), errorCode: errorCode as import('./types').AiErrorCode, retryable: isRetryable(errorCode) }
+  }
+}
+
+// ── Embeddings — base de conocimiento (RAG) ───────────────
+export async function generateEmbedding(options: EmbeddingOptions): Promise<AiResponse<number[]>> {
+  const config = AGENT_CONFIG.SALES_AGENT_EMBEDDING
+  const start  = Date.now()
+
+  const guard = await canMakeAiCall({ clinicId: options.clinicId, promptLength: options.text.length })
+  if (!guard.allowed) {
+    return { success: false, error: guard.reason, errorCode: 'BUDGET_EXCEEDED', retryable: false }
+  }
+
+  try {
+    const res = await getClient().embeddings.create({
+      model: config.model,
+      input: options.text,
+    })
+
+    const latencyMs   = Date.now() - start
+    const tokensInput = res.usage?.prompt_tokens ?? 0
+    const embedding    = res.data[0].embedding
+
+    logAiUsage({
+      clinicId: options.clinicId, agentKey: 'SALES_AGENT_EMBEDDING',
+      model: config.model, tokensInput, tokensOutput: 0, latencyMs, success: true,
+    })
+
+    return {
+      success:    true,
+      data:       embedding,
+      model:      config.model,
+      tokensUsed: { input: tokensInput, output: 0, total: tokensInput },
+      costUsd:    calculateCost({ model: config.model, tokensInput, tokensOutput: 0 }),
+      latencyMs,
+    }
+  } catch (error: unknown) {
+    const latencyMs = Date.now() - start
+    const errorCode = mapError(error)
+    logAiUsage({
+      clinicId: options.clinicId, agentKey: 'SALES_AGENT_EMBEDDING',
+      model: config.model, latencyMs, success: false, errorCode,
+    })
+    console.error('[ai] SALES_AGENT_EMBEDDING failed:', (error as Error).message)
+    return { success: false, error: readable(errorCode), errorCode: errorCode as import('./types').AiErrorCode, retryable: isRetryable(errorCode) }
   }
 }
 

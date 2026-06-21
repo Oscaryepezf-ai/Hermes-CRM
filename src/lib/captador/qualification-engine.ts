@@ -23,12 +23,18 @@ export type QualificationResult = {
   shouldRespond:     boolean
   shouldHandOff:     boolean
   confidence:        number
+  // ─── Solo usados por el modo "consultivo" del Agente de Ventas ───
+  detectedNeed:       string | null
+  newObjection:       string | null
+  resolvedObjection:  string | null
+  emotionalState:     string | null
 }
 
 const FALLBACK: QualificationResult = {
   intent: 'saludo_inicial', treatment: null, urgency: 'media', sentiment: 'neutro',
   extractedName: null, extractedBudget: null, extractedBestTime: null,
   shouldRespond: true, shouldHandOff: false, confidence: 0.5,
+  detectedNeed: null, newObjection: null, resolvedObjection: null, emotionalState: null,
 }
 
 export async function qualifyMessage(params: {
@@ -37,14 +43,30 @@ export async function qualifyMessage(params: {
   clinicName:          string
   clinicId:            string
   collectedSoFar:      Record<string, unknown>
+  /** Pide también señales para el framework consultivo (needs/objeciones/estado emocional). */
+  consultiveMode?:     boolean
 }): Promise<QualificationResult> {
   const treatmentsList = Object.entries(TREATMENT_LABELS)
     .map(([k, v]) => `${k}: ${v}`)
     .join(', ')
 
+  const consultiveFields = params.consultiveMode
+    ? `,
+  "detectedNeed": "necesidad nueva detectada en este mensaje, breve, o null",
+  "newObjection": "objeción/duda nueva planteada en este mensaje, o null",
+  "resolvedObjection": "texto EXACTO de una objeción anterior que este mensaje resuelve, tomado de 'Objeciones sin resolver' abajo, o null",
+  "emotionalState": "una palabra: ansioso|curioso|escéptico|entusiasmado|neutro|frustrado"`
+    : `,
+  "detectedNeed": null, "newObjection": null, "resolvedObjection": null, "emotionalState": null`
+
+  const objectionsContext = params.consultiveMode && Array.isArray((params.collectedSoFar as { objections?: { text: string; resolved: boolean }[] }).objections)
+    ? `\nObjeciones sin resolver: ${((params.collectedSoFar as { objections: { text: string; resolved: boolean }[] }).objections)
+        .filter(o => !o.resolved).map(o => `"${o.text}"`).join(', ') || 'ninguna'}`
+    : ''
+
   const systemPrompt = `Analizador de mensajes para clínica dental "${params.clinicName}".
 Extrae datos de calificación comercial del mensaje del prospecto.
-TRATAMIENTOS: ${treatmentsList}
+TRATAMIENTOS: ${treatmentsList}${objectionsContext}
 Responde SOLO con este JSON exacto:
 {
   "intent": "consulta_precio|agendar_cita|informacion_general|urgencia_dental|seguimiento|queja_o_problema|fuera_de_contexto|saludo_inicial",
@@ -56,7 +78,7 @@ Responde SOLO con este JSON exacto:
   "extractedBestTime": "horario preferido o null",
   "shouldRespond": true,
   "shouldHandOff": false,
-  "confidence": 0.9
+  "confidence": 0.9${consultiveFields}
 }
 shouldHandOff=true SOLO si: urgencia_dental con dolor severo, queja_o_problema, o pide hablar con persona.
 shouldRespond=false SOLO si: fuera_de_contexto irrelevante.`

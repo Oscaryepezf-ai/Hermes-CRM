@@ -1,7 +1,8 @@
 export const AI_MODELS = {
-  FAST:          'gpt-4o-mini' as const,
-  SMART:         'gpt-4o'      as const,
-  TRANSCRIPTION: 'whisper-1'   as const,
+  FAST:          'gpt-4o-mini'            as const,
+  SMART:         'gpt-4o'                 as const,
+  TRANSCRIPTION: 'whisper-1'              as const,
+  EMBEDDING:     'text-embedding-3-small' as const,
 } as const
 
 export type AiModel = typeof AI_MODELS[keyof typeof AI_MODELS]
@@ -35,6 +36,22 @@ export const AGENT_CONFIG = {
     model:       AI_MODELS.TRANSCRIPTION,
     description: 'Transcribir audio del dictado del odontólogo',
   },
+  SALES_AGENT_VISION: {
+    model:       AI_MODELS.FAST,
+    maxTokens:   200,
+    temperature: 0.2,
+    description: 'Analizar imagen enviada por un prospecto (Agente de Ventas Consultivo)',
+  },
+  SALES_AGENT_RESPONDER: {
+    model:       AI_MODELS.FAST,
+    maxTokens:   250,
+    temperature: 0.75,
+    description: 'Generar respuesta consultiva del Agente de Ventas',
+  },
+  SALES_AGENT_EMBEDDING: {
+    model:       AI_MODELS.EMBEDDING,
+    description: 'Generar embeddings para la base de conocimiento (RAG)',
+  },
 } as const
 
 export type AgentConfigKey = keyof typeof AGENT_CONFIG
@@ -44,4 +61,5 @@ export const MODEL_COSTS = {
   [AI_MODELS.FAST]:          { input: 0.00015, output: 0.0006  },
   [AI_MODELS.SMART]:         { input: 0.005,   output: 0.015   },
   [AI_MODELS.TRANSCRIPTION]: { perMinute: 0.006 },
+  [AI_MODELS.EMBEDDING]:     { input: 0.00002,  output: 0      },
 } as const

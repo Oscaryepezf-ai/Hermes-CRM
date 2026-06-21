@@ -34,7 +34,8 @@ export async function runCaptadorCycle(params: {
         reason:        'max_turns',
         qualification: { intent: 'saludo_inicial', treatment: null, urgency: 'media',
                          sentiment: 'neutro', extractedName: null, extractedBudget: null,
-                         extractedBestTime: null, shouldRespond: true, shouldHandOff: false, confidence: 0.5 },
+                         extractedBestTime: null, shouldRespond: true, shouldHandOff: false, confidence: 0.5,
+                         detectedNeed: null, newObjection: null, resolvedObjection: null, emotionalState: null },
         collectedData: (decision.existingConversation?.collectedData as Record<string, unknown>) ?? {},
       })
     }
@@ -42,6 +43,18 @@ export async function runCaptadorCycle(params: {
   }
 
   const { clinic, config, existingConversation: conv, isBusinessHours } = decision
+
+  if (config.mode === 'consultivo') {
+    const { generateConsultativeResponse } = await import('@/lib/sales-agent/response-engine')
+    await generateConsultativeResponse({
+      leadId:     params.leadId,
+      message:    params.message,
+      channel:    params.channel,
+      clinicId:   clinic.id,
+      clinicName: clinic.name,
+    })
+    return
+  }
 
   // Fetch recent messages for context (last 20)
   const recentMsgs = await db.message.findMany({
@@ -140,7 +153,7 @@ export async function runCaptadorCycle(params: {
 }
 
 // ── Send via the correct channel and persist to DB ───────
-async function sendAgentReply(
+export async function sendAgentReply(
   leadId:   string,
   content:  string,
   channel:  MarketingChannel,

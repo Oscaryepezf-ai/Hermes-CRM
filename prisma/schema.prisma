@@ -65,6 +65,7 @@ model Clinic {
   services              Service[]
   payments              Payment[]
   expenses              Expense[]
+  knowledgeDocuments    KnowledgeDocument[]
 }
 
 model ClinicChannel {
@@ -660,6 +661,16 @@ model AgentConversation {
   collectedData  Json               @default("{}")
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
+
+  // ─── Agente de Ventas Consultivo (modo "consultivo") ───
+  detectedNeeds    Json       @default("[]")
+  objections       Json       @default("[]")
+  rapportScore     Int        @default(0)
+  salesStage       SalesStage @default(CONEXION)
+  resourcesSent    Json       @default("[]")
+  emotionalState   String?
+  decisionTimeline String?
+  preferredTone    String?
 }
 
 enum AgentType {
@@ -668,11 +679,56 @@ enum AgentType {
   REACTIVADOR
 }
 
+enum SalesStage {
+  CONEXION
+  INDAGACION
+  CONSTRUCCION_VALOR
+  MANEJO_OBJECIONES
+  CIERRE_SUAVE
+  LISTO_PARA_HUMANO
+}
+
 enum ConversationStatus {
   ACTIVE
   HANDED_OFF
   COMPLETED
   ABANDONED
+}
+
+// ─── Base de conocimiento (RAG) — Agente de Ventas Consultivo ────────────────
+
+model KnowledgeDocument {
+  id         String              @id @default(cuid())
+  clinicId   String
+  clinic     Clinic              @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  title      String
+  sourceType KnowledgeSourceType
+  rawContent String              @db.Text
+  createdAt  DateTime            @default(now())
+
+  chunks KnowledgeChunk[]
+
+  @@index([clinicId])
+}
+
+enum KnowledgeSourceType {
+  TEXTO_MANUAL
+  FAQ
+  TESTIMONIOS
+  GUION_OBJECIONES
+}
+
+model KnowledgeChunk {
+  id         String                       @id @default(cuid())
+  documentId String
+  document   KnowledgeDocument            @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  clinicId   String
+  content    String                       @db.Text
+  embedding  Unsupported("vector(1536)")?
+  chunkIndex Int
+  createdAt  DateTime                     @default(now())
+
+  @@index([clinicId])
 }
 
 // ─── AI Usage Tracking ────────────────────────────────────────────────────────

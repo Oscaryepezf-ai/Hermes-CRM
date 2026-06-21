@@ -12,6 +12,7 @@ const DEFAULT_CONFIG: CaptadorConfig = {
   tone: "amigable",
   specialties: ["Ortodoncia", "Implantes", "Blanqueamiento", "Limpieza", "Cirugía"],
   knowledgeBase: "",
+  mode: "basico",
 }
 
 export async function getCaptadorSettings() {
@@ -35,6 +36,7 @@ export async function getCaptadorSettings() {
       tone: raw.tone ?? DEFAULT_CONFIG.tone,
       specialties: raw.specialties ?? DEFAULT_CONFIG.specialties,
       knowledgeBase: raw.knowledgeBase ?? DEFAULT_CONFIG.knowledgeBase,
+      mode: raw.mode ?? DEFAULT_CONFIG.mode,
     },
   }
 }
@@ -50,6 +52,7 @@ const UpdateSchema = z.object({
     tone: z.enum(["formal", "amigable"]),
     specialties: z.array(z.string().min(1)).min(1),
     knowledgeBase: z.string().max(4000),
+    mode: z.enum(["basico", "consultivo"]),
   }),
 })
 

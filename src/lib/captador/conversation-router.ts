@@ -16,6 +16,8 @@ export type CaptadorConfig = {
   tone:          'formal' | 'amigable'
   specialties:   string[]
   knowledgeBase: string
+  /** 'basico' = Captador original (sin límite cambia). 'consultivo' = Agente de Ventas con RAG/memoria/multimodal. */
+  mode:          'basico' | 'consultivo'
 }
 
 function getEcuadorHour(): number {
@@ -34,6 +36,7 @@ function parseConfig(raw: unknown): CaptadorConfig {
     tone:       (c.tone       as 'formal' | 'amigable' | undefined) ?? 'amigable',
     specialties: (c.specialties as string[] | undefined) ?? ['Ortodoncia', 'Implantes', 'Blanqueamiento', 'Limpieza', 'Cirugía'],
     knowledgeBase: (c.knowledgeBase as string | undefined) ?? '',
+    mode: (c.mode as 'basico' | 'consultivo' | undefined) ?? 'basico',
   }
 }
 
@@ -64,7 +67,8 @@ export async function routeIncomingMessage(params: {
     return { ...base, shouldAgentRespond: false, reason: 'already_handed_off', isBusinessHours }
   }
 
-  if (conv && conv.turnCount >= config.maxTurns) {
+  // El modo consultivo no tiene límite de turnos — su memoria es indefinida.
+  if (conv && conv.turnCount >= config.maxTurns && config.mode !== 'consultivo') {
     return { ...base, shouldAgentRespond: false, reason: 'max_turns_reached', isBusinessHours }
   }
 

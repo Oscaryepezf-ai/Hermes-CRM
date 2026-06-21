@@ -5,6 +5,7 @@ import { fetchConversationDetail, fetchClinicLabels, fetchClinicUsers } from "@/
 import { ConversationHeader } from "./ConversationHeader"
 import { MessageThread } from "./MessageThread"
 import { ReplyBox } from "./ReplyBox"
+import { ProspectProfileView } from "@/components/hermes-ai/ProspectProfileView"
 import type { InboxConversationItem } from "@/lib/inbox/conversations"
 import type { Message } from "@prisma/client"
 
@@ -105,6 +106,7 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
         users={users}
         onReload={load}
       />
+      <ProspectProfileView leadId={conv.leadId} />
       <MessageThread messages={messages} />
       <ReplyBox
         conversationId={conversationId}

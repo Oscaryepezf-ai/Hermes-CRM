@@ -39,7 +39,18 @@ export type AiCallOptions = {
 export type TranscriptionOptions = {
   clinicId:    string
   audioBuffer: Buffer
-  mimeType:    'audio/webm' | 'audio/mp3' | 'audio/wav' | 'audio/m4a'
+  mimeType:    'audio/webm' | 'audio/mp3' | 'audio/wav' | 'audio/m4a' | 'audio/ogg'
   language?:   string
   prompt?:     string
+}
+
+export type ImageAnalysisOptions = {
+  clinicId: string
+  imageUrl: string
+  context:  string
+}
+
+export type EmbeddingOptions = {
+  clinicId: string
+  text:     string
 }

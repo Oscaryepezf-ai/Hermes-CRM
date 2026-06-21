@@ -4,9 +4,11 @@ import { runCaptadorCycle } from '@/lib/captador/run-cycle'
 import { markCampaignAsResponded } from '@/lib/reactivador/response-tracker'
 import { upsertInboxConversation } from '@/lib/inbox/conversations'
 import { createDefaultStages } from '@/lib/pipeline/stage-manager'
+import { resolveWhatsAppMedia } from '@/lib/whatsapp/media'
+import { analyzeImage, transcribeAudio } from '@/lib/ai/client'
 
 export const dynamic     = 'force-dynamic'
-export const maxDuration = 30
+export const maxDuration = 60
 
 // ── GET — webhook verification ────────────────────────────
 export async function GET(request: NextRequest) {
@@ -42,6 +44,8 @@ type WAMessage = {
   timestamp: string
   type:      string
   text?:     { body: string }
+  image?:    { id: string; mime_type: string }
+  audio?:    { id: string; mime_type: string }
   errors?:   unknown[]
 }
 
@@ -66,16 +70,21 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
       const contacts  = (value.contacts as { wa_id: string; profile: { name: string } }[]) ?? []
 
       for (const msg of messages) {
-        if (msg.type !== 'text' || !msg.text?.body) continue
+        if (!['text', 'image', 'audio'].includes(msg.type)) continue
 
         const phone       = msg.from
-        const text        = msg.text.body
         const contactName = contacts.find(c => c.wa_id === phone)?.profile.name
 
-        console.log(`[wa-webhook] message from ${phone}, phoneNumberId=${phoneNumberId ?? 'unknown'}`)
+        console.log(`[wa-webhook] message from ${phone}, type=${msg.type}, phoneNumberId=${phoneNumberId ?? 'unknown'}`)
 
         try {
           const { leadId, clinicId } = await findOrCreateWhatsAppLead(phone, contactName, phoneNumberId)
+
+          const text = await normalizeInboundMessage(msg, clinicId, leadId)
+          if (!text) {
+            console.log(`[wa-webhook] lead=${leadId} mensaje tipo ${msg.type} sin contenido procesable, se omite`)
+            continue
+          }
 
           await db.message.create({
             data: {
@@ -106,6 +115,35 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
       }
     }
   }
+}
+
+// ── Normaliza texto/imagen/audio entrante a un solo string para el agente ─
+const SUPPORTED_AUDIO_MIME = ['audio/webm', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/ogg']
+
+async function normalizeInboundMessage(msg: WAMessage, clinicId: string, leadId: string): Promise<string | null> {
+  if (msg.type === 'text') return msg.text?.body ?? null
+
+  if (msg.type === 'image' && msg.image) {
+    const media = await resolveWhatsAppMedia(msg.image.id, clinicId, leadId)
+    if (!media) return '[El prospecto envió una imagen que no pudimos procesar]'
+    const result = await analyzeImage({
+      clinicId,
+      imageUrl: media.blobUrl,
+      context:  'Este es un negocio de odontología (clínica dental).',
+    })
+    return `[El prospecto envió una imagen] ${result.success ? result.data : 'Imagen recibida'}`
+  }
+
+  if (msg.type === 'audio' && msg.audio) {
+    const media = await resolveWhatsAppMedia(msg.audio.id, clinicId, leadId)
+    if (!media) return '[El prospecto envió un audio que no pudimos procesar]'
+    const mimeType = (SUPPORTED_AUDIO_MIME.find(m => media.mimeType.startsWith(m)) ?? 'audio/ogg') as
+      'audio/webm' | 'audio/mp3' | 'audio/wav' | 'audio/m4a' | 'audio/ogg'
+    const result = await transcribeAudio({ clinicId, audioBuffer: media.buffer, mimeType })
+    return result.success ? `[Mensaje de voz] "${result.data}"` : '[El prospecto envió un audio que no pudimos transcribir]'
+  }
+
+  return null
 }
 
 async function findOrCreateWhatsAppLead(
