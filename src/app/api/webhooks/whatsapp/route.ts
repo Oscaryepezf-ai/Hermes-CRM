@@ -105,8 +105,8 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
 
           await upsertInboxConversation({ clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true })
 
-          markCampaignAsResponded(leadId).catch(console.error)
-          runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP' }).catch(console.error)
+          await markCampaignAsResponded(leadId).catch(console.error)
+          await runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP' }).catch(console.error)
 
           console.log(`[wa-webhook] lead=${leadId} processed`)
         } catch (err) {

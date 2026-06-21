@@ -11,7 +11,7 @@ import { sendPushToClinicAdmins } from '@/lib/push/send-notification'
 import { runCaptadorCycle } from '@/lib/captador/run-cycle'
 import { upsertInboxConversation } from '@/lib/inbox/conversations'
 
-export const maxDuration = 30
+export const maxDuration = 60
 export const dynamic     = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
@@ -95,7 +95,7 @@ async function processMessengerEvents(body: unknown): Promise<void> {
       // Inbox conversation
       if (event.message?.text) {
         await upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'FACEBOOK', preview: event.message.text, isInbound: true }).catch(console.error)
-        runCaptadorCycle({ leadId, message: event.message.text, channel: 'FACEBOOK' }).catch(console.error)
+        await runCaptadorCycle({ leadId, message: event.message.text, channel: 'FACEBOOK' }).catch(console.error)
       }
     } catch (err) {
       console.error(`[meta-webhook] FB PSID ${event.senderId}:`, err)
@@ -134,7 +134,7 @@ async function processInstagramEvents(body: unknown): Promise<void> {
 
       if (event.message?.text) {
         await upsertInboxConversation({ clinicId: clinic.id, leadId, channel: 'INSTAGRAM', preview: event.message.text, isInbound: true }).catch(console.error)
-        runCaptadorCycle({ leadId, message: event.message.text, channel: 'INSTAGRAM' }).catch(console.error)
+        await runCaptadorCycle({ leadId, message: event.message.text, channel: 'INSTAGRAM' }).catch(console.error)
       }
     } catch (err) {
       console.error(`[meta-webhook] IG IGSID ${event.senderId}:`, err)
