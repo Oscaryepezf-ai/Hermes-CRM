@@ -21,20 +21,32 @@ export async function resolveWhatsAppMedia(
   leadId:   string,
 ): Promise<ResolvedMedia | null> {
   const creds = await getWhatsAppCredentials(clinicId)
-  if (!creds) return null
+  if (!creds) {
+    console.error(`[whatsapp-media] sin credenciales para clinicId=${clinicId}`)
+    return null
+  }
 
   try {
     const metaRes = await fetch(`${GRAPH}/${mediaId}`, {
       headers: { Authorization: `Bearer ${creds.token}` },
     })
-    if (!metaRes.ok) return null
+    if (!metaRes.ok) {
+      console.error(`[whatsapp-media] GET /${mediaId} -> ${metaRes.status}: ${await metaRes.text()}`)
+      return null
+    }
     const meta = await metaRes.json() as { url?: string; mime_type?: string }
-    if (!meta.url) return null
+    if (!meta.url) {
+      console.error(`[whatsapp-media] respuesta sin url para mediaId=${mediaId}:`, JSON.stringify(meta))
+      return null
+    }
 
     const fileRes = await fetch(meta.url, {
       headers: { Authorization: `Bearer ${creds.token}` },
     })
-    if (!fileRes.ok) return null
+    if (!fileRes.ok) {
+      console.error(`[whatsapp-media] descarga de archivo -> ${fileRes.status}: ${await fileRes.text()}`)
+      return null
+    }
 
     const arrayBuffer = await fileRes.arrayBuffer()
     const buffer      = Buffer.from(arrayBuffer)
