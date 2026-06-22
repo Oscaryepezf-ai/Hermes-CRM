@@ -80,17 +80,19 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
         try {
           const { leadId, clinicId } = await findOrCreateWhatsAppLead(phone, contactName, phoneNumberId)
 
-          const text = await normalizeInboundMessage(msg, clinicId, leadId)
-          if (!text) {
+          const normalized = await normalizeInboundMessage(msg, clinicId, leadId)
+          if (!normalized) {
             console.log(`[wa-webhook] lead=${leadId} mensaje tipo ${msg.type} sin contenido procesable, se omite`)
             continue
           }
+          const { text, mediaUrl } = normalized
 
           await db.message.create({
             data: {
               leadId,
               direction:         'INBOUND',
               content:           text,
+              mediaUrl,
               channel:           'WHATSAPP',
               externalMessageId: msg.id,
               status:            'READ',
@@ -120,27 +122,38 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
 // ── Normaliza texto/imagen/audio entrante a un solo string para el agente ─
 const SUPPORTED_AUDIO_MIME = ['audio/webm', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/ogg']
 
-async function normalizeInboundMessage(msg: WAMessage, clinicId: string, leadId: string): Promise<string | null> {
-  if (msg.type === 'text') return msg.text?.body ?? null
+type NormalizedMessage = { text: string; mediaUrl: string | null }
+
+async function normalizeInboundMessage(msg: WAMessage, clinicId: string, leadId: string): Promise<NormalizedMessage | null> {
+  if (msg.type === 'text') {
+    const body = msg.text?.body
+    return body ? { text: body, mediaUrl: null } : null
+  }
 
   if (msg.type === 'image' && msg.image) {
     const media = await resolveWhatsAppMedia(msg.image.id, clinicId, leadId)
-    if (!media) return '[El prospecto envió una imagen que no pudimos procesar]'
+    if (!media) return { text: '[El prospecto envió una imagen que no pudimos procesar]', mediaUrl: null }
     const result = await analyzeImage({
       clinicId,
       imageUrl: media.blobUrl,
       context:  'Este es un negocio de odontología (clínica dental).',
     })
-    return `[El prospecto envió una imagen] ${result.success ? result.data : 'Imagen recibida'}`
+    return {
+      text:     `[Imagen] ${result.success ? result.data : 'El prospecto envió una imagen'}`,
+      mediaUrl: media.blobUrl,
+    }
   }
 
   if (msg.type === 'audio' && msg.audio) {
     const media = await resolveWhatsAppMedia(msg.audio.id, clinicId, leadId)
-    if (!media) return '[El prospecto envió un audio que no pudimos procesar]'
+    if (!media) return { text: '[El prospecto envió un audio que no pudimos procesar]', mediaUrl: null }
     const mimeType = (SUPPORTED_AUDIO_MIME.find(m => media.mimeType.startsWith(m)) ?? 'audio/ogg') as
       'audio/webm' | 'audio/mp3' | 'audio/wav' | 'audio/m4a' | 'audio/ogg'
     const result = await transcribeAudio({ clinicId, audioBuffer: media.buffer, mimeType })
-    return result.success ? `[Mensaje de voz] "${result.data}"` : '[El prospecto envió un audio que no pudimos transcribir]'
+    return {
+      text:     result.success ? `[Audio] "${result.data}"` : '[Mensaje de voz — no pudimos transcribirlo]',
+      mediaUrl: media.blobUrl,
+    }
   }
 
   return null

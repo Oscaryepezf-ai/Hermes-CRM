@@ -23,6 +23,32 @@ function StatusIcon({ status }: { status: string }) {
   return <Check className="w-3 h-3 text-ink-disabled" />
 }
 
+const IMAGE_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif"]
+const AUDIO_EXT  = [".ogg", ".mp3", ".wav", ".m4a", ".opus", ".aac", ".webm"]
+
+function getMediaKind(url: string | null): "image" | "audio" | null {
+  if (!url) return null
+  const path = url.split("?")[0].toLowerCase()
+  if (IMAGE_EXT.some(ext => path.endsWith(ext))) return "image"
+  if (AUDIO_EXT.some(ext => path.endsWith(ext))) return "audio"
+  return null
+}
+
+function MediaPreview({ url }: { url: string }) {
+  const kind = getMediaKind(url)
+  if (kind === "image") {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block mb-1.5">
+        <img src={url} alt="Imagen enviada por el prospecto" className="rounded-lg max-h-64 max-w-full object-cover" />
+      </a>
+    )
+  }
+  if (kind === "audio") {
+    return <audio controls src={url} className="mb-1.5 max-w-full" />
+  }
+  return null
+}
+
 export function MessageThread({ messages }: MessageThreadProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -96,6 +122,7 @@ export function MessageThread({ messages }: MessageThreadProps) {
                       : "bg-white dark:bg-[#1E2730] text-ink-primary rounded-tl-none shadow-sm"
                   )}
                 >
+                  {msg.mediaUrl && <MediaPreview url={msg.mediaUrl} />}
                   <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                   <div className={cn(
                     "flex items-center gap-1 mt-1",
