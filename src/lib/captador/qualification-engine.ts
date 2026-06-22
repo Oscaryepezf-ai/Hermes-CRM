@@ -96,5 +96,23 @@ shouldRespond=false SOLO si: fuera_de_contexto irrelevante.`
       : params.message,
   })
 
-  return result.success ? result.data : FALLBACK
+  if (!result.success) return FALLBACK
+
+  // El modelo a veces devuelve el string "null" en vez del valor JSON null
+  // para los campos opcionales — sin esto, ese texto queda guardado tal cual
+  // (ej. una objeción con el texto literal "null").
+  return { ...result.data,
+    treatment:         nullify(result.data.treatment),
+    extractedName:     nullify(result.data.extractedName),
+    extractedBudget:   nullify(result.data.extractedBudget),
+    extractedBestTime: nullify(result.data.extractedBestTime),
+    detectedNeed:      nullify(result.data.detectedNeed),
+    newObjection:      nullify(result.data.newObjection),
+    resolvedObjection: nullify(result.data.resolvedObjection),
+  }
+}
+
+function nullify<T extends string>(value: T | null | undefined): T | null {
+  if (!value) return null
+  return value.trim().toLowerCase() === 'null' ? null : value
 }
