@@ -13,7 +13,7 @@ import { SIDEBAR_MODULES } from "@/lib/rbac/permissions";
 import type { UserRole } from "@prisma/client";
 
 const ALL_NAV_ITEMS = [
-  { label: "Dashboard",  href: "/dashboard", icon: LayoutDashboard, module: "dashboard"  },
+  { label: "Inicio",     href: "/dashboard", icon: LayoutDashboard, module: "dashboard"  },
   { label: "Pipeline",   href: "/pipeline",  icon: Kanban,          module: "pipeline"   },
   { label: "Bandeja",    href: "/inbox",     icon: Inbox,           module: "inbox"      },
   { label: "Agenda",     href: "/agenda",    icon: CalendarDays,    module: "agenda"     },

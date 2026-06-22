@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CreateButton } from "./CreateButton";
 
 const ROUTE_LABELS: Record<string, string> = {
-  "/dashboard":  "Dashboard",
+  "/dashboard":  "Inicio",
   "/pipeline":   "Pipeline",
   "/inbox":      "Bandeja de entrada",
   "/agenda":     "Agenda",
@@ -37,7 +37,7 @@ export function Header({ clinicName, userName, onCreateAppointment, onCreatePati
 
   const pageLabel = Object.entries(ROUTE_LABELS).find(
     ([route]) => pathname.startsWith(route)
-  )?.[1] ?? "Dashboard";
+  )?.[1] ?? "Inicio";
 
   return (
     <header

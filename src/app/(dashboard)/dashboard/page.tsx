@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   TrendingUp,
   Target,
   DollarSign,
   CalendarCheck,
+  Calendar,
 } from "lucide-react";
 import { auth } from "../../../../auth";
 import { getDashboardMetrics } from "@/lib/actions/analytics";
@@ -59,13 +62,19 @@ async function DashboardContent() {
     },
   });
 
+  const greetingName = session.user.name?.trim().split(/\s+/).pop() ?? "";
+  const today = format(new Date(), "dd/MM/yyyy", { locale: es });
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-ink-primary">Dashboard</h2>
-        <p className="text-sm text-ink-tertiary mt-0.5">
-          Resumen de actividad de tu clínica
-        </p>
+      <div className="relative overflow-hidden rounded-2xl border border-line-subtle bg-gradient-to-br from-white to-sky-50 dark:from-[#10151c] dark:to-[#0c1f2e] p-6 shadow-card">
+        <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-sky-200/50 dark:bg-sky-500/10 blur-2xl pointer-events-none" />
+        <div className="relative flex items-center gap-1.5 text-ink-tertiary text-[13px] mb-4">
+          <Calendar className="w-4 h-4" />
+          {today}
+        </div>
+        <h2 className="relative text-2xl font-bold text-ink-primary">¡Hola, {greetingName}!</h2>
+        <p className="relative text-sm text-ink-tertiary mt-1">Resumen del día</p>
       </div>
 
       <ActivationChecklist />
