@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { format, isToday, isYesterday, isSameDay } from "date-fns"
 import { es } from "date-fns/locale"
-import { Check, CheckCheck } from "lucide-react"
+import { Check, CheckCheck, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Message } from "@prisma/client"
 
@@ -18,6 +18,7 @@ function formatDayLabel(date: Date): string {
 }
 
 function StatusIcon({ status }: { status: string }) {
+  if (status === "FAILED")    return <AlertCircle className="w-3 h-3 text-red-400" />
   if (status === "READ")      return <CheckCheck className="w-3 h-3 text-blue-400" />
   if (status === "DELIVERED") return <CheckCheck className="w-3 h-3 text-ink-disabled" />
   return <Check className="w-3 h-3 text-ink-disabled" />
@@ -136,6 +137,9 @@ export function MessageThread({ messages }: MessageThreadProps) {
                     </span>
                     {isOut && <StatusIcon status={msg.status} />}
                   </div>
+                  {isOut && msg.status === "FAILED" && (
+                    <p className="text-[10px] text-red-200 mt-0.5">No se pudo entregar — revisa la conexión del canal</p>
+                  )}
                 </div>
               </div>
             )

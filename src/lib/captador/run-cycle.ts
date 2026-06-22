@@ -159,9 +159,11 @@ export async function sendAgentReply(
   channel:  MarketingChannel,
   clinicId: string
 ): Promise<void> {
+  let delivered = false
+
   if (channel === 'WHATSAPP') {
     const lead = await db.lead.findUnique({ where: { id: leadId }, select: { phone: true } })
-    if (lead?.phone) await sendWhatsAppMessageForClinic(clinicId, lead.phone, content)
+    delivered = lead?.phone ? await sendWhatsAppMessageForClinic(clinicId, lead.phone, content) : false
   } else {
     const profile = await db.socialProfile.findFirst({
       where: { leadId, channel },
@@ -171,18 +173,22 @@ export async function sendAgentReply(
       const token = await getChannelAccessToken(clinicId, channel)
       if (token) {
         if (channel === 'FACEBOOK') {
-          await sendMessengerMessage(profile.externalId, content, token)
+          delivered = (await sendMessengerMessage(profile.externalId, content, token)) !== null
         } else if (channel === 'INSTAGRAM') {
           const igChannel = await db.clinicChannel.findUnique({
             where:  { clinicId_channel: { clinicId, channel: 'INSTAGRAM' } },
             select: { pageId: true },
           })
-          if (igChannel?.pageId) {
-            await sendInstagramMessage(igChannel.pageId, profile.externalId, content, token)
-          }
+          delivered = igChannel?.pageId
+            ? (await sendInstagramMessage(igChannel.pageId, profile.externalId, content, token)) !== null
+            : false
         }
       }
     }
+  }
+
+  if (!delivered) {
+    console.error(`[captador] no se pudo entregar respuesta a lead=${leadId} canal=${channel} — revisa el token/conexión del canal`)
   }
 
   // Persist outbound message
@@ -192,7 +198,7 @@ export async function sendAgentReply(
       direction:   'OUTBOUND',
       content,
       channel,
-      status:      'SENT',
+      status:      delivered ? 'SENT' : 'FAILED',
       isAutomatic: true,
     },
   })
