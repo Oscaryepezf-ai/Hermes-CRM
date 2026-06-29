@@ -3,6 +3,7 @@ import { auth } from "../../../../../auth"
 import { Bot } from "lucide-react"
 import { getCaptadorSettings } from "@/lib/actions/captador"
 import { getKnowledgeDocuments } from "@/lib/actions/knowledge-base"
+import { getFlows } from "@/lib/actions/flows"
 import { AssistantSettingsView } from "@/components/settings/AssistantSettingsView"
 
 export const dynamic = 'force-dynamic'
@@ -15,6 +16,7 @@ export default async function AssistantSettingsPage() {
   if (!result.success) redirect("/login")
 
   const knowledgeDocs = await getKnowledgeDocuments()
+  const flowsRes = await getFlows()
 
   return (
     <div className="space-y-5">
@@ -35,6 +37,7 @@ export default async function AssistantSettingsPage() {
         initialActive={result.active}
         initialConfig={result.config}
         initialKnowledgeDocuments={knowledgeDocs.success ? knowledgeDocs.data : []}
+        flows={flowsRes.success ? flowsRes.data : []}
       />
     </div>
   )

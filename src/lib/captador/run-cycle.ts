@@ -10,9 +10,11 @@ import { getChannelAccessToken }   from '@/lib/meta/lead-from-messenger'
 import type { MarketingChannel }   from '@prisma/client'
 
 export async function runCaptadorCycle(params: {
-  leadId:  string
-  message: string
-  channel: MarketingChannel
+  leadId:    string
+  message:   string
+  channel:   MarketingChannel
+  /** Id del botón de WhatsApp tocado por el prospecto (solo modo "flujo"). */
+  buttonId?: string
 }): Promise<void> {
   // Guard: only process text messages
   if (!params.message?.trim()) return
@@ -52,6 +54,18 @@ export async function runCaptadorCycle(params: {
       channel:    params.channel,
       clinicId:   clinic.id,
       clinicName: clinic.name,
+    })
+    return
+  }
+
+  if (config.mode === 'flujo') {
+    const { runFlowCycle } = await import('@/lib/flows/run-flow')
+    await runFlowCycle({
+      leadId:    params.leadId,
+      clinicId:  clinic.id,
+      flowId:    config.flowId,
+      buttonId:  params.buttonId,
+      channel:   params.channel,
     })
     return
   }

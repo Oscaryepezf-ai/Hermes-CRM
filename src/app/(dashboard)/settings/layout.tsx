@@ -2,13 +2,14 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CreditCard, Calendar, Users, Radio, Bot } from "lucide-react"
+import { CreditCard, Calendar, Users, Radio, Bot, Workflow } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
   { href: "/settings",          label: "Plan",       icon: CreditCard },
   { href: "/settings/channels", label: "Canales",    icon: Radio      },
   { href: "/settings/assistant", label: "Captador IA", icon: Bot      },
+  { href: "/settings/flows",    label: "Flujos",     icon: Workflow   },
   { href: "/settings/calendar", label: "Agendador",  icon: Calendar   },
   { href: "/settings/users",    label: "Equipo",     icon: Users      },
 ]

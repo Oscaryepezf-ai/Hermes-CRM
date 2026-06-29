@@ -16,8 +16,10 @@ export type CaptadorConfig = {
   tone:          'formal' | 'amigable'
   specialties:   string[]
   knowledgeBase: string
-  /** 'basico' = Captador original (sin límite cambia). 'consultivo' = Agente de Ventas con RAG/memoria/multimodal. */
-  mode:          'basico' | 'consultivo'
+  /** 'basico' = Captador original. 'consultivo' = Agente de Ventas con RAG/memoria/multimodal. 'flujo' = árbol de botones sin código. */
+  mode:          'basico' | 'consultivo' | 'flujo'
+  /** Id del Flow activo — solo relevante cuando mode === 'flujo'. */
+  flowId:        string | null
 }
 
 function getEcuadorHour(): number {
@@ -36,7 +38,8 @@ function parseConfig(raw: unknown): CaptadorConfig {
     tone:       (c.tone       as 'formal' | 'amigable' | undefined) ?? 'amigable',
     specialties: (c.specialties as string[] | undefined) ?? ['Ortodoncia', 'Implantes', 'Blanqueamiento', 'Limpieza', 'Cirugía'],
     knowledgeBase: (c.knowledgeBase as string | undefined) ?? '',
-    mode: (c.mode as 'basico' | 'consultivo' | undefined) ?? 'basico',
+    mode: (c.mode as 'basico' | 'consultivo' | 'flujo' | undefined) ?? 'basico',
+    flowId: (c.flowId as string | undefined) ?? null,
   }
 }
 
@@ -67,8 +70,8 @@ export async function routeIncomingMessage(params: {
     return { ...base, shouldAgentRespond: false, reason: 'already_handed_off', isBusinessHours }
   }
 
-  // El modo consultivo no tiene límite de turnos — su memoria es indefinida.
-  if (conv && conv.turnCount >= config.maxTurns && config.mode !== 'consultivo') {
+  // Los modos consultivo y flujo no tienen límite de turnos clásico.
+  if (conv && conv.turnCount >= config.maxTurns && config.mode === 'basico') {
     return { ...base, shouldAgentRespond: false, reason: 'max_turns_reached', isBusinessHours }
   }
 

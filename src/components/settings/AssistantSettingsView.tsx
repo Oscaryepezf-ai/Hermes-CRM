@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Bot, Lock, Plus, X, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { Bot, Lock, Plus, X, Loader2, Workflow, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
@@ -15,17 +16,21 @@ type Config = {
   tone: "formal" | "amigable"
   specialties: string[]
   knowledgeBase: string
-  mode: "basico" | "consultivo"
+  mode: "basico" | "consultivo" | "flujo"
+  flowId: string | null
 }
+
+type FlowSummary = { id: string; name: string }
 
 interface AssistantSettingsViewProps {
   plan: string
   initialActive: boolean
   initialConfig: Config
   initialKnowledgeDocuments: KnowledgeDoc[]
+  flows: FlowSummary[]
 }
 
-export function AssistantSettingsView({ plan, initialActive, initialConfig, initialKnowledgeDocuments }: AssistantSettingsViewProps) {
+export function AssistantSettingsView({ plan, initialActive, initialConfig, initialKnowledgeDocuments, flows }: AssistantSettingsViewProps) {
   const [active, setActive] = useState(initialActive)
   const [config, setConfig] = useState(initialConfig)
   const [newSpecialty, setNewSpecialty] = useState("")
@@ -220,8 +225,8 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
             conversación y busca respuestas en tu base de conocimiento.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {(["basico", "consultivo"] as const).map((m) => (
+        <div className="grid grid-cols-3 gap-2">
+          {(["basico", "consultivo", "flujo"] as const).map((m) => (
             <button
               key={m}
               type="button"
@@ -233,16 +238,45 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
                   : "border-line-subtle text-ink-secondary hover:bg-inset"
               )}
             >
-              {m === "basico" ? "Básico" : "Consultivo"}
+              {m === "basico" ? "Básico" : m === "consultivo" ? "Consultivo" : "Flujo"}
             </button>
           ))}
         </div>
       </div>
 
+      {/* Flujo activo */}
+      {config.mode === "flujo" && (
+        <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+          <div className="flex items-center gap-2">
+            <Workflow className="w-4 h-4 text-brand-600" />
+            <div>
+              <h3 className="text-[14px] font-bold text-ink-primary">Flujo activo</h3>
+              <p className="text-[12px] text-ink-tertiary mt-0.5">
+                El bot responde con el árbol de botones de este flujo en vez de generar respuestas con IA.
+              </p>
+            </div>
+          </div>
+          <select
+            value={config.flowId ?? ""}
+            onChange={(e) => setConfig({ ...config, flowId: e.target.value || null })}
+            className="w-full h-9 rounded-lg border border-line-subtle bg-transparent px-2.5 text-[13px] text-ink-primary outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+          >
+            <option value="">Selecciona un flujo</option>
+            {flows.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+          <Link href="/settings/flows" className="inline-flex items-center gap-1.5 text-[12px] text-brand-600 font-medium hover:underline">
+            Crear o editar flujos en el constructor
+            <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
+
       {/* Knowledge base */}
       {config.mode === "consultivo" ? (
         <KnowledgeBaseUpload initialDocuments={initialKnowledgeDocuments} />
-      ) : (
+      ) : config.mode === "flujo" ? null : (
         <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
           <div>
             <h3 className="text-[14px] font-bold text-ink-primary">Información de la clínica</h3>

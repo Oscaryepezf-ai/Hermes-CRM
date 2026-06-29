@@ -57,3 +57,55 @@ export async function sendWhatsAppMessageForClinic(
   if (!creds) return false
   return sendWhatsAppTextMessage(phone, message, creds)
 }
+
+// ── Send an interactive message with up to 3 reply buttons ──
+// (usado por el Constructor de Flujos — header opcional de imagen/documento,
+// cuerpo de texto, y hasta 3 botones de respuesta rápida)
+export async function sendWhatsAppInteractiveMessage(
+  phone:       string,
+  options: {
+    bodyText:   string
+    mediaUrl?:  string | null
+    mediaType?: 'image' | 'document' | null
+    buttons:    { id: string; title: string }[]
+  },
+  credentials?: { phoneId: string; token: string }
+): Promise<boolean> {
+  if (!credentials) return false
+  if (options.buttons.length === 0 || options.buttons.length > 3) return false
+
+  const header = options.mediaUrl && options.mediaType
+    ? options.mediaType === 'image'
+      ? { type: 'image', image: { link: options.mediaUrl } }
+      : { type: 'document', document: { link: options.mediaUrl, filename: 'documento.pdf' } }
+    : undefined
+
+  try {
+    const res = await fetch(`${GRAPH}/${credentials.phoneId}/messages`, {
+      method:  'POST',
+      headers: {
+        'Authorization': `Bearer ${credentials.token}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to:                phone.replace(/\D/g, ''),
+        type:              'interactive',
+        interactive: {
+          type:   'button',
+          ...(header && { header }),
+          body:   { text: options.bodyText },
+          action: {
+            buttons: options.buttons.map(b => ({
+              type:  'reply',
+              reply: { id: b.id, title: b.title.slice(0, 20) },
+            })),
+          },
+        },
+      }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}

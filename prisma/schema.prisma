@@ -66,6 +66,7 @@ model Clinic {
   payments              Payment[]
   expenses              Expense[]
   knowledgeDocuments    KnowledgeDocument[]
+  flows                 Flow[]
 }
 
 model ClinicChannel {
@@ -671,6 +672,9 @@ model AgentConversation {
   emotionalState   String?
   decisionTimeline String?
   preferredTone    String?
+
+  // ─── Constructor de Flujos (modo "flujo") ───
+  currentFlowNodeId String?
 }
 
 enum AgentType {
@@ -729,6 +733,42 @@ model KnowledgeChunk {
   createdAt  DateTime                     @default(now())
 
   @@index([clinicId])
+}
+
+// ─── Constructor de Flujos (modo "flujo" del Captador) ────────────────────────
+
+model Flow {
+  id          String     @id @default(cuid())
+  clinicId    String
+  clinic      Clinic     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  name        String
+  startNodeId String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  nodes       FlowNode[]
+
+  @@index([clinicId])
+}
+
+enum FlowNodeType {
+  MESSAGE
+  HANDOFF
+  END
+}
+
+model FlowNode {
+  id        String       @id @default(cuid())
+  flowId    String
+  flow      Flow         @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  type      FlowNodeType @default(MESSAGE)
+  text      String       @db.Text
+  mediaUrl  String?
+  mediaType String?
+  buttons   Json         @default("[]")
+  positionX Float        @default(0)
+  positionY Float        @default(0)
+
+  @@index([flowId])
 }
 
 // ─── AI Usage Tracking ────────────────────────────────────────────────────────

@@ -39,14 +39,15 @@ export async function POST(request: NextRequest) {
 }
 
 type WAMessage = {
-  from:      string
-  id:        string
-  timestamp: string
-  type:      string
-  text?:     { body: string }
-  image?:    { id: string; mime_type: string }
-  audio?:    { id: string; mime_type: string }
-  errors?:   unknown[]
+  from:        string
+  id:          string
+  timestamp:   string
+  type:        string
+  text?:       { body: string }
+  image?:      { id: string; mime_type: string }
+  audio?:      { id: string; mime_type: string }
+  interactive?: { type: string; button_reply?: { id: string; title: string } }
+  errors?:     unknown[]
 }
 
 type WAMetadata = {
@@ -70,7 +71,7 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
       const contacts  = (value.contacts as { wa_id: string; profile: { name: string } }[]) ?? []
 
       for (const msg of messages) {
-        if (!['text', 'image', 'audio'].includes(msg.type)) continue
+        if (!['text', 'image', 'audio', 'interactive'].includes(msg.type)) continue
 
         const phone       = msg.from
         const contactName = contacts.find(c => c.wa_id === phone)?.profile.name
@@ -107,8 +108,10 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
 
           await upsertInboxConversation({ clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true })
 
+          const buttonId = msg.type === 'interactive' ? msg.interactive?.button_reply?.id : undefined
+
           await markCampaignAsResponded(leadId).catch(console.error)
-          await runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP' }).catch(console.error)
+          await runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP', buttonId }).catch(console.error)
 
           console.log(`[wa-webhook] lead=${leadId} processed`)
         } catch (err) {
@@ -154,6 +157,10 @@ async function normalizeInboundMessage(msg: WAMessage, clinicId: string, leadId:
       text:     result.success ? `[Audio] "${result.data}"` : '[Mensaje de voz — no pudimos transcribirlo]',
       mediaUrl: media.blobUrl,
     }
+  }
+
+  if (msg.type === 'interactive' && msg.interactive?.button_reply) {
+    return { text: msg.interactive.button_reply.title, mediaUrl: null }
   }
 
   return null
