@@ -45,7 +45,7 @@ function toRFNodes(nodes: InitialFlowNode[]): FlowFlowNode[] {
       kind:      n.type,
       text:      n.text,
       mediaUrl:  n.mediaUrl,
-      mediaType: n.mediaType as "image" | "document" | null,
+      mediaType: n.mediaType as "image" | "video" | "document" | null,
       buttons:   (n.buttons as FlowNodeData["buttons"]) ?? [],
     },
   }))

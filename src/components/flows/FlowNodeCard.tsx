@@ -1,7 +1,7 @@
 "use client"
 
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react"
-import { MessageSquare, UserRound, Flag, Image as ImageIcon, FileText } from "lucide-react"
+import { MessageSquare, UserRound, Flag, Image as ImageIcon, FileText, Video } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { FlowButton, FlowNodeKind } from "@/lib/flows/types"
 
@@ -9,7 +9,7 @@ export type FlowNodeData = {
   kind:      FlowNodeKind
   text:      string
   mediaUrl:  string | null
-  mediaType: "image" | "document" | null
+  mediaType: "image" | "video" | "document" | null
   buttons:   FlowButton[]
 }
 
@@ -47,7 +47,9 @@ export function FlowNodeCard({ data, selected }: NodeProps<FlowFlowNode>) {
       <div className="px-2.5 py-2 space-y-1.5">
         {data.mediaUrl && (
           <div className="flex items-center gap-1 text-[10px] text-ink-tertiary">
-            {data.mediaType === "image" ? <ImageIcon className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
+            {data.mediaType === "image" ? <ImageIcon className="w-3 h-3" />
+              : data.mediaType === "video" ? <Video className="w-3 h-3" />
+              : <FileText className="w-3 h-3" />}
             Adjunto
           </div>
         )}

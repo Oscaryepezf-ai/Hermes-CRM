@@ -78,10 +78,12 @@ export function FlowNodeEditorPanel({ flowId, data, isStart, onChange, onSetStar
         {data.kind === "MESSAGE" && (
           <>
             <div>
-              <label className="text-[11px] font-medium text-ink-secondary block mb-1.5">Imagen o documento (opcional)</label>
+              <label className="text-[11px] font-medium text-ink-secondary block mb-1.5">Imagen, video o documento (opcional)</label>
               {data.mediaUrl ? (
                 <div className="flex items-center justify-between px-2.5 py-2 rounded-lg border border-line-subtle">
-                  <span className="text-[12px] text-ink-secondary truncate">{data.mediaType === "image" ? "Imagen adjunta" : "Documento adjunto"}</span>
+                  <span className="text-[12px] text-ink-secondary truncate">
+                    {data.mediaType === "image" ? "Imagen adjunta" : data.mediaType === "video" ? "Video adjunto" : "Documento adjunto"}
+                  </span>
                   <button type="button" onClick={() => onChange({ mediaUrl: null, mediaType: null })} className="text-ink-tertiary hover:text-red-500">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -92,7 +94,8 @@ export function FlowNodeEditorPanel({ flowId, data, isStart, onChange, onSetStar
                   Subir archivo
                 </Button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleFileSelected} />
+              <input ref={fileInputRef} type="file" accept="image/*,video/*,.pdf" className="hidden" onChange={handleFileSelected} />
+              <p className="text-[10px] text-ink-disabled mt-1">Imagen hasta 5MB, video hasta 16MB, documento hasta 20MB.</p>
             </div>
 
             <div>

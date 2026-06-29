@@ -96,7 +96,7 @@ async function sendFlowMessageNode(
       delivered = await sendWhatsAppInteractiveMessage(lead.phone, {
         bodyText:  node.text,
         mediaUrl:  node.mediaUrl,
-        mediaType: node.mediaType as 'image' | 'document' | null,
+        mediaType: node.mediaType as 'image' | 'video' | 'document' | null,
         buttons:   buttons.map(b => ({ id: b.id, title: b.label })),
       }, creds)
     }

@@ -17,7 +17,7 @@ const NodeSchema = z.object({
   type:      z.enum(["MESSAGE", "HANDOFF", "END"]),
   text:      z.string().min(1).max(2000),
   mediaUrl:  z.string().url().nullable(),
-  mediaType: z.enum(["image", "document"]).nullable(),
+  mediaType: z.enum(["image", "video", "document"]).nullable(),
   buttons:   z.array(ButtonSchema).max(3),
   positionX: z.number(),
   positionY: z.number(),
@@ -129,7 +129,14 @@ export async function deleteFlow(flowId: string) {
   return { success: true as const }
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+// Límites de WhatsApp Cloud API por tipo de media (recortados frente al máximo
+// real de Meta para documentos, ya que el archivo viaja completo en el body
+// de la Server Action — ver next.config.ts serverActions.bodySizeLimit).
+const MAX_FILE_SIZE: Record<"image" | "video" | "document", number> = {
+  image:    5  * 1024 * 1024,
+  video:    16 * 1024 * 1024,
+  document: 20 * 1024 * 1024,
+}
 
 export async function uploadFlowAsset(flowId: string, formData: FormData) {
   const guard = await requirePermission("hermes_ai", "configure")
@@ -140,9 +147,15 @@ export async function uploadFlowAsset(flowId: string, formData: FormData) {
 
   const file = formData.get("file")
   if (!(file instanceof File) || file.size === 0) return { success: false as const, error: "Selecciona un archivo" }
-  if (file.size > MAX_FILE_SIZE) return { success: false as const, error: "El archivo supera el límite de 10MB" }
 
-  const mediaType = file.type.startsWith("image/") ? "image" as const : "document" as const
+  const mediaType = file.type.startsWith("image/") ? "image" as const
+    : file.type.startsWith("video/") ? "video" as const
+    : "document" as const
+
+  if (file.size > MAX_FILE_SIZE[mediaType]) {
+    const limitMb = MAX_FILE_SIZE[mediaType] / (1024 * 1024)
+    return { success: false as const, error: `El archivo supera el límite de ${limitMb}MB para este tipo` }
+  }
 
   const blob = await put(`flows/${guard.user.clinicId}/${flowId}/${Date.now()}-${file.name}`, file, { access: "public" })
 

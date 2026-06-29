@@ -66,7 +66,7 @@ export async function sendWhatsAppInteractiveMessage(
   options: {
     bodyText:   string
     mediaUrl?:  string | null
-    mediaType?: 'image' | 'document' | null
+    mediaType?: 'image' | 'video' | 'document' | null
     buttons:    { id: string; title: string }[]
   },
   credentials?: { phoneId: string; token: string }
@@ -77,6 +77,8 @@ export async function sendWhatsAppInteractiveMessage(
   const header = options.mediaUrl && options.mediaType
     ? options.mediaType === 'image'
       ? { type: 'image', image: { link: options.mediaUrl } }
+      : options.mediaType === 'video'
+      ? { type: 'video', video: { link: options.mediaUrl } }
       : { type: 'document', document: { link: options.mediaUrl, filename: 'documento.pdf' } }
     : undefined
 
