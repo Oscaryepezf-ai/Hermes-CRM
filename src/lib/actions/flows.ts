@@ -5,6 +5,7 @@ import { put, del } from "@vercel/blob"
 import { db } from "@/lib/db"
 import { requirePermission, unauthorizedResponse } from "@/lib/rbac/guards"
 import { revalidatePath } from "next/cache"
+import { FLOW_MEDIA_MAX_BYTES } from "@/lib/flows/types"
 
 const ButtonSchema = z.object({
   id:         z.string().min(1),
@@ -129,15 +130,6 @@ export async function deleteFlow(flowId: string) {
   return { success: true as const }
 }
 
-// Límites de WhatsApp Cloud API por tipo de media (recortados frente al máximo
-// real de Meta para documentos, ya que el archivo viaja completo en el body
-// de la Server Action — ver next.config.ts serverActions.bodySizeLimit).
-const MAX_FILE_SIZE: Record<"image" | "video" | "document", number> = {
-  image:    5  * 1024 * 1024,
-  video:    16 * 1024 * 1024,
-  document: 20 * 1024 * 1024,
-}
-
 export async function uploadFlowAsset(flowId: string, formData: FormData) {
   const guard = await requirePermission("hermes_ai", "configure")
   if (!guard.authorized) return unauthorizedResponse(guard.error)
@@ -152,8 +144,8 @@ export async function uploadFlowAsset(flowId: string, formData: FormData) {
     : file.type.startsWith("video/") ? "video" as const
     : "document" as const
 
-  if (file.size > MAX_FILE_SIZE[mediaType]) {
-    const limitMb = MAX_FILE_SIZE[mediaType] / (1024 * 1024)
+  if (file.size > FLOW_MEDIA_MAX_BYTES[mediaType]) {
+    const limitMb = FLOW_MEDIA_MAX_BYTES[mediaType] / (1024 * 1024)
     return { success: false as const, error: `El archivo supera el límite de ${limitMb}MB para este tipo` }
   }
 

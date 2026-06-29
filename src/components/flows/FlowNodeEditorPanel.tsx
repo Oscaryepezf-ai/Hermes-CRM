@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { uploadFlowAsset } from "@/lib/actions/flows"
+import { FLOW_MEDIA_MAX_BYTES, type FlowMediaType } from "@/lib/flows/types"
 import type { FlowNodeData } from "./FlowNodeCard"
 
 interface FlowNodeEditorPanelProps {
@@ -39,6 +40,17 @@ export function FlowNodeEditorPanel({ flowId, data, isStart, onChange, onSetStar
   function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+
+    const mediaType: FlowMediaType = file.type.startsWith("image/") ? "image"
+      : file.type.startsWith("video/") ? "video"
+      : "document"
+    const maxBytes = FLOW_MEDIA_MAX_BYTES[mediaType]
+    if (file.size > maxBytes) {
+      toast.error(`El archivo supera el límite de ${maxBytes / (1024 * 1024)}MB para ${mediaType === "video" ? "video" : mediaType === "image" ? "imagen" : "documento"}`)
+      e.target.value = ""
+      return
+    }
+
     const formData = new FormData()
     formData.append("file", file)
     startTransition(async () => {
