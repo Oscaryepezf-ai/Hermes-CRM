@@ -1,10 +1,10 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ReactFlow, Background, Controls, useNodesState,
-  type Connection, type Edge, type Node as RFNode, type NodeTypes,
+  type Connection, type Edge, type Node as RFNode, type NodeTypes, type ReactFlowInstance,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import { ArrowLeft, Plus, Loader2, Save } from "lucide-react"
@@ -57,8 +57,20 @@ export function FlowBuilderCanvas({ flowId, flowName, startNodeId: initialStartN
   const [startNodeId, setStartNodeId] = useState(initialStartNodeId)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const reactFlowInstanceRef = useRef<ReactFlowInstance<FlowFlowNode, Edge> | null>(null)
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null
+
+  // El panel lateral de edición reduce el ancho visible del lienzo (es un
+  // hermano flex, no un overlay) — sin este re-ajuste, los nodos que el
+  // fitView inicial ubicó al fondo quedan recortados fuera del área visible
+  // y no se puede soltar una conexión sobre ellos.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      reactFlowInstanceRef.current?.fitView({ padding: 0.2, duration: 200 })
+    }, 50)
+    return () => clearTimeout(id)
+  }, [!!selectedNode])
 
   const edges = useMemo<Edge[]>(() => {
     const list: Edge[] = []
@@ -174,6 +186,7 @@ export function FlowBuilderCanvas({ flowId, flowName, startNodeId: initialStartN
             onConnect={onConnect}
             onNodeClick={(_, node) => setSelectedNodeId(node.id)}
             onPaneClick={() => setSelectedNodeId(null)}
+            onInit={(instance) => { reactFlowInstanceRef.current = instance }}
             fitView
           >
             <Background />
