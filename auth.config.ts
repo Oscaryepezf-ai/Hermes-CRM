@@ -33,6 +33,7 @@ export const authConfig: NextAuthConfig = {
       if (token) {
         session.user.id = token.id as string;
         session.user.clinicId = token.clinicId as string;
+        (session.user as any).clinicIds = (token.clinicIds as string[]) ?? [token.clinicId as string];
         session.user.role = token.role as UserRole;
         session.user.avatarUrl = token.avatarUrl as string | null;
         (session.user as any).isActive = (token.isActive as boolean) ?? true;

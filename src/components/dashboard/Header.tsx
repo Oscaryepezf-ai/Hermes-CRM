@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CreateButton } from "./CreateButton";
+import { ClinicSwitcher } from "./ClinicSwitcher";
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard":  "Inicio",
@@ -19,14 +20,16 @@ const ROUTE_LABELS: Record<string, string> = {
 };
 
 interface HeaderProps {
-  clinicName: string;
-  userName:   string;
-  plan:       string;
+  clinicName:     string;
+  userName:       string;
+  plan:           string;
+  clinics:        { id: string; name: string }[];
+  activeClinicId: string;
   onCreateAppointment: () => void;
   onCreatePatient: () => void;
 }
 
-export function Header({ clinicName, userName, onCreateAppointment, onCreatePatient }: HeaderProps) {
+export function Header({ clinicName, userName, clinics, activeClinicId, onCreateAppointment, onCreatePatient }: HeaderProps) {
   const pathname = usePathname();
   const initials = userName
     .split(" ")
@@ -46,7 +49,7 @@ export function Header({ clinicName, userName, onCreateAppointment, onCreatePati
     >
       {/* Breadcrumb */}
       <nav className="flex items-center text-[12px] min-w-0" aria-label="Breadcrumb">
-        <span className="font-medium text-ink-tertiary hidden sm:block truncate max-w-[120px]">{clinicName}</span>
+        <ClinicSwitcher clinicName={clinicName} clinics={clinics} activeClinicId={activeClinicId} />
         <span className="mx-1.5 text-ink-disabled hidden sm:block">/</span>
         <span className="font-[550] text-ink-primary">{pageLabel}</span>
       </nav>

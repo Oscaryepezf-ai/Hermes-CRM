@@ -8,6 +8,7 @@ declare module 'next-auth' {
       email: string
       role: UserRole
       clinicId: string
+      clinicIds: string[]
       isActive: boolean
       isSuperAdmin: boolean
       avatarUrl?: string | null
@@ -20,6 +21,7 @@ declare module 'next-auth/jwt' {
     id: string
     role: UserRole
     clinicId: string
+    clinicIds: string[]
     isActive: boolean
     isSuperAdmin: boolean
     avatarUrl?: string | null

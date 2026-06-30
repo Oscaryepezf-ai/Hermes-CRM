@@ -67,6 +67,7 @@ model Clinic {
   expenses              Expense[]
   knowledgeDocuments    KnowledgeDocument[]
   flows                 Flow[]
+  userClinics           UserClinic[]
 }
 
 model ClinicChannel {
@@ -123,6 +124,21 @@ model User {
   uploadedFiles                PatientFile[]        @relation("UploadedFiles")
   superAdminActions            SuperAdminAuditLog[] @relation("SuperAdminActions")
   doctorPayments                Payment[]            @relation("DoctorPayments")
+  userClinics                  UserClinic[]
+}
+
+// Acceso adicional a clínicas más allá de la clínica de origen (User.clinicId)
+// — permite que un mismo usuario (ej. una recepcionista) opere varias
+// clínicas distintas alternando entre ellas sin tener cuentas separadas.
+model UserClinic {
+  userId    String
+  clinicId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, clinicId])
+  @@index([clinicId])
 }
 
 model SuperAdminAuditLog {

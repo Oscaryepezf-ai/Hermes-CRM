@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "../../../auth";
 import { db } from "@/lib/db";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { getAccessibleClinics } from "@/lib/actions/clinic-switch";
 
 export default async function DashboardLayout({
   children,
@@ -11,10 +12,13 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user?.clinicId) redirect("/login");
 
-  const clinic = await db.clinic.findUnique({
-    where: { id: session.user.clinicId },
-    select: { name: true, plan: true },
-  });
+  const [clinic, clinics] = await Promise.all([
+    db.clinic.findUnique({
+      where: { id: session.user.clinicId },
+      select: { name: true, plan: true },
+    }),
+    getAccessibleClinics(),
+  ]);
 
   if (!clinic) redirect("/login");
 
@@ -25,6 +29,8 @@ export default async function DashboardLayout({
       plan={clinic.plan}
       userRole={session.user.role}
       isSuperAdmin={(session.user as any).isSuperAdmin ?? false}
+      clinics={clinics}
+      activeClinicId={session.user.clinicId}
     >
       {children}
     </DashboardShell>

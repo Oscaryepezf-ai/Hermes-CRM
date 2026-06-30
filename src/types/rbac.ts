@@ -30,6 +30,7 @@ export type SessionUser = {
   email: string
   role: UserRole
   clinicId: string
+  clinicIds: string[]
   isActive: boolean
 }
 

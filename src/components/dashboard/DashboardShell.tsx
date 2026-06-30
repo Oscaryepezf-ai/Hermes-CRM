@@ -12,19 +12,21 @@ import type { UserRole } from "@prisma/client";
 import type { PipelineStage } from "@/types";
 
 interface DashboardShellProps {
-  children:     React.ReactNode;
-  clinicName:   string;
-  userName:     string;
-  plan:         string;
-  userRole:     UserRole;
-  isSuperAdmin?: boolean;
+  children:       React.ReactNode;
+  clinicName:     string;
+  userName:       string;
+  plan:           string;
+  userRole:       UserRole;
+  isSuperAdmin?:  boolean;
+  clinics:        { id: string; name: string }[];
+  activeClinicId: string;
 }
 
 // The sidebar width is tracked via CSS custom property --sidebar-w
 // set directly by Sidebar.tsx. This avoids React re-renders in the
 // content area (which would break @hello-pangea/dnd drag-and-drop).
 export function DashboardShell({
-  children, clinicName, userName, plan, userRole, isSuperAdmin = false,
+  children, clinicName, userName, plan, userRole, isSuperAdmin = false, clinics, activeClinicId,
 }: DashboardShellProps) {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -48,6 +50,8 @@ export function DashboardShell({
           clinicName={clinicName}
           userName={userName}
           plan={plan}
+          clinics={clinics}
+          activeClinicId={activeClinicId}
           onCreateAppointment={() => setShowAppointmentModal(true)}
           onCreatePatient={openCreatePatient}
         />
