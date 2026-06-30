@@ -24,6 +24,7 @@ export type CalendarEvent = {
   textColor: string
   extendedProps: {
     patientId: string
+    leadId?: string
     patientName: string
     patientPhone: string
     procedure: string
@@ -59,6 +60,16 @@ export async function getCalendarEvents(params: {
     orderBy: { scheduledAt: 'asc' },
   })
 
+  // Build patientId → leadId map for redirect to Patient 360 on confirm
+  const patientIds = [...new Set(appointments.map(a => a.patient.id))]
+  const leads = patientIds.length > 0
+    ? await db.lead.findMany({
+        where: { patientId: { in: patientIds }, clinicId: session.user.clinicId },
+        select: { id: true, patientId: true },
+      })
+    : []
+  const leadByPatientId = new Map(leads.map(l => [l.patientId, l.id]))
+
   const events: CalendarEvent[] = appointments.map((appt) => {
     const colors = getEventColors(appt.procedure, appt.dentistId)
     const endTime = new Date(appt.scheduledAt.getTime() + 60 * 60 * 1000)
@@ -72,15 +83,16 @@ export async function getCalendarEvents(params: {
       borderColor: colors.borderColor,
       textColor: colors.textColor,
       extendedProps: {
-        patientId: appt.patient.id,
-        patientName: appt.patient.fullName,
-        patientPhone: appt.patient.phone,
-        procedure: appt.procedure,
-        dentistId: appt.dentistId,
-        dentistName: appt.dentist.name,
-        status: appt.status,
-        value: appt.value ?? undefined,
-        notes: appt.notes ?? undefined,
+        patientId:      appt.patient.id,
+        leadId:         leadByPatientId.get(appt.patient.id),
+        patientName:    appt.patient.fullName,
+        patientPhone:   appt.patient.phone,
+        procedure:      appt.procedure,
+        dentistId:      appt.dentistId,
+        dentistName:    appt.dentist.name,
+        status:         appt.status,
+        value:          appt.value ?? undefined,
+        notes:          appt.notes ?? undefined,
         reminderStatus: appt.reminderStatus,
         patientConfirmed: appt.patientConfirmed,
       },

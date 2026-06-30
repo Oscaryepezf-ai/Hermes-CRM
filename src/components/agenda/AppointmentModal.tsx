@@ -141,7 +141,12 @@ export function AppointmentModal({ mode, start, end, event, onClose, onCreated, 
     if (result.success) {
       toast.success("Estado actualizado")
       onStatusChanged?.(event.id, status)
-      onClose()
+      // Al confirmar la cita, llevar al doctor a la historia clínica 360 del paciente
+      if (status === "CONFIRMED" && event.extendedProps.leadId) {
+        router.push(`/patients/${event.extendedProps.leadId}`)
+      } else {
+        onClose()
+      }
     } else {
       toast.error("Error al actualizar")
     }
