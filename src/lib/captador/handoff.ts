@@ -1,6 +1,9 @@
 import { db } from '@/lib/db'
 import { sendPushToClinicAdmins } from '@/lib/push/send-notification'
+import { moveLeadToStageBySlug }  from '@/lib/pipeline/auto-stage-sync'
 import type { QualificationResult } from './qualification-engine'
+
+const QUALIFYING_INTENTS = new Set(['consulta_precio', 'agendar_cita', 'urgencia_dental'])
 
 export async function handoffToHuman(params: {
   leadId:        string
@@ -49,6 +52,11 @@ export async function handoffToHuman(params: {
       note: `Hermes Captador calificó el lead. Tratamiento: ${params.qualification.treatment ?? 'por confirmar'}. Urgencia: ${params.qualification.urgency}`,
     },
   })
+
+  // Contactado → Calificado en el Pipeline (solo si el intent indica interés real)
+  if (QUALIFYING_INTENTS.has(params.qualification.intent)) {
+    moveLeadToStageBySlug(params.leadId, params.clinicId, 'calificado', `intent: ${params.qualification.intent}`).catch(console.error)
+  }
 
   // Push notification with lead data
   const urgencyEmoji =

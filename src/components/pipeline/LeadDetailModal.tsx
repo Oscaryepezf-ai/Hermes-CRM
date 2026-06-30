@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Clock, Phone, Mail, DollarSign } from "lucide-react";
+import { ArrowRight, Clock, Phone, Mail, DollarSign, Sparkles } from "lucide-react";
 import { getLeadHistory, convertLeadToPatient } from "@/lib/actions/leads";
 import { toast } from "sonner";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -115,11 +115,17 @@ export function LeadDetailModal({ lead, onClose }: LeadDetailModalProps) {
             <div className="space-y-3">
               {history.map((h) => (
                 <div key={h.id} className="flex items-start gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-semibold text-indigo-700">
-                      {h.user.name[0]}
-                    </span>
-                  </div>
+                  {h.user ? (
+                    <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs font-semibold text-indigo-700">
+                        {h.user.name[0]}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                    </div>
+                  )}
                   <div className="flex-1">
                     <div className="flex items-center gap-1 flex-wrap">
                       {h.fromStage ? (
@@ -138,7 +144,7 @@ export function LeadDetailModal({ lead, onClose }: LeadDetailModalProps) {
                     <div className="flex items-center gap-1 mt-0.5">
                       <Clock className="w-2.5 h-2.5 text-gray-300" />
                       <span className="text-xs text-gray-400">
-                        {h.user.name} · {formatDate(h.createdAt)}
+                        {h.user ? h.user.name : "Hermes IA"} · {formatDate(h.createdAt)}
                       </span>
                     </div>
                   </div>

@@ -43,7 +43,7 @@ async function DashboardContent() {
 
   const activity = recentHistory.map((h) => ({
     id: h.id,
-    user: h.user.name,
+    user: h.user?.name ?? "Hermes IA",
     action: h.fromStage ? "movió" : "creó lead",
     subject: h.lead.fullName,
     fromStage: h.fromStage ?? null,

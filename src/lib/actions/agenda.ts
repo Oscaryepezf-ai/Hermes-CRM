@@ -12,6 +12,7 @@ import {
 } from "@/lib/push/notification-templates"
 import { completeMission } from "@/lib/onboarding/activation-checklist"
 import { getEventColors } from "@/lib/agenda/colors"
+import { moveLeadToStageBySlug } from "@/lib/pipeline/auto-stage-sync"
 
 export type CalendarEvent = {
   id: string
@@ -267,6 +268,9 @@ export async function scheduleLeadAppointment(
     })
   ).catch(console.error)
 
+  // Calificado → Cita Agendada en el Pipeline
+  moveLeadToStageBySlug(data.leadId, session.user.clinicId, 'cita_agendada', 'cita agendada').catch(console.error)
+
   revalidatePath('/agenda')
   revalidatePath('/pipeline')
   completeMission(session.user.clinicId, 'CREAR_CITA').catch(() => {})
@@ -289,6 +293,17 @@ export async function updateAppointmentStatusFromCalendar(
     where: { id: appointmentId },
     data: { status },
   })
+
+  // Cita Agendada → Convertido en el Pipeline cuando la cita se completa
+  if (status === 'COMPLETED') {
+    const lead = await db.lead.findFirst({
+      where: { patientId: appt.patientId, clinicId: session.user.clinicId },
+      select: { id: true },
+    })
+    if (lead) {
+      moveLeadToStageBySlug(lead.id, session.user.clinicId, 'convertido', 'cita completada').catch(console.error)
+    }
+  }
 
   if (status === 'CANCELLED') {
     const patient = await db.patient.findUniqueOrThrow({

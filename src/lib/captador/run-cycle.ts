@@ -8,6 +8,7 @@ import { sendMessengerMessage }    from '@/lib/meta/messenger-client'
 import { sendInstagramMessage }    from '@/lib/meta/instagram-client'
 import { getChannelAccessToken }   from '@/lib/meta/lead-from-messenger'
 import type { MarketingChannel }   from '@prisma/client'
+import { moveLeadToStageBySlug }   from '@/lib/pipeline/auto-stage-sync'
 
 export async function runCaptadorCycle(params: {
   leadId:    string
@@ -203,6 +204,12 @@ export async function sendAgentReply(
 
   if (!delivered) {
     console.error(`[captador] no se pudo entregar respuesta a lead=${leadId} canal=${channel} — revisa el token/conexión del canal`)
+  }
+
+  // Si es el primer mensaje del agente a este lead → Contacto Nuevo → Contactado
+  const prevOutbound = await db.message.count({ where: { leadId, direction: 'OUTBOUND' } })
+  if (prevOutbound === 0) {
+    moveLeadToStageBySlug(leadId, clinicId, 'contactado', 'primer mensaje enviado').catch(console.error)
   }
 
   // Persist outbound message
