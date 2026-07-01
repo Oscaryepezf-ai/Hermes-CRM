@@ -5,6 +5,7 @@ import { getClinicalHistory } from "@/lib/actions/clinical";
 import { getOrthodonticHistory, getOrthodonticVisitsByLead } from "@/lib/actions/orthodontics";
 import { getPrescriptionsByLead } from "@/lib/actions/prescriptions";
 import { getPatientFiles } from "@/lib/actions/files";
+import { getBudgets } from "@/lib/actions/budgets";
 import { Patient360View } from "@/components/patients/Patient360View";
 
 export const dynamic = "force-dynamic";
@@ -23,13 +24,13 @@ export default async function Patient360Page({
 
   const canViewClinico = session.user.role === "ADMIN" || session.user.role === "DOCTOR";
 
-  const [clinicalRes, orthoHistoryRes, orthoVisitsRes, prescriptionsRes, filesRes, clinic, patient] = await Promise.all([
+  const [clinicalRes, orthoHistoryRes, orthoVisitsRes, prescriptionsRes, filesRes, clinic, patient, budgetsRes, doctors] = await Promise.all([
     canViewClinico ? getClinicalHistory(id) : Promise.resolve(null),
     canViewClinico ? getOrthodonticHistory(id) : Promise.resolve(null),
     canViewClinico ? getOrthodonticVisitsByLead(id) : Promise.resolve(null),
     canViewClinico ? getPrescriptionsByLead(id) : Promise.resolve(null),
     getPatientFiles(id),
-    db.clinic.findUnique({ where: { id: session.user.clinicId }, select: { name: true } }),
+    db.clinic.findUnique({ where: { id: session.user.clinicId }, select: { name: true, logoUrl: true, phone: true, address: true, city: true } }),
     lead.patientId
       ? db.patient.findUnique({
           where: { id: lead.patientId },
@@ -41,6 +42,8 @@ export default async function Patient360Page({
           },
         })
       : Promise.resolve(null),
+    getBudgets(id),
+    db.user.findMany({ where: { clinicId: session.user.clinicId, role: { in: ["DOCTOR", "ADMIN"] }, isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
 
   return (
@@ -76,6 +79,9 @@ export default async function Patient360Page({
       clinicName={clinic?.name ?? ""}
       patient={patient}
       canViewClinico={canViewClinico}
+      budgets={budgetsRes.success ? budgetsRes.data : []}
+      doctors={doctors}
+      clinic={{ name: clinic?.name ?? "", logoUrl: clinic?.logoUrl ?? null, phone: clinic?.phone ?? null, address: clinic?.address ?? null, city: clinic?.city ?? null }}
     />
   );
 }

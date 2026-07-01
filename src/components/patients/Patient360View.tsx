@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft, Phone, Mail, User, FileText, Smile, Activity,
-  Sparkles, Wallet, ClipboardList, Folder,
+  Sparkles, Wallet, ClipboardList, Folder, Receipt,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { STATE_CONFIG } from "@/lib/journey/state-machine"
@@ -16,7 +16,8 @@ import { Odontogram } from "@/components/dr-clinic/Odontogram"
 import { OrthodonticsForm } from "./OrthodonticsForm"
 import { PrescriptionsTab } from "./PrescriptionsTab"
 import { ArchivosTab } from "./ArchivosTab"
-import type { JourneyState, DocumentType, MarketingChannel, Sex } from "@prisma/client"
+import { PresupuestosTab } from "./PresupuestosTab"
+import type { JourneyState, DocumentType, MarketingChannel, Sex, BudgetStatus } from "@prisma/client"
 import type { ClinicalHistoryWithLead, OdontogramData } from "@/types/clinical"
 import type { OrthodonticHistoryWithLead, OrthodonticVisitWithDoctor } from "@/types/orthodontics"
 import type { PrescriptionWithDoctor } from "@/types/prescriptions"
@@ -25,7 +26,14 @@ import type { Patient, Appointment, User as DentistUser } from "@prisma/client"
 
 type Tab =
   | "filiacion" | "historia" | "odontograma" | "periodontograma"
-  | "ortodoncia" | "cuenta" | "prescripciones" | "archivos"
+  | "ortodoncia" | "cuenta" | "prescripciones" | "archivos" | "presupuestos"
+
+type BudgetSummary = {
+  id: string; number: number; status: BudgetStatus; total: number; subtotal: number
+  discountPct: number; createdAt: Date | string; validUntil: Date | string | null
+  notes: string | null; doctorId: string | null; doctor: { name: string } | null
+  items: { description: string; quantity: number; unitPrice: number; discount: number; total: number; serviceId: string | null }[]
+}
 
 type PatientWithAppointments = Patient & {
   appointments: (Appointment & { dentist: Pick<DentistUser, "id" | "name"> })[]
@@ -65,11 +73,15 @@ interface Patient360ViewProps {
   clinicName: string
   patient: PatientWithAppointments | null
   canViewClinico: boolean
+  budgets: BudgetSummary[]
+  doctors: { id: string; name: string }[]
+  clinic: { name: string; logoUrl: string | null; phone: string | null; address: string | null; city: string | null }
 }
 
 const TAB_ICONS: Record<Tab, typeof User> = {
   filiacion: User, historia: FileText, odontograma: Smile, periodontograma: Activity,
   ortodoncia: Sparkles, cuenta: Wallet, prescripciones: ClipboardList, archivos: Folder,
+  presupuestos: Receipt,
 }
 
 const NAV_ITEMS: { id: Tab; label: string; icon: typeof User; requiresClinico?: boolean }[] = [
@@ -79,11 +91,12 @@ const NAV_ITEMS: { id: Tab; label: string; icon: typeof User; requiresClinico?: 
   { id: "periodontograma", label: "Periodontograma",   icon: TAB_ICONS.periodontograma, requiresClinico: true },
   { id: "ortodoncia",      label: "Ortodoncia",        icon: TAB_ICONS.ortodoncia, requiresClinico: true },
   { id: "cuenta",          label: "Estado de cuenta",  icon: TAB_ICONS.cuenta },
+  { id: "presupuestos",    label: "Presupuestos",      icon: TAB_ICONS.presupuestos },
   { id: "prescripciones",  label: "Prescripciones",    icon: TAB_ICONS.prescripciones, requiresClinico: true },
   { id: "archivos",        label: "Archivos",          icon: TAB_ICONS.archivos },
 ]
 
-export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orthodonticVisits, prescriptions, files, clinicName, patient, canViewClinico }: Patient360ViewProps) {
+export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orthodonticVisits, prescriptions, files, clinicName, patient, canViewClinico, budgets, doctors, clinic }: Patient360ViewProps) {
   const [tab, setTab] = useState<Tab>("filiacion")
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.requiresClinico || canViewClinico)
@@ -197,6 +210,17 @@ export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orth
 
           {tab === "archivos" && (
             <ArchivosTab leadId={lead.id} files={files} />
+          )}
+
+          {tab === "presupuestos" && (
+            <PresupuestosTab
+              leadId={lead.id}
+              budgets={budgets}
+              doctors={doctors}
+              clinic={clinic}
+              lead={{ fullName: lead.fullName, phone: lead.phone, email: lead.email }}
+              canEdit={canViewClinico}
+            />
           )}
         </div>
       </div>

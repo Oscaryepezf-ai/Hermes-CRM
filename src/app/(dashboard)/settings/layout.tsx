@@ -2,17 +2,18 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical } from "lucide-react"
+import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical, Building2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/settings",           label: "Plan",       icon: CreditCard   },
-  { href: "/settings/channels",  label: "Canales",    icon: Radio        },
-  { href: "/settings/assistant", label: "Captador IA", icon: Bot         },
-  { href: "/settings/flows",     label: "Flujos",     icon: Workflow     },
-  { href: "/settings/calendar",  label: "Agendador",  icon: Calendar     },
-  { href: "/settings/users",     label: "Equipo",     icon: Users        },
-  { href: "/settings/simular",   label: "Simular",    icon: FlaskConical },
+  { href: "/settings",           label: "Plan",        icon: CreditCard   },
+  { href: "/settings/clinica",   label: "Mi clínica",  icon: Building2    },
+  { href: "/settings/channels",  label: "Canales",     icon: Radio        },
+  { href: "/settings/assistant", label: "Captador IA", icon: Bot          },
+  { href: "/settings/flows",     label: "Flujos",      icon: Workflow     },
+  { href: "/settings/calendar",  label: "Agendador",   icon: Calendar     },
+  { href: "/settings/users",     label: "Equipo",      icon: Users        },
+  { href: "/settings/simular",   label: "Simular",     icon: FlaskConical },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
