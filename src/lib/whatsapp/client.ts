@@ -47,6 +47,34 @@ export async function sendWhatsAppTextMessage(
   }
 }
 
+// ── Send a document (PDF, etc.) ───────────────────────────
+export async function sendWhatsAppDocumentMessage(
+  phone:       string,
+  documentUrl: string,
+  filename:    string,
+  caption:     string,
+  credentials: { phoneId: string; token: string }
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${GRAPH}/${credentials.phoneId}/messages`, {
+      method:  'POST',
+      headers: {
+        'Authorization': `Bearer ${credentials.token}`,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to:                phone.replace(/\D/g, ''),
+        type:              'document',
+        document: { link: documentUrl, filename, caption },
+      }),
+    })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 // ── Send using clinic DB credentials (convenience) ───────
 export async function sendWhatsAppMessageForClinic(
   clinicId: string,

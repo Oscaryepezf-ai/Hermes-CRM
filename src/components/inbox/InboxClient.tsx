@@ -12,14 +12,15 @@ type Counts = { total: number; unread: number; channels: Record<string, number> 
 type Label  = { id: string; name: string; color: string; emoji: string | null }
 
 interface InboxClientProps {
-  initialConversations: InboxConversationItem[]
-  initialCounts:        Counts
-  initialLabels:        Label[]
+  initialConversations:      InboxConversationItem[]
+  initialCounts:             Counts
+  initialLabels:             Label[]
+  initialOpenConversationId?: string | null
 }
 
-export function InboxClient({ initialConversations, initialCounts, initialLabels }: InboxClientProps) {
+export function InboxClient({ initialConversations, initialCounts, initialLabels, initialOpenConversationId }: InboxClientProps) {
   const [filters, setFilters]       = useState<InboxFilters>({})
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(initialOpenConversationId ?? null)
 
   return (
     <div className="-m-3 md:-m-6 flex h-[calc(100vh-52px)] overflow-hidden bg-canvas">

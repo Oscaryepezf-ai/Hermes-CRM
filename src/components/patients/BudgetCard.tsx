@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { FileText, Download, Pencil, Trash2, ChevronDown, Loader2 } from "lucide-react"
+import { FileText, Download, Pencil, Trash2, ChevronDown, Loader2, Send } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { updateBudgetStatus, deleteBudget } from "@/lib/actions/budgets"
@@ -68,6 +68,51 @@ export function BudgetCard({ budget, clinic, lead, canEdit, onEdit }: BudgetCard
       clinic,
       lead
     )
+  }
+
+  async function sendWhatsApp() {
+    startTransition(async () => {
+      try {
+        toast.loading("Generando y enviando PDF por WhatsApp…", { id: "ws-send" })
+
+        // 1. Generate PDF doc (client-side) and convert to blob
+        const { generateBudgetPDFDoc } = await import("@/lib/pdf/budget-pdf")
+        const pdfDoc = await generateBudgetPDFDoc(
+          { ...budget, createdAt: new Date(budget.createdAt), validUntil: budget.validUntil ? new Date(budget.validUntil) : null },
+          clinic,
+          lead
+        )
+        const pdfBlob = pdfDoc.output("blob")
+        const filename = `Presupuesto-${String(budget.number).padStart(3, "0")}-${lead.fullName.replace(/\s+/g, "_")}.pdf`
+        const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" })
+
+        // 2. Send to server
+        const formData = new FormData()
+        formData.append("pdf", pdfFile)
+
+        const res = await fetch(`/api/budgets/${budget.id}/whatsapp`, {
+          method: "POST",
+          body:   formData,
+        })
+        const data = await res.json()
+
+        if (!res.ok || !data.success) {
+          toast.error(data.error ?? "Error al enviar", { id: "ws-send" })
+          return
+        }
+
+        toast.success("¡Presupuesto enviado por WhatsApp!", { id: "ws-send" })
+        router.refresh()
+
+        // 3. Navigate to inbox conversation
+        if (data.leadId) {
+          router.push(`/inbox?leadId=${data.leadId}`)
+        }
+      } catch (err) {
+        console.error(err)
+        toast.error("Error al generar el PDF", { id: "ws-send" })
+      }
+    })
   }
 
   function changeStatus(status: BudgetStatus) {
@@ -143,6 +188,19 @@ export function BudgetCard({ budget, clinic, lead, canEdit, onEdit }: BudgetCard
           className="flex items-center gap-1.5 text-[11px] font-medium text-ink-secondary hover:text-brand-600 px-2 py-1 rounded-lg hover:bg-brand-50 transition-ui"
         >
           <Download className="w-3.5 h-3.5" /> Descargar PDF
+        </button>
+
+        <button
+          type="button"
+          onClick={sendWhatsApp}
+          disabled={isPending}
+          className="flex items-center gap-1.5 text-[11px] font-medium text-white bg-[#128C7E] hover:bg-[#0e7266] px-2.5 py-1 rounded-lg transition-ui disabled:opacity-40"
+        >
+          {isPending
+            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            : <Send className="w-3.5 h-3.5" />
+          }
+          Enviar por WhatsApp
         </button>
 
         {canEdit && budget.status === "BORRADOR" && (
