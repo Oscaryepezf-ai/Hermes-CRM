@@ -7,61 +7,55 @@ import Link from "next/link";
 
 // ─── Plan data ────────────────────────────────────────────────────────────────
 
-type PlanKey = "STARTER" | "PROFESIONAL" | "CLINICA";
+type PlanKey = "ESENCIAL" | "PRO" | "MULTISEDE";
 
 const PLAN_CONFIG = {
-  STARTER: {
-    label:    "Basic",
-    price:    "$49 USD/mes",
+  ESENCIAL: {
+    label:    "Esencial",
+    price:    "$99 USD/mes",
     icon:     null,
     features: [
-      "Dashboard con métricas básicas",
-      "Pipeline Kanban completo",
-      "Historial de conversaciones",
-      "Agendar citas manualmente",
-      "Cumplimiento LOPDP básico",
-      "Hasta 2 usuarios",
+      "Pipeline + Bandeja unificada",
+      "Hermes Captador 24/7",
+      "Hermes Agendador",
+      "Usuarios ilimitados",
+      "Soporte por ticket",
     ],
     checkColor: "text-ink-disabled",
     cta:        null,
   },
-  PROFESIONAL: {
-    label:    "Premium",
-    price:    "$129 USD/mes",
+  PRO: {
+    label:    "Pro",
+    price:    "$197 USD/mes",
     icon:     "zap" as const,
     features: [
-      "Hermes AI — Clasificador automático",
-      "Hermes AI — Redactor de respuestas",
-      "Hermes AI — Scheduler inteligente",
-      "Agente Re-engagement",
-      "Agente Post-consulta (Hermes MD)",
-      "~8h ahorradas por semana",
-      "2FA obligatorio + LOPDP completo",
-      "Usuarios ilimitados",
+      "Todo lo de Esencial",
+      "Hermes Analítico semanal",
+      "Dr. Clinic con dictado por voz",
+      "Facebook + Instagram DM",
+      "Soporte por chat 24h",
     ],
     checkColor: "text-indigo-500",
-    cta:        "Actualizar a Premium",
+    cta:        "Agendar demo — Pro",
   },
-  CLINICA: {
-    label:    "Élite",
-    price:    "desde $500/mes",
-    sub:      "+ $200 por doctor adicional",
+  MULTISEDE: {
+    label:    "Multi-sede",
+    price:    "$297 USD/mes",
+    sub:      "Red dental o franquicia",
     icon:     "star" as const,
     features: [
-      "Historial clínico desde Hermes MD",
-      "Odontograma de solo lectura",
-      "Recetas y documentos en CRM",
-      "Agente entrega de documentos",
-      "Audit log completo + exportación CSV",
-      "Soporte prioritario 24/7",
-      "White label completo",
+      "Todo lo de Pro",
+      "Hermes Reactivador automático",
+      "Dashboard multi-sede",
+      "Reportes por sucursal",
+      "Soporte prioritario",
     ],
     checkColor: "text-amber-400",
-    cta:        "Contactar para Élite",
+    cta:        "Contactar para Multi-sede",
   },
 } as const;
 
-const PLAN_KEYS: PlanKey[] = ["STARTER", "PROFESIONAL", "CLINICA"];
+const PLAN_KEYS: PlanKey[] = ["ESENCIAL", "PRO", "MULTISEDE"];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -127,7 +121,7 @@ function PlanCard({
         <button
           className={cn(
             "mt-5 w-full py-2 rounded-xl text-sm font-medium transition-colors",
-            planKey === "CLINICA"
+            planKey === "MULTISEDE"
               ? "border border-line-soft text-ink-secondary hover:bg-canvas"
               : "bg-indigo-600 text-white hover:bg-indigo-700"
           )}
@@ -146,7 +140,7 @@ export function SettingsView({ clinicName, currentPlan, apiKeyMasked }: Settings
 
   const plan = (PLAN_KEYS.includes(currentPlan as PlanKey)
     ? currentPlan
-    : "STARTER") as PlanKey;
+    : "ESENCIAL") as PlanKey;
 
   return (
     <div className="max-w-4xl space-y-6">
