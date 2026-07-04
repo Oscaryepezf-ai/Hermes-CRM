@@ -13,6 +13,7 @@ const loginSchema = z.object({
 
 export const { handlers, auth: baseAuth, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true,
   providers: [
     Credentials({
       async authorize(credentials) {

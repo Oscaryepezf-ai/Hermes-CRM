@@ -24,6 +24,7 @@ const ROLE_ALLOWED_MODULES: Record<string, string[]> = {
 }
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   pages: {
     signIn: "/login",
     error: "/login",
