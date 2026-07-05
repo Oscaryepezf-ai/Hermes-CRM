@@ -2,18 +2,19 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical, Building2 } from "lucide-react"
+import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical, Building2, LayoutTemplate } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/settings",           label: "Plan",        icon: CreditCard   },
-  { href: "/settings/clinica",   label: "Mi clínica",  icon: Building2    },
-  { href: "/settings/channels",  label: "Canales",     icon: Radio        },
-  { href: "/settings/assistant", label: "Captador IA", icon: Bot          },
-  { href: "/settings/flows",     label: "Flujos",      icon: Workflow     },
-  { href: "/settings/calendar",  label: "Agendador",   icon: Calendar     },
-  { href: "/settings/users",     label: "Equipo",      icon: Users        },
-  { href: "/settings/simular",   label: "Simular",     icon: FlaskConical },
+  { href: "/settings",            label: "Plan",        icon: CreditCard     },
+  { href: "/settings/clinica",    label: "Mi clínica",  icon: Building2      },
+  { href: "/settings/channels",   label: "Canales",     icon: Radio          },
+  { href: "/settings/assistant",  label: "Captador IA", icon: Bot            },
+  { href: "/settings/flows",      label: "Flujos",      icon: Workflow       },
+  { href: "/settings/plantillas", label: "Plantillas",  icon: LayoutTemplate },
+  { href: "/settings/calendar",   label: "Agendador",   icon: Calendar       },
+  { href: "/settings/users",      label: "Equipo",      icon: Users          },
+  { href: "/settings/simular",    label: "Simular",     icon: FlaskConical   },
 ]
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -27,12 +28,10 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       </div>
 
       <div className="flex gap-6 items-start">
-        {/* Settings sidebar nav */}
         <nav className="w-[180px] flex-shrink-0">
           <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
-            {NAV_ITEMS.map((item, i) => {
+            {NAV_ITEMS.map((item) => {
               const Icon = item.icon
-              // Exact match for /settings, prefix match for sub-pages
               const isActive = item.href === "/settings"
                 ? pathname === "/settings"
                 : pathname.startsWith(item.href)

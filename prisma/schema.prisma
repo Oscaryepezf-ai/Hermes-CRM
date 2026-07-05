@@ -69,6 +69,8 @@ model Clinic {
   flows                 Flow[]
   userClinics           UserClinic[]
   budgets               Budget[]
+  waTemplates           WaTemplate[]
+  waCampaigns           WaCampaign[]
 }
 
 model ClinicChannel {
@@ -260,6 +262,7 @@ model Lead {
   reactivationCampaigns ReactivationCampaign[]
   inboxConversations    InboxConversation[]
   budgets               Budget[]
+  waCampaignSends       WaCampaignSend[]
 
   // ─── Filiación (ficha 360) ────────────────────────────────
   nickname       String?
@@ -1205,4 +1208,124 @@ enum SelfReportedRole {
   PROFESIONAL_MULTISEDE
   ESTUDIANTE
   OTRO
+}
+
+// ─── Plantillas de WhatsApp Marketing ────────────────────────────────────────
+
+model WaTemplate {
+  id              String            @id @default(cuid())
+  clinicId        String
+  clinic          Clinic            @relation(fields: [clinicId], references: [id])
+
+  name            String            // snake_case, único por clínica (requerido por Meta)
+  category        WaTemplateCategory
+  language        String            @default("es")
+  status          WaTemplateStatus  @default(BORRADOR)
+
+  // Meta tracking
+  metaId          String?           // ID devuelto por Meta al hacer submit
+  metaStatus      String?           // APPROVED / REJECTED / PENDING
+  rejectionReason String?
+
+  // Componentes
+  headerType      WaHeaderType?
+  headerText      String?
+  headerExample   String?           // ejemplo de variable del header
+  body            String            @db.Text
+  bodyExamples    Json?             // ["val1", "val2"] para variables {{1}}, {{2}}
+  footer          String?
+  buttons         Json?             // [{ type: "QUICK_REPLY"|"URL"|"PHONE_NUMBER", text, value? }]
+
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  campaigns       WaCampaign[]
+
+  @@unique([clinicId, name])
+  @@index([clinicId])
+}
+
+model WaCampaign {
+  id           String           @id @default(cuid())
+  clinicId     String
+  clinic       Clinic           @relation(fields: [clinicId], references: [id])
+  templateId   String
+  template     WaTemplate       @relation(fields: [templateId], references: [id])
+
+  name         String
+  status       WaCampaignStatus @default(BORRADOR)
+
+  // Filtros de destinatarios (JSON flexible)
+  targetFilter Json             // { all: bool, stageIds: [], labelIds: [] }
+  // Mapeo variable → campo: { "1": "fullName", "2": "treatment" }
+  variableMap  Json             @default("{}")
+
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  totalCount   Int              @default(0)
+  sentCount    Int              @default(0)
+  failedCount  Int              @default(0)
+
+  sends        WaCampaignSend[]
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([clinicId])
+}
+
+model WaCampaignSend {
+  id           String         @id @default(cuid())
+  campaignId   String
+  campaign     WaCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId       String
+  lead         Lead           @relation(fields: [leadId], references: [id])
+  phone        String
+  status       WaSendStatus   @default(PENDIENTE)
+  errorMsg     String?
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+
+  @@index([campaignId])
+  @@index([leadId])
+}
+
+enum WaTemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+}
+
+enum WaTemplateStatus {
+  BORRADOR
+  EN_REVISION
+  APROBADA
+  RECHAZADA
+  PAUSADA
+}
+
+enum WaHeaderType {
+  TEXT
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+enum WaCampaignStatus {
+  BORRADOR
+  PROGRAMADA
+  ENVIANDO
+  COMPLETADA
+  CANCELADA
+}
+
+enum WaSendStatus {
+  PENDIENTE
+  ENVIADO
+  ENTREGADO
+  FALLIDO
 }
