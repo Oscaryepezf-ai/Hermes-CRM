@@ -63,12 +63,26 @@ export async function handoffToHuman(params: {
     params.qualification.urgency === 'alta'  ? '🔴' :
     params.qualification.urgency === 'media' ? '🟡' : '🟢'
 
-  const name     = (params.collectedData.name as string | undefined) ?? 'Nuevo prospecto'
+  const name      = (params.collectedData.name as string | undefined) ?? 'Nuevo prospecto'
   const treatment = params.qualification.treatment ?? 'tratamiento por confirmar'
 
+  // #4 — Check if any human agent is assigned in the Inbox; alert if handoff is unattended
+  const inboxConv = await db.inboxConversation.findFirst({
+    where:  { leadId: params.leadId, clinicId: params.clinicId },
+    select: { assignedToId: true },
+  })
+  const isUnattended = !inboxConv?.assignedToId
+
+  const pushTitle = isUnattended
+    ? `⚠️ Handoff sin agente — ${urgencyEmoji} ${name}`
+    : `${urgencyEmoji} Lead calificado por Hermes`
+  const pushBody = isUnattended
+    ? `Nadie asignado · ${treatment} · Urgencia ${params.qualification.urgency}. Asigna un agente ahora.`
+    : `${name} · ${treatment} · Urgencia ${params.qualification.urgency}`
+
   await sendPushToClinicAdmins(params.clinicId, {
-    title: `${urgencyEmoji} Lead calificado por Hermes`,
-    body:  `${name} · ${treatment} · Urgencia ${params.qualification.urgency}`,
-    data:  { url: '/pipeline', type: 'appointment_created', entityId: params.leadId },
+    title: pushTitle,
+    body:  pushBody,
+    data:  { url: `/patients/${params.leadId}`, type: 'appointment_created', entityId: params.leadId },
   }).catch(console.error)
 }

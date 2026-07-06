@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { z } from 'zod'
 import type { MarketingChannel } from '@prisma/client'
 
 export type RouterDecision = {
@@ -27,20 +28,25 @@ function getEcuadorHour(): number {
   return new Date(dateStr).getHours()
 }
 
+const ConfigSchema = z.object({
+  businessHours: z.object({
+    start: z.number().int().min(0).max(23),
+    end:   z.number().int().min(0).max(23),
+  }).default({ start: parseInt(process.env.CAPTADOR_START_HOUR ?? '8'), end: parseInt(process.env.CAPTADOR_END_HOUR ?? '20') }),
+  maxTurns:     z.number().int().min(1).max(20).default(parseInt(process.env.CAPTADOR_MAX_TURNS ?? '4')),
+  tone:         z.enum(['formal', 'amigable']).default('amigable'),
+  specialties:  z.array(z.string()).default(['Ortodoncia', 'Implantes', 'Blanqueamiento', 'Limpieza', 'Cirugía']),
+  knowledgeBase:z.string().default(''),
+  mode:         z.enum(['basico', 'consultivo', 'flujo']).default('basico'),
+  flowId:       z.string().nullable().default(null),
+})
+
 function parseConfig(raw: unknown): CaptadorConfig {
-  const c = (raw ?? {}) as Record<string, unknown>
-  return {
-    businessHours: {
-      start: (c.businessHours as { start?: number })?.start ?? parseInt(process.env.CAPTADOR_START_HOUR ?? '8'),
-      end:   (c.businessHours as { end?: number })?.end   ?? parseInt(process.env.CAPTADOR_END_HOUR   ?? '20'),
-    },
-    maxTurns:   (c.maxTurns   as number | undefined) ?? parseInt(process.env.CAPTADOR_MAX_TURNS ?? '4'),
-    tone:       (c.tone       as 'formal' | 'amigable' | undefined) ?? 'amigable',
-    specialties: (c.specialties as string[] | undefined) ?? ['Ortodoncia', 'Implantes', 'Blanqueamiento', 'Limpieza', 'Cirugía'],
-    knowledgeBase: (c.knowledgeBase as string | undefined) ?? '',
-    mode: (c.mode as 'basico' | 'consultivo' | 'flujo' | undefined) ?? 'basico',
-    flowId: (c.flowId as string | undefined) ?? null,
+  const result = ConfigSchema.safeParse(raw ?? {})
+  if (!result.success) {
+    console.error('[captador] captadorConfig malformado — usando defaults:', result.error.flatten())
   }
+  return result.success ? result.data : ConfigSchema.parse({})
 }
 
 export async function routeIncomingMessage(params: {

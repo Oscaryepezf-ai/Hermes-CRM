@@ -70,6 +70,14 @@ export async function updateCaptadorSettings(data: z.infer<typeof UpdateSchema>)
     return { success: false as const, error: "El horario de cierre debe ser después del de apertura" }
   }
 
+  // #8 — Validate flowId exists and belongs to this clinic when mode='flujo'
+  if (parsed.data.config.mode === "flujo") {
+    const flowId = parsed.data.config.flowId
+    if (!flowId) return { success: false as const, error: "Debes seleccionar un flujo para el modo 'Flujo de botones'" }
+    const flow = await db.flow.findFirst({ where: { id: flowId, clinicId: guard.user.clinicId } })
+    if (!flow) return { success: false as const, error: "El flujo seleccionado no existe o no pertenece a esta clínica" }
+  }
+
   await db.clinic.update({
     where: { id: guard.user.clinicId },
     data: {

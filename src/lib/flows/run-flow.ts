@@ -40,7 +40,16 @@ export async function runFlowCycle(params: {
       const button  = buttons.find(b => b.id === params.buttonId)
       targetNodeId  = button ? button.nextNodeId : conv.currentFlowNodeId
     } else {
-      // Mensaje de texto libre en vez de tocar un botón — reenvía el nodo actual.
+      // #9 — Free text during flow: resend current node with a gentle nudge.
+      // The user typed instead of tapping a button — remind them of the options.
+      const currentNode = await db.flowNode.findUnique({ where: { id: conv.currentFlowNodeId } })
+      if (currentNode) {
+        const buttons = (currentNode.buttons as unknown as FlowButton[]) ?? []
+        if (buttons.length > 0) {
+          await sendFlowMessageNode(params.leadId, params.clinicId, params.channel, currentNode, buttons)
+          return
+        }
+      }
       targetNodeId = conv.currentFlowNodeId
     }
   } else {

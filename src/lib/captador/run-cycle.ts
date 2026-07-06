@@ -20,6 +20,10 @@ export async function runCaptadorCycle(params: {
   // Guard: only process text messages
   if (!params.message?.trim()) return
 
+  // #3 — Reset journeyState for dormant leads (inactive > 30 days)
+  // Prevents the agent from resuming a stale conversation as if no time passed.
+  await resetDormantConversation(params.leadId)
+
   const decision = await routeIncomingMessage({
     leadId:  params.leadId,
     channel: params.channel,
@@ -223,4 +227,36 @@ export async function sendAgentReply(
       isAutomatic: true,
     },
   })
+}
+
+// Resetea la conversación del agente si el lead lleva > 30 días inactivo,
+// para que el agente empiece desde cero en vez de retomar un hilo obsoleto.
+async function resetDormantConversation(leadId: string): Promise<void> {
+  const conv = await db.agentConversation.findUnique({
+    where:  { leadId },
+    select: { id: true, status: true, updatedAt: true },
+  })
+  if (!conv || conv.status === 'HANDED_OFF' || conv.status === 'COMPLETED') return
+
+  const daysSinceUpdate = (Date.now() - conv.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
+  if (daysSinceUpdate < 30) return
+
+  await Promise.all([
+    db.agentConversation.update({
+      where: { leadId },
+      data:  {
+        status:            'ACTIVE',
+        turnCount:         0,
+        currentFlowNodeId: null,
+        detectedNeeds:     [],
+        objections:        [],
+        rapportScore:      0,
+      },
+    }),
+    db.lead.update({
+      where: { id: leadId },
+      data:  { journeyState: 'PROSPECTO' },
+    }),
+  ])
+  console.log(`[captador] journeyState reseteado para lead=${leadId} (${Math.round(daysSinceUpdate)} días inactivo)`)
 }

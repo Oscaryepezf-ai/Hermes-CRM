@@ -101,6 +101,12 @@ export function FlowBuilderCanvas({ flowId, flowName, startNodeId: initialStartN
   }, [setNodes])
 
   const onNodesDelete = useCallback((deleted: RFNode[]) => {
+    // #10 — Block deletion of the START node; it would orphan the entire flow
+    if (startNodeId && deleted.some((d) => d.id === startNodeId)) {
+      toast.error("No puedes eliminar el nodo de inicio. Conecta otro nodo como inicio primero.")
+      setNodes((nds) => nds) // no-op to trigger re-render keeping the node
+      return
+    }
     const ids = deleted.map((d) => d.id)
     setNodes((nds) => nds.map((n) => ({
       ...n,

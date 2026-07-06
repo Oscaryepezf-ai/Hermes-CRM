@@ -76,7 +76,9 @@ export async function generateCaptadorResponse(
     userPrompt,
   })
 
-  return result.success ? result.data.trim() : '¡Hola! Gracias por escribirnos. En breve te atendemos. 😊'
+  const raw = result.success ? result.data.trim() : '¡Hola! Gracias por escribirnos. En breve te atendemos. 😊'
+  // WhatsApp hard limit: 4096 chars. Truncate gracefully to avoid silent FAILED status.
+  return raw.length > 4000 ? raw.slice(0, 3997) + '…' : raw
 }
 
 export function getHandoffMessage(clinicName: string, reason: string): string {

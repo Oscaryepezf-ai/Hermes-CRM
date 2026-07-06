@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { disconnectChannel, connectWhatsApp } from "@/lib/actions/channels"
+import { disconnectChannel, connectWhatsApp, checkWhatsAppTokenHealth } from "@/lib/actions/channels"
 import { toast } from "sonner"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -160,6 +160,13 @@ function WhatsAppCard({ channel }: { channel: ChannelRecord | null }) {
   const [showToken,   setShowToken]   = useState(false)
   const [phoneNumId,  setPhoneNumId]  = useState("")
   const [token,       setToken]       = useState("")
+  const [tokenHealth, setTokenHealth] = useState<{ valid: boolean; reason?: string } | null>(null)
+
+  // #5 — Check token validity on mount when connected
+  useEffect(() => {
+    if (!connected) return
+    checkWhatsAppTokenHealth().then(setTokenHealth).catch(() => {})
+  }, [connected])
 
   const handleConnect = async () => {
     if (!phoneNumId.trim() || !token.trim()) {
@@ -188,8 +195,15 @@ function WhatsAppCard({ channel }: { channel: ChannelRecord | null }) {
     <ChannelCard meta={meta} connected={connected} badge={connected ? "Activo" : "Sin configurar"}>
       {connected ? (
         <div className="mt-4 space-y-3">
+          {tokenHealth && !tokenHealth.valid && (
+            <StatusBanner
+              type="error"
+              title="⚠️ Token de WhatsApp inválido o expirado"
+              detail={tokenHealth.reason ?? "Regenera el token en Meta Business Suite → WhatsApp → API Setup"}
+            />
+          )}
           <StatusBanner
-            type="success"
+            type={tokenHealth?.valid === false ? "warning" : "success"}
             title={waMeta?.displayName ?? "WhatsApp Business conectado"}
             detail={waMeta?.phoneNumber ? `Número: ${waMeta.phoneNumber}` : channel?.pageId ? `Phone ID: ${channel.pageId.slice(0, 8)}••••` : undefined}
           />

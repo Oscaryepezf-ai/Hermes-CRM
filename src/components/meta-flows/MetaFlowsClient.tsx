@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Layers, CheckCircle2, Clock, XCircle, PauseCircle, RefreshCw, Trash2, Send, BarChart2, ChevronDown, ChevronUp, Key } from "lucide-react"
 import { toast } from "sonner"
@@ -78,11 +78,26 @@ export function MetaFlowsClient({ initialFlows, hasPrivateKey }: Props) {
     const r = await syncFlowStatus(id)
     setLoading(null)
     if (r.success) {
-      if (r.validationErrors?.length) toast.warning(`Estado: ${r.status} — hay errores de validación`)
-      else toast.success(`Estado: ${r.status}`)
+      // #12 — Show validation errors with detail so the operator can fix the JSON
+      if (r.validationErrors?.length) {
+        const details = r.validationErrors.map((e: any) => e.message ?? JSON.stringify(e)).join(' · ')
+        toast.warning(`Estado: ${r.status} — Errores: ${details}`)
+      } else {
+        toast.success(`Estado: ${r.status}`)
+      }
       router.refresh()
     } else toast.error(r.error)
   }
+
+  // #11 — Auto-sync PUBLISHED flows on mount to detect expired/blocked status
+  useEffect(() => {
+    const published = initialFlows.filter(f => f.status === "PUBLISHED" && f.metaFlowId)
+    if (!published.length) return
+    Promise.allSettled(published.map(f => syncFlowStatus(f.id)))
+      .then(() => router.refresh())
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar este flow?")) return

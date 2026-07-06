@@ -26,7 +26,8 @@ export async function moveLeadToStageBySlug(
     db.pipelineStage.findFirst({ where: { clinicId, slug: targetSlug } }),
   ])
 
-  if (!lead || !targetStage) return
+  if (!lead) { console.warn(`[auto-stage-sync] lead ${leadId} no encontrado`); return }
+  if (!targetStage) { console.warn(`[auto-stage-sync] etapa '${targetSlug}' no existe en clínica ${clinicId} — fue borrada?`); return }
   if (lead.stage && lead.stage.order >= targetStage.order) return
 
   await db.$transaction([

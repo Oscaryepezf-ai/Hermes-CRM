@@ -166,3 +166,41 @@ export async function getChannelToken(
   if (!record?.isActive) return null
   return record.accessToken
 }
+
+// ── #5 Verificar si el token de WhatsApp sigue válido ────────────────────────
+// Llama a Meta Graph API con el token almacenado. Si devuelve error 190
+// (token inválido/expirado), retorna { valid: false, reason }.
+export async function checkWhatsAppTokenHealth(): Promise<{
+  valid:    boolean
+  reason?:  string
+  phoneId?: string
+}> {
+  const guard = await requirePermission("settings", "view")
+  if (!guard.authorized) return { valid: false, reason: "No autorizado" }
+
+  const channel = await db.clinicChannel.findUnique({
+    where:  { clinicId_channel: { clinicId: guard.user.clinicId, channel: "WHATSAPP" } },
+    select: { accessToken: true, pageId: true, isActive: true },
+  })
+  if (!channel?.isActive || !channel.accessToken || !channel.pageId) {
+    return { valid: false, reason: "Canal de WhatsApp no configurado" }
+  }
+
+  try {
+    const res  = await fetch(
+      `https://graph.facebook.com/v23.0/${channel.pageId}?fields=display_phone_number`,
+      { headers: { Authorization: `Bearer ${channel.accessToken}` } }
+    )
+    const json = await res.json()
+    if (json.error) {
+      const code   = json.error.code
+      const reason = code === 190
+        ? "Token de WhatsApp expirado — regenera el token en Meta Business Suite"
+        : json.error.message ?? "Error desconocido de Meta"
+      return { valid: false, reason }
+    }
+    return { valid: true, phoneId: json.display_phone_number }
+  } catch {
+    return { valid: false, reason: "No se pudo conectar con Meta API" }
+  }
+}

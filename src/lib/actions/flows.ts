@@ -81,12 +81,39 @@ export async function createFlow(name: string) {
   return { success: true as const, data: updated }
 }
 
+// #7 — DFS cycle detection: returns true if nodes contain a circular reference
+function hasCycle(nodes: z.infer<typeof NodeSchema>[]): boolean {
+  type FlowButton = { nextNodeId?: string | null }
+  const adj = new Map<string, string[]>()
+  for (const n of nodes) {
+    const buttons = (n.buttons ?? []) as FlowButton[]
+    adj.set(n.id, buttons.map(b => b.nextNodeId).filter(Boolean) as string[])
+  }
+  const visited  = new Set<string>()
+  const inStack  = new Set<string>()
+  function dfs(id: string): boolean {
+    if (inStack.has(id)) return true
+    if (visited.has(id))  return false
+    visited.add(id)
+    inStack.add(id)
+    for (const next of adj.get(id) ?? []) { if (dfs(next)) return true }
+    inStack.delete(id)
+    return false
+  }
+  return nodes.some(n => !visited.has(n.id) && dfs(n.id))
+}
+
 export async function saveFlow(flowId: string, nodes: z.infer<typeof NodeSchema>[], startNodeId: string | null) {
   const guard = await requirePermission("hermes_ai", "configure")
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
   const parsedNodes = z.array(NodeSchema).safeParse(nodes)
   if (!parsedNodes.success) return { success: false as const, error: "Datos de flujo inválidos" }
+
+  // #7 — Reject if the graph has a cycle (would cause infinite loop in WhatsApp)
+  if (hasCycle(parsedNodes.data)) {
+    return { success: false as const, error: "El flujo tiene una referencia circular entre nodos. Revisa las conexiones para evitar loops infinitos." }
+  }
 
   const flow = await db.flow.findFirst({ where: { id: flowId, clinicId: guard.user.clinicId } })
   if (!flow) return { success: false as const, error: "Flujo no encontrado" }
