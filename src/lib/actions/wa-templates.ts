@@ -196,9 +196,13 @@ export async function syncWaTemplateStatus(id: string) {
   const result = await syncTemplateStatusFromMeta(tpl.metaId, waChannel.accessToken)
   if (!result.success) return { success: false, error: result.error }
 
+  // Meta statuses: APPROVED, REINSTATED → APROBADA
+  // REJECTED, DISABLED → RECHAZADA | PAUSED → PAUSADA | resto → EN_REVISION
   const newStatus: WaTemplateStatus =
-    result.metaStatus === "APPROVED" ? "APROBADA" :
-    result.metaStatus === "REJECTED" ? "RECHAZADA" : "EN_REVISION"
+    (result.metaStatus === "APPROVED"   || result.metaStatus === "REINSTATED") ? "APROBADA"  :
+    (result.metaStatus === "REJECTED"   || result.metaStatus === "DISABLED")   ? "RECHAZADA" :
+     result.metaStatus === "PAUSED"                                             ? "PAUSADA"   :
+    "EN_REVISION"
 
   await db.waTemplate.update({
     where: { id },

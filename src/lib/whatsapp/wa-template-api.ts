@@ -3,7 +3,7 @@
 import type { WaTemplate, WaHeaderType } from "@prisma/client"
 import type { TemplateButton } from "@/lib/actions/wa-templates"
 
-const GRAPH_URL = "https://graph.facebook.com/v22.0"
+const GRAPH_URL = "https://graph.facebook.com/v23.0"
 
 // ─── Submit template to Meta for approval ─────────────────────────────────────
 
@@ -16,9 +16,10 @@ export async function submitTemplateToMeta(
     const components = buildComponents(tpl)
 
     const body = {
-      name:       tpl.name,
-      language:   tpl.language,
-      category:   tpl.category,
+      name:             tpl.name,
+      language:         tpl.language,
+      category:         tpl.category,
+      parameter_format: "positional",
       components,
     }
 

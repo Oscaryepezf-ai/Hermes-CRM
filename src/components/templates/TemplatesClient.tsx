@@ -102,16 +102,30 @@ export function TemplatesClient({ initialTemplates, stages }: Props) {
         </button>
       </div>
 
-      {/* Reglas rápidas de Meta */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[12px] text-amber-800 space-y-1">
-        <p className="font-semibold">📋 Reglas clave de Meta</p>
-        <ul className="list-disc list-inside space-y-0.5 text-amber-700">
-          <li>Solo puedes enviar a contactos que dieron consentimiento (opt-in)</li>
-          <li>El cuerpo tiene máx. 1024 caracteres · El footer máx. 60</li>
-          <li>Variables con formato <code className="bg-amber-100 px-1 rounded">{"{{1}}"}</code>, <code className="bg-amber-100 px-1 rounded">{"{{2}}"}</code> — siempre con ejemplos</li>
-          <li>Máx. 3 botones por plantilla · No uses palabras tipo "GRATIS" o "GANA"</li>
-          <li>Aprobación en ~24h · Rechazo: debes esperar 30 días para resubmitir</li>
-        </ul>
+      {/* Costos y reglas Meta */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Precios */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-[12px] text-blue-800">
+          <p className="font-semibold mb-1.5">💰 Costo por mensaje (Ecuador · vigente jul 2026)</p>
+          <div className="space-y-0.5 text-blue-700">
+            <div className="flex justify-between"><span>Marketing</span><span className="font-bold">$0.0740 USD</span></div>
+            <div className="flex justify-between"><span>Utilidad</span><span className="font-bold">$0.0113 USD</span></div>
+            <div className="flex justify-between"><span>Autenticación</span><span className="font-bold">$0.0113 USD</span></div>
+            <div className="flex justify-between text-blue-500 text-[11px] pt-1"><span>Mensajes dentro de ventana de servicio al cliente</span><span className="font-bold">GRATIS</span></div>
+          </div>
+        </div>
+
+        {/* Reglas */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-[12px] text-amber-800">
+          <p className="font-semibold mb-1.5">📋 Reglas clave de Meta</p>
+          <ul className="list-disc list-inside space-y-0.5 text-amber-700">
+            <li>Solo a contactos con opt-in (consentimiento)</li>
+            <li>Cuerpo máx. 1024 chars · Footer máx. 60</li>
+            <li>Variables <code className="bg-amber-100 px-1 rounded">{"{{1}}"}</code> siempre con ejemplos</li>
+            <li>Máx. 3 botones · Aprobación ~24h</li>
+            <li>Rechazo: espera 30 días para resubmitir</li>
+          </ul>
+        </div>
       </div>
 
       {/* Template list */}
