@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical, Building2, LayoutTemplate } from "lucide-react"
+import { CreditCard, Calendar, Users, Radio, Bot, Workflow, FlaskConical, Building2, LayoutTemplate, AppWindow } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/settings/assistant",  label: "Captador IA", icon: Bot            },
   { href: "/settings/flows",      label: "Flujos",      icon: Workflow       },
   { href: "/settings/plantillas", label: "Plantillas",  icon: LayoutTemplate },
+  { href: "/settings/meta-flows", label: "WA Flows",    icon: AppWindow      },
   { href: "/settings/calendar",   label: "Agendador",   icon: Calendar       },
   { href: "/settings/users",      label: "Equipo",      icon: Users          },
   { href: "/settings/simular",    label: "Simular",     icon: FlaskConical   },

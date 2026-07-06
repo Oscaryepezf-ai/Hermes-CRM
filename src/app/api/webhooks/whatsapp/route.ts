@@ -46,7 +46,11 @@ type WAMessage = {
   text?:       { body: string }
   image?:      { id: string; mime_type: string }
   audio?:      { id: string; mime_type: string }
-  interactive?: { type: string; button_reply?: { id: string; title: string } }
+  interactive?: {
+    type:          string
+    button_reply?: { id: string; title: string }
+    nfm_reply?:    { response_json: string; name: string; body: string }
+  }
   errors?:     unknown[]
 }
 
@@ -109,6 +113,11 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
           await upsertInboxConversation({ clinicId, leadId, channel: 'WHATSAPP', preview: text, isInbound: true })
 
           const buttonId = msg.type === 'interactive' ? msg.interactive?.button_reply?.id : undefined
+
+          // Flow completion (nfm_reply) — guardar respuesta en MetaFlowSubmission
+          if (msg.type === 'interactive' && msg.interactive?.type === 'nfm_reply' && msg.interactive.nfm_reply) {
+            await handleFlowCompletion(msg.interactive.nfm_reply, clinicId, leadId).catch(console.error)
+          }
 
           await markCampaignAsResponded(leadId).catch(console.error)
           await runCaptadorCycle({ leadId, message: text, channel: 'WHATSAPP', buttonId }).catch(console.error)
@@ -232,4 +241,64 @@ async function findOrCreateWhatsAppLead(
   })
 
   return { leadId: lead.id, clinicId, isNew: true }
+}
+
+// ── Procesa respuestas de WhatsApp Flows (nfm_reply) ──────────────────────────
+
+async function handleFlowCompletion(
+  nfm: { response_json: string; name: string; body: string },
+  clinicId: string,
+  leadId:   string,
+) {
+  let flowData: Record<string, unknown> = {}
+  try {
+    flowData = JSON.parse(nfm.response_json)
+  } catch {
+    flowData = { raw: nfm.response_json }
+  }
+
+  // Buscar el flow por el flow_token incluido en la respuesta
+  const flowToken = flowData.flow_token as string | undefined
+  let metaFlowId: string | null = null
+
+  if (flowToken) {
+    // flow_token se incluye en el payload si el flow fue enviado por el CRM
+    const metaFlow = await db.metaFlow.findFirst({
+      where: { clinicId },
+      select: { id: true },
+    })
+    metaFlowId = metaFlow?.id ?? null
+  }
+
+  if (!metaFlowId) {
+    // Buscar cualquier flow publicado de la clínica como fallback
+    const anyFlow = await db.metaFlow.findFirst({
+      where:  { clinicId, status: "PUBLISHED" },
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+    })
+    metaFlowId = anyFlow?.id ?? null
+  }
+
+  if (metaFlowId) {
+    await db.metaFlowSubmission.create({
+      data: {
+        flowId:   metaFlowId,
+        clinicId,
+        leadId,
+        data:     flowData as any,
+        flowToken: flowToken ?? null,
+      },
+    })
+  }
+
+  // Actualizar el lead con datos del flow si corresponden
+  if (flowData.treatment && typeof flowData.treatment === "string") {
+    await db.lead.update({
+      where: { id: leadId },
+      data:  { interest: flowData.treatment },
+    }).catch(() => {})
+  }
+
+  console.log(`[wa-webhook] flow completado por lead=${leadId}, flow=${metaFlowId}`)
 }

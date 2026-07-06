@@ -71,6 +71,7 @@ model Clinic {
   budgets               Budget[]
   waTemplates           WaTemplate[]
   waCampaigns           WaCampaign[]
+  metaFlows             MetaFlow[]
 }
 
 model ClinicChannel {
@@ -263,6 +264,7 @@ model Lead {
   inboxConversations    InboxConversation[]
   budgets               Budget[]
   waCampaignSends       WaCampaignSend[]
+  metaFlowSubmissions   MetaFlowSubmission[]
 
   // ─── Filiación (ficha 360) ────────────────────────────────
   nickname       String?
@@ -1328,4 +1330,69 @@ enum WaSendStatus {
   ENVIADO
   ENTREGADO
   FALLIDO
+}
+
+// ─── Meta WhatsApp Flows ──────────────────────────────────────────────────────
+
+model MetaFlow {
+  id          String          @id @default(cuid())
+  clinicId    String
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
+
+  name        String
+  description String?
+  category    MetaFlowCategory
+  status      MetaFlowStatus  @default(DRAFT)
+
+  // Meta IDs
+  metaFlowId  String?         // ID devuelto por Meta al crear
+  metaStatus  String?         // DRAFT / PUBLISHED / DEPRECATED / BLOCKED / THROTTLED
+
+  // Flow JSON schema (pantallas y componentes)
+  screens     Json
+
+  submittedAt DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  submissions MetaFlowSubmission[]
+
+  @@index([clinicId])
+}
+
+model MetaFlowSubmission {
+  id         String   @id @default(cuid())
+  flowId     String
+  flow       MetaFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  clinicId   String
+  leadId     String?
+  lead       Lead?    @relation(fields: [leadId], references: [id])
+
+  // Datos enviados por el usuario al completar el flow
+  data       Json
+  // Token único por envío (traza)
+  flowToken  String?
+  // Mensaje de WhatsApp asociado
+  waMessageId String?
+
+  receivedAt DateTime @default(now())
+
+  @@index([flowId])
+  @@index([clinicId])
+  @@index([leadId])
+}
+
+enum MetaFlowCategory {
+  LEAD_QUALIFICATION
+  APPOINTMENT_REQUEST
+  POST_VISIT_SURVEY
+  CUSTOM
+}
+
+enum MetaFlowStatus {
+  DRAFT
+  PUBLISHED
+  DEPRECATED
+  BLOCKED
 }
