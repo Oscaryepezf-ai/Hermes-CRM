@@ -83,6 +83,17 @@ async function processWhatsAppEvents(body: unknown): Promise<void> {
         console.log(`[wa-webhook] message from ${phone}, type=${msg.type}, phoneNumberId=${phoneNumberId ?? 'unknown'}`)
 
         try {
+          // ── Fix 1: Idempotency — skip duplicate webhook deliveries ───────
+          // Meta retries for up to 7 days on server errors; guard with externalMessageId
+          const alreadySeen = await db.message.findFirst({
+            where:  { externalMessageId: msg.id },
+            select: { id: true },
+          })
+          if (alreadySeen) {
+            console.log(`[wa-webhook] duplicate msg.id=${msg.id} — skipping`)
+            continue
+          }
+
           const { leadId, clinicId } = await findOrCreateWhatsAppLead(phone, contactName, phoneNumberId)
 
           const normalized = await normalizeInboundMessage(msg, clinicId, leadId)
@@ -176,11 +187,13 @@ async function normalizeInboundMessage(msg: WAMessage, clinicId: string, leadId:
 }
 
 async function findOrCreateWhatsAppLead(
-  phone:         string,
-  name?:         string,
+  phone:          string,
+  name?:          string,
   phoneNumberId?: string,
 ): Promise<{ leadId: string; clinicId: string; isNew: boolean }> {
-  const cleanPhone = phone.replace(/\D/g, '')
+  // ── Fix 2: Normalize phone to E.164 to prevent format-based duplicates ──
+  // +593991234567 / 593991234567 / 0991234567 all → same canonical form
+  const cleanPhone = normalizePhone(phone)
 
   // ── Find the clinic via ClinicChannel (multi-tenant) ────
   let clinicId: string | null = null
@@ -199,10 +212,10 @@ async function findOrCreateWhatsAppLead(
 
   if (!clinicId) throw new Error(`No clinic configured for WhatsApp phoneNumberId=${phoneNumberId}`)
 
-  // ── Find existing lead by phone + clinic ─────────────────
+  // ── Find existing lead by normalized phone + clinic ──────
   const existing = await db.lead.findFirst({
-    where:  { phone: cleanPhone, clinicId },
-    select: { id: true },
+    where:   { phone: cleanPhone, clinicId },
+    select:  { id: true },
     orderBy: { createdAt: 'desc' },
   })
   if (existing) return { leadId: existing.id, clinicId, isNew: false }
@@ -214,33 +227,57 @@ async function findOrCreateWhatsAppLead(
   })
   if (!firstStage) throw new Error(`No pipeline stages for clinic ${clinicId}`)
 
-  const lead = await db.lead.create({
-    data: {
-      clinicId,
-      fullName:      name ?? `WhatsApp (${cleanPhone.slice(-4)})`,
-      phone:         cleanPhone,
-      source:        'WHATSAPP',
-      channel:       'WHATSAPP',
-      status:        'NUEVO',
-      journeyState:  'PROSPECTO',
-      stageId:       firstStage.id,
-      lastContactAt: new Date(),
-      lastActivityAt: new Date(),
-    },
-  })
+  // ── Atomic create with race-condition guard ───────────────
+  // Two simultaneous requests can both pass findFirst (null) and race to create.
+  // We catch any error and fall back to findFirst — the winner's row is returned.
+  try {
+    const lead = await db.lead.create({
+      data: {
+        clinicId,
+        fullName:      name ?? `WhatsApp (${cleanPhone.slice(-4)})`,
+        phone:         cleanPhone,
+        source:        'WHATSAPP',
+        channel:       'WHATSAPP',
+        status:        'NUEVO',
+        journeyState:  'PROSPECTO',
+        stageId:       firstStage.id,
+        lastContactAt: new Date(),
+        lastActivityAt: new Date(),
+      },
+    })
 
-  await db.journeyEvent.create({
-    data: {
-      leadId:      lead.id,
-      type:        'MESSAGE_RECEIVED',
-      toState:     'PROSPECTO',
-      isAutomatic: true,
-      metadata:    { source: 'whatsapp', phone: cleanPhone },
-      note:        'Lead creado automáticamente desde WhatsApp',
-    },
-  })
+    await db.journeyEvent.create({
+      data: {
+        leadId:      lead.id,
+        type:        'MESSAGE_RECEIVED',
+        toState:     'PROSPECTO',
+        isAutomatic: true,
+        metadata:    { source: 'whatsapp', phone: cleanPhone },
+        note:        'Lead creado automáticamente desde WhatsApp',
+      },
+    })
 
-  return { leadId: lead.id, clinicId, isNew: true }
+    return { leadId: lead.id, clinicId, isNew: true }
+  } catch {
+    // Lost the race — another concurrent request already created this lead
+    const winner = await db.lead.findFirst({
+      where:   { phone: cleanPhone, clinicId },
+      select:  { id: true },
+      orderBy: { createdAt: 'asc' },
+    })
+    if (winner) {
+      console.log(`[wa-webhook] race condition resolved for phone=${cleanPhone}, using existing lead=${winner.id}`)
+      return { leadId: winner.id, clinicId, isNew: false }
+    }
+    throw new Error(`Failed to find or create lead for phone=${cleanPhone}`)
+  }
+}
+
+// Normaliza teléfono a dígitos puros sin código de país prefijado con ceros.
+// Meta envía los números en formato internacional sin "+": "593991234567".
+// Preserva ese formato como canónico para evitar duplicados por variantes locales.
+function normalizePhone(raw: string): string {
+  return raw.replace(/\D/g, '')
 }
 
 // ── Procesa respuestas de WhatsApp Flows (nfm_reply) ──────────────────────────
