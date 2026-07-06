@@ -4,6 +4,7 @@ import { z } from "zod"
 import { requirePermission, unauthorizedResponse } from "@/lib/rbac/guards"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import { capiFire_Purchase } from "@/lib/meta/conversions-api"
 
 const RegisterPaymentSchema = z.object({
   patientId: z.string(),
@@ -85,6 +86,21 @@ export async function registerPayment(data: z.infer<typeof RegisterPaymentSchema
       comment: parsed.data.comment,
     },
   })
+
+  // CAPI: Purchase event — revenue registered
+  const fullPatient = await db.patient.findUnique({
+    where:  { id: patientId },
+    select: { phone: true, email: true },
+  })
+  if (fullPatient?.phone) {
+    capiFire_Purchase({
+      phone:       fullPatient.phone,
+      email:       fullPatient.email,
+      amount:      parsed.data.amount,
+      currency:    "USD",
+      description: parsed.data.comment ?? "Tratamiento dental",
+    })
+  }
 
   revalidatePath("/reportes/ingresos")
   revalidatePath("/reportes/servicios-vendidos")

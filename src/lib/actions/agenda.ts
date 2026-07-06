@@ -13,6 +13,7 @@ import {
 import { completeMission } from "@/lib/onboarding/activation-checklist"
 import { getEventColors } from "@/lib/agenda/colors"
 import { moveLeadToStageBySlug } from "@/lib/pipeline/auto-stage-sync"
+import { capiFire_Schedule } from "@/lib/meta/conversions-api"
 
 export type CalendarEvent = {
   id: string
@@ -282,6 +283,9 @@ export async function scheduleLeadAppointment(
 
   // Calificado → Cita Agendada en el Pipeline
   moveLeadToStageBySlug(data.leadId, session.user.clinicId, 'cita_agendada', 'cita agendada').catch(console.error)
+
+  // CAPI: Schedule event — appointment booked
+  capiFire_Schedule({ phone: lead.phone, email: lead.email, treatment: data.procedure })
 
   revalidatePath('/agenda')
   revalidatePath('/pipeline')

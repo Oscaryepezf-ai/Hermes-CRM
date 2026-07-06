@@ -1,6 +1,7 @@
 import { db } from '@/lib/db'
 import { sendPushToClinicAdmins } from '@/lib/push/send-notification'
 import { moveLeadToStageBySlug }  from '@/lib/pipeline/auto-stage-sync'
+import { capiFire_CompleteRegistration } from '@/lib/meta/conversions-api'
 import type { QualificationResult } from './qualification-engine'
 
 const QUALIFYING_INTENTS = new Set(['consulta_precio', 'agendar_cita', 'urgencia_dental'])
@@ -56,6 +57,19 @@ export async function handoffToHuman(params: {
   // Contactado → Calificado en el Pipeline (solo si el intent indica interés real)
   if (QUALIFYING_INTENTS.has(params.qualification.intent)) {
     moveLeadToStageBySlug(params.leadId, params.clinicId, 'calificado', `intent: ${params.qualification.intent}`).catch(console.error)
+  }
+
+  // CAPI: CompleteRegistration — lead fully qualified, ready for human follow-up
+  const lead = await db.lead.findUnique({
+    where:  { id: params.leadId },
+    select: { phone: true, email: true },
+  })
+  if (lead) {
+    capiFire_CompleteRegistration({
+      phone:     lead.phone,
+      email:     lead.email,
+      treatment: params.qualification.treatment,
+    })
   }
 
   // Push notification with lead data

@@ -6,6 +6,7 @@ import { upsertInboxConversation } from '@/lib/inbox/conversations'
 import { createDefaultStages } from '@/lib/pipeline/stage-manager'
 import { resolveWhatsAppMedia } from '@/lib/whatsapp/media'
 import { analyzeImage, transcribeAudio } from '@/lib/ai/client'
+import { capiFire_Lead } from '@/lib/meta/conversions-api'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 60
@@ -257,7 +258,10 @@ async function findOrCreateWhatsAppLead(
       },
     })
 
-    return { leadId: lead.id, clinicId, isNew: true }
+    // CAPI: fire Lead event for new contacts from WhatsApp ads
+  capiFire_Lead({ phone: cleanPhone, fullName: name })
+
+  return { leadId: lead.id, clinicId, isNew: true }
   } catch {
     // Lost the race — another concurrent request already created this lead
     const winner = await db.lead.findFirst({

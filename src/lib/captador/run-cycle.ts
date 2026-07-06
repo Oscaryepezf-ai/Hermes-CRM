@@ -9,6 +9,7 @@ import { sendInstagramMessage }    from '@/lib/meta/instagram-client'
 import { getChannelAccessToken }   from '@/lib/meta/lead-from-messenger'
 import type { MarketingChannel }   from '@prisma/client'
 import { moveLeadToStageBySlug }   from '@/lib/pipeline/auto-stage-sync'
+import { capiFire_Contact }        from '@/lib/meta/conversions-api'
 
 export async function runCaptadorCycle(params: {
   leadId:    string
@@ -214,6 +215,9 @@ export async function sendAgentReply(
   const prevOutbound = await db.message.count({ where: { leadId, direction: 'OUTBOUND' } })
   if (prevOutbound === 0) {
     moveLeadToStageBySlug(leadId, clinicId, 'contactado', 'primer mensaje enviado').catch(console.error)
+    // CAPI: Contact event — agent first response establishes contact
+    const lead = await db.lead.findUnique({ where: { id: leadId }, select: { phone: true, email: true } })
+    if (lead) capiFire_Contact({ phone: lead.phone, email: lead.email })
   }
 
   // Persist outbound message
