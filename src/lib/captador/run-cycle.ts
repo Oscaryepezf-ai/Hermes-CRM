@@ -99,14 +99,19 @@ export async function runCaptadorCycle(params: {
     collectedSoFar:      collectedData,
   })
 
-  // Update collected data
-  const updatedData: Record<string, unknown> = {
+  // Update collected data — includes Método Prisma profiling fields
+  const merged = {
     ...collectedData,
-    ...(qualification.extractedName     && { name:     qualification.extractedName }),
-    ...(qualification.extractedBudget   && { budget:   qualification.extractedBudget }),
-    ...(qualification.extractedBestTime && { bestTime: qualification.extractedBestTime }),
-    ...(qualification.treatment         && { treatment: qualification.treatment }),
+    ...(qualification.extractedName     && { name:       qualification.extractedName }),
+    ...(qualification.extractedBudget   && { budget:     qualification.extractedBudget }),
+    ...(qualification.extractedBestTime && { bestTime:   qualification.extractedBestTime }),
+    ...(qualification.treatment         && { treatment:  qualification.treatment }),
+    ...(qualification.detectedNeed      && { motivation: qualification.detectedNeed }),
     urgency: qualification.urgency,
+  }
+  const updatedData: Record<string, unknown> = {
+    ...merged,
+    prismaStage: !merged.name ? 'INTENCION' : !merged.treatment ? 'PERFIL' : 'VALOR_CITA',
   }
 
   // Immediate handoff: urgency or complaint
