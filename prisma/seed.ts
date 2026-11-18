@@ -31,6 +31,21 @@ async function main() {
 
   console.log("✅ Clínica creada:", clinic.name);
 
+  // Misiones de activación (checklist del dashboard). Mismo estado inicial que
+  // al registrar una clínica: la cuenta ya está creada, las otras dos pendientes.
+  for (const missionKey of ["CUENTA_CREADA", "CREAR_CITA", "REGISTRAR_EVOLUCION"] as const) {
+    await prisma.activationMission.upsert({
+      where: { clinicId_missionKey: { clinicId: clinic.id, missionKey } },
+      update: {},
+      create: {
+        clinicId: clinic.id,
+        missionKey,
+        completed: missionKey === "CUENTA_CREADA",
+        completedAt: missionKey === "CUENTA_CREADA" ? new Date() : null,
+      },
+    });
+  }
+
   // Usuarios
   const passwordHash = await bcrypt.hash("dentflow2024", 12);
 

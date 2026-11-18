@@ -39,7 +39,8 @@ export function ActivationChecklist() {
   if (!checklist || !checklist.success) return null
   const { missions, completed, total, allDone, rewardAvailable, rewardClaimed } = checklist.data
 
-  if (dismissed || (allDone && rewardClaimed)) return null
+  // Sin misiones (clínicas anteriores a la función o sin seed) no hay nada que mostrar
+  if (dismissed || total === 0 || (allDone && rewardClaimed)) return null
 
   const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0
 
