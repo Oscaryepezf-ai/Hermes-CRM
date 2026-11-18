@@ -154,19 +154,6 @@ export async function disconnectChannel(channel: MarketingChannel) {
   return { success: true as const }
 }
 
-// ── Obtener token de un canal (solo server-side) ─────────
-export async function getChannelToken(
-  clinicId: string,
-  channel:  MarketingChannel
-): Promise<string | null> {
-  const record = await db.clinicChannel.findUnique({
-    where:  { clinicId_channel: { clinicId, channel } },
-    select: { accessToken: true, isActive: true },
-  })
-  if (!record?.isActive) return null
-  return record.accessToken
-}
-
 // ── #5 Verificar si el token de WhatsApp sigue válido ────────────────────────
 // Llama a Meta Graph API con el token almacenado. Si devuelve error 190
 // (token inválido/expirado), retorna { valid: false, reason }.

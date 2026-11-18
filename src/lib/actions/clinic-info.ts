@@ -42,7 +42,9 @@ export async function updateClinicInfo(formData: FormData) {
 
   if (logoFile instanceof File && logoFile.size > 0) {
     if (logoFile.size > 5 * 1024 * 1024) return { success: false as const, error: "El logo no puede superar 5MB" }
-    const ext = logoFile.name.split(".").pop() ?? "png"
+    const EXT_BY_TYPE: Record<string, string> = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }
+    const ext = EXT_BY_TYPE[logoFile.type]
+    if (!ext) return { success: false as const, error: "El logo debe ser PNG, JPG o WebP" }
     const blob = await put(`clinics/${guard.user.clinicId}/logo.${ext}`, logoFile, { access: "public" })
     logoUrl = blob.url
   }

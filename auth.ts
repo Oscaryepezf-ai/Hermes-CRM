@@ -5,6 +5,7 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { authConfig } from "./auth.config";
+import { rateLimit } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -21,6 +22,9 @@ export const { handlers, auth: baseAuth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+
+        // Freno de fuerza bruta: 8 intentos por email cada 15 min
+        if (!rateLimit(`login:${email.toLowerCase()}`, 8, 15 * 60 * 1000)) return null;
 
         const user = await db.user.findUnique({
           where: { email },

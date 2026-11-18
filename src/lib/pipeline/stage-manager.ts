@@ -153,6 +153,12 @@ export async function deleteStage(params: {
   })
   if (!stage)            throw new Error('Etapa no encontrada')
   if (stage.isProtected) throw new Error('Esta etapa no puede ser eliminada')
+  if (params.moveLeadsToId === params.stageId) throw new Error('La etapa destino debe ser distinta')
+  const dest = await db.pipelineStage.findFirst({
+    where: { id: params.moveLeadsToId, clinicId: params.clinicId },
+    select: { id: true },
+  })
+  if (!dest) throw new Error('Etapa destino no válida')
 
   // Move leads to destination stage
   await db.lead.updateMany({

@@ -28,6 +28,8 @@ async function getSession() {
 export async function createLead(
   data: z.infer<typeof createLeadSchema>
 ): Promise<ActionResponse<{ id: string }>> {
+  const guard = await requirePermission("pipeline", "create");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
     const parsed = createLeadSchema.safeParse(data);
@@ -35,6 +37,13 @@ export async function createLead(
       return { success: false, error: parsed.error.issues[0].message };
     }
 
+    if (parsed.data.stageId) {
+      const ok = await db.pipelineStage.findFirst({
+        where: { id: parsed.data.stageId, clinicId: session.user.clinicId },
+        select: { id: true },
+      });
+      if (!ok) return { success: false, error: "Etapa no válida" };
+    }
     const firstStage = await db.pipelineStage.findFirst({
       where: { clinicId: session.user.clinicId },
       orderBy: { order: "asc" },
@@ -81,6 +90,8 @@ export async function updateLeadStage(
   newStageId: string,
   note?: string
 ): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("pipeline", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 
@@ -126,6 +137,8 @@ export async function updateLeadStage(
 export async function convertLeadToPatient(
   leadId: string
 ): Promise<ActionResponse<{ patientId: string }>> {
+  const guard = await requirePermission("pipeline", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 
@@ -292,6 +305,8 @@ export async function updateLeadStatus(
   leadId: string,
   newStatus: LeadStatus
 ): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("pipeline", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 

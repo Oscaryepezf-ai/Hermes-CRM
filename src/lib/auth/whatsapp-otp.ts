@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { addMinutes } from 'date-fns'
+import { randomInt } from 'crypto'
 
 const PLACEHOLDER_VALUES = ['placeholder', 'EAABs-placeholder', 'placeholder-phone-id']
 
@@ -31,7 +32,7 @@ export async function sendWhatsAppOTP(
     return { success: false, error: 'Espera 1 minuto antes de solicitar otro código' }
   }
 
-  const code      = Math.floor(100000 + Math.random() * 900000).toString()
+  const code      = randomInt(100000, 1000000).toString()
   const expiresAt = addMinutes(new Date(), 10)
 
   await db.phoneVerification.create({ data: { phone, code, expiresAt } })

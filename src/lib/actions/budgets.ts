@@ -1,6 +1,7 @@
 "use server"
 
 import { z } from "zod"
+import { userInClinic, serviceInClinic } from "@/lib/rbac/tenant"
 import { db } from "@/lib/db"
 import { requirePermission, unauthorizedResponse } from "@/lib/rbac/guards"
 import { revalidatePath } from "next/cache"
@@ -22,6 +23,14 @@ const BudgetDataSchema = z.object({
   discountPct: z.number().min(0).max(100),
   items:       z.array(ItemSchema).min(1).max(30),
 })
+
+async function validateBudgetRefs(data: z.infer<typeof BudgetDataSchema>, clinicId: string): Promise<string | null> {
+  if (data.doctorId && !(await userInClinic(data.doctorId, clinicId))) return "Doctor no válido"
+  for (const it of data.items) {
+    if (it.serviceId && !(await serviceInClinic(it.serviceId, clinicId))) return "Servicio no válido"
+  }
+  return null
+}
 
 function computeTotals(items: z.infer<typeof ItemSchema>[], discountPct: number) {
   const subtotal = items.reduce((acc, it) => {
@@ -56,6 +65,9 @@ export async function createBudget(data: z.infer<typeof BudgetDataSchema>) {
 
   const lead = await db.lead.findUnique({ where: { id: parsed.data.leadId }, select: { clinicId: true } })
   if (!lead || lead.clinicId !== guard.user.clinicId) return { success: false as const, error: "Lead no encontrado" }
+
+  const refErr = await validateBudgetRefs(parsed.data, guard.user.clinicId)
+  if (refErr) return { success: false as const, error: refErr }
 
   const lastBudget = await db.budget.findFirst({
     where:   { clinicId: guard.user.clinicId },
@@ -103,6 +115,8 @@ export async function updateBudget(budgetId: string, data: z.infer<typeof Budget
 
   const parsed = BudgetDataSchema.safeParse(data)
   if (!parsed.success) return { success: false as const, error: "Datos inválidos" }
+  const refErr = await validateBudgetRefs(parsed.data, guard.user.clinicId)
+  if (refErr) return { success: false as const, error: refErr }
 
   const { subtotal, total } = computeTotals(parsed.data.items, parsed.data.discountPct)
 

@@ -92,6 +92,8 @@ export async function updatePatient(
 export async function getPatientsByClinic(): Promise<
   ActionResponse<Awaited<ReturnType<typeof db.patient.findMany>>>
 > {
+  const guard = await requirePermission("patients", "view");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 
@@ -117,6 +119,8 @@ export async function getPatientsByClinic(): Promise<
 export async function getPatientById(
   id: string
 ): Promise<ActionResponse<PatientWithAppointments>> {
+  const guard = await requirePermission("patients", "view");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 

@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { auth } from "../../../auth"
+import { requirePermission } from "@/lib/rbac/guards"
 import { revalidatePath } from "next/cache"
 import { WaTemplateCategory, WaHeaderType, WaTemplateStatus } from "@prisma/client"
 import { submitTemplateToMeta, syncTemplateStatusFromMeta } from "@/lib/whatsapp/wa-template-api"
@@ -30,8 +30,9 @@ export type TemplateUpsertData = {
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export async function getWaTemplates() {
-  const session = await auth()
-  if (!session?.user) throw new Error("No autenticado")
+  const guard = await requirePermission("settings", "view")
+  if (!guard.authorized) throw new Error(guard.error)
+  const session = { user: guard.user }
 
   return db.waTemplate.findMany({
     where:   { clinicId: session.user.clinicId },
@@ -40,8 +41,9 @@ export async function getWaTemplates() {
 }
 
 export async function getWaTemplate(id: string) {
-  const session = await auth()
-  if (!session?.user) throw new Error("No autenticado")
+  const guard = await requirePermission("settings", "view")
+  if (!guard.authorized) throw new Error(guard.error)
+  const session = { user: guard.user }
 
   return db.waTemplate.findFirst({
     where: { id, clinicId: session.user.clinicId },
@@ -51,8 +53,9 @@ export async function getWaTemplate(id: string) {
 // ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function createWaTemplate(data: TemplateUpsertData) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const nameClean = data.name.trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")
   if (!nameClean) return { success: false, error: "Nombre inválido" }
@@ -86,8 +89,9 @@ export async function createWaTemplate(data: TemplateUpsertData) {
 // ─── Update ───────────────────────────────────────────────────────────────────
 
 export async function updateWaTemplate(id: string, data: TemplateUpsertData) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const tpl = await db.waTemplate.findFirst({
     where: { id, clinicId: session.user.clinicId },
@@ -122,8 +126,9 @@ export async function updateWaTemplate(id: string, data: TemplateUpsertData) {
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 export async function deleteWaTemplate(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const tpl = await db.waTemplate.findFirst({
     where: { id, clinicId: session.user.clinicId },
@@ -139,8 +144,9 @@ export async function deleteWaTemplate(id: string) {
 // ─── Submit to Meta ───────────────────────────────────────────────────────────
 
 export async function submitWaTemplate(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const tpl = await db.waTemplate.findFirst({
     where:   { id, clinicId: session.user.clinicId },
@@ -181,8 +187,9 @@ export async function submitWaTemplate(id: string) {
 // ─── Sync status from Meta ────────────────────────────────────────────────────
 
 export async function syncWaTemplateStatus(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const tpl = await db.waTemplate.findFirst({
     where:   { id, clinicId: session.user.clinicId },
@@ -221,8 +228,9 @@ export async function syncWaTemplateStatus(id: string) {
 // ─── Duplicate ────────────────────────────────────────────────────────────────
 
 export async function duplicateWaTemplate(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const tpl = await db.waTemplate.findFirst({
     where: { id, clinicId: session.user.clinicId },

@@ -7,6 +7,7 @@ import { createDefaultStages } from '@/lib/pipeline/stage-manager'
 import { resolveWhatsAppMedia } from '@/lib/whatsapp/media'
 import { analyzeImage, transcribeAudio } from '@/lib/ai/client'
 import { capiFire_Lead } from '@/lib/meta/conversions-api'
+import { verifyMetaWebhookSignature } from '@/lib/meta/verify-webhook'
 
 export const dynamic     = 'force-dynamic'
 export const maxDuration = 60
@@ -26,8 +27,15 @@ export async function GET(request: NextRequest) {
 
 // ── POST — receive WhatsApp messages ─────────────────────
 export async function POST(request: NextRequest) {
+  const rawBody = await request.text()
+  const signature = request.headers.get('x-hub-signature-256') ?? ''
+  if (!verifyMetaWebhookSignature(rawBody, signature)) {
+    console.warn('[wa-webhook] firma inválida — petición rechazada')
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 403 })
+  }
+
   let body: unknown
-  try { body = await request.json() } catch {
+  try { body = JSON.parse(rawBody) } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 

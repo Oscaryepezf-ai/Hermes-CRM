@@ -1,6 +1,7 @@
 "use server"
 
 import { z } from "zod"
+import { userInClinic } from '@/lib/rbac/tenant'
 import { auth } from "../../../auth"
 import { db } from "@/lib/db"
 import { requirePermission } from "@/lib/rbac/guards"
@@ -126,9 +127,12 @@ export async function createAppointmentFromCalendar(
   // `data.patientId` may reference either an existing Patient, or a Lead
   // that hasn't been converted to a Patient yet (e.g. selected from the
   // global "Agendar cita" quick-create button). Resolve/upsert accordingly.
+  if (!(await userInClinic(data.dentistId, session.user.clinicId))) {
+    return { success: false, error: 'Dentista no válido' }
+  }
   let patientId = data.patientId
-  let patient = await db.patient.findUnique({
-    where: { id: data.patientId },
+  let patient = await db.patient.findFirst({
+    where: { id: data.patientId, clinicId: session.user.clinicId },
     select: { id: true, fullName: true },
   })
 
@@ -216,6 +220,9 @@ export async function scheduleLeadAppointment(
 
   if (!lead) return { success: false, error: 'Lead no encontrado' }
   if (lead.clinicId !== session.user.clinicId) return { success: false, error: 'No autorizado' }
+  if (!(await userInClinic(data.dentistId, session.user.clinicId))) {
+    return { success: false, error: 'Dentista no válido' }
+  }
   if (lead.journeyState !== 'CALIFICADO') {
     return { success: false, error: 'El lead debe estar en estado Calificado' }
   }

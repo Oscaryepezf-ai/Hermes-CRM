@@ -1,7 +1,7 @@
 "use server"
 
 import { z } from "zod"
-import { auth } from "../../../auth"
+import { requirePermission } from '@/lib/rbac/guards'
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import {
@@ -10,8 +10,9 @@ import {
 } from "@/lib/pipeline/stage-manager"
 
 export async function fetchClinicStages() {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado', data: [] as never[] }
+  const guard = await requirePermission('pipeline', 'view')
+  if (!guard.authorized) return { success: false as const, error: guard.error, data: [] as never[] }
+  const session = { user: guard.user }
 
   const stages = await getClinicStages(session.user.clinicId)
   return { success: true as const, data: stages }
@@ -26,8 +27,9 @@ const AddStageSchema = z.object({
 })
 
 export async function createCustomStage(data: z.infer<typeof AddStageSchema>) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado' }
+  const guard = await requirePermission('settings', 'configure')
+  if (!guard.authorized) return { success: false as const, error: guard.error }
+  const session = { user: guard.user }
 
   const parsed = AddStageSchema.safeParse(data)
   if (!parsed.success) return { success: false as const, error: 'Datos inválidos' }
@@ -43,8 +45,9 @@ export async function createCustomStage(data: z.infer<typeof AddStageSchema>) {
 }
 
 export async function renameClinicStage(stageId: string, newName: string) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado' }
+  const guard = await requirePermission('settings', 'configure')
+  if (!guard.authorized) return { success: false as const, error: guard.error }
+  const session = { user: guard.user }
 
   if (!newName || newName.length < 2 || newName.length > 40) {
     return { success: false as const, error: 'El nombre debe tener entre 2 y 40 caracteres' }
@@ -60,8 +63,9 @@ export async function renameClinicStage(stageId: string, newName: string) {
 }
 
 export async function deleteClinicStage(stageId: string, moveLeadsToId: string) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado' }
+  const guard = await requirePermission('settings', 'configure')
+  if (!guard.authorized) return { success: false as const, error: guard.error }
+  const session = { user: guard.user }
 
   try {
     await deleteStage({ stageId, clinicId: session.user.clinicId, moveLeadsToId })
@@ -74,8 +78,9 @@ export async function deleteClinicStage(stageId: string, moveLeadsToId: string) 
 }
 
 export async function reorderClinicStages(stageIds: string[]) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado' }
+  const guard = await requirePermission('settings', 'configure')
+  if (!guard.authorized) return { success: false as const, error: guard.error }
+  const session = { user: guard.user }
 
   try {
     await reorderStages({ clinicId: session.user.clinicId, stageIds })
@@ -87,8 +92,9 @@ export async function reorderClinicStages(stageIds: string[]) {
 }
 
 export async function toggleNewPatientBadge(leadId: string) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false as const, error: 'No autorizado' }
+  const guard = await requirePermission('pipeline', 'edit')
+  if (!guard.authorized) return { success: false as const, error: guard.error }
+  const session = { user: guard.user }
 
   const lead = await db.lead.findUnique({ where: { id: leadId } })
   if (!lead || lead.clinicId !== session.user.clinicId) {

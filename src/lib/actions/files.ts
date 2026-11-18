@@ -38,7 +38,7 @@ export async function uploadPatientFile(
     if (!lead || lead.clinicId !== session.user.clinicId) return { success: false, error: "Lead no encontrado" };
 
     const blob = await put(
-      `patients/${leadIdParsed.data}/${Date.now()}-${file.name}`,
+      `patients/${leadIdParsed.data}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100)}`,
       file,
       { access: "public" }
     );

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 import { createDefaultStages } from "@/lib/pipeline/stage-manager";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   clinicName: z.string().min(2),
@@ -13,6 +14,12 @@ const registerSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`register:${clientIp(req)}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Intenta de nuevo más tarde." },
+      { status: 429 }
+    );
+  }
   try {
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);

@@ -1,6 +1,8 @@
 "use server"
 
 import { z } from "zod"
+import { headers } from "next/headers"
+import { rateLimit } from "@/lib/rate-limit"
 import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { slugify } from "@/lib/utils"
@@ -17,6 +19,10 @@ export async function requestPhoneVerification(
   const parsed = RequestOtpSchema.safeParse(data)
   if (!parsed.success) return { success: false as const, error: "Número inválido" }
 
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
+  if (!rateLimit(`otp:${ip}`, 5, 60 * 60 * 1000)) {
+    return { success: false as const, error: "Demasiados intentos. Intenta de nuevo más tarde." }
+  }
   const existing = await db.user.findUnique({ where: { phone: parsed.data.phone } })
   if (existing) return { success: false as const, error: "Este número ya está registrado" }
 
@@ -40,6 +46,10 @@ export async function completeRegistration(
   const parsed = CompleteRegistrationSchema.safeParse(data)
   if (!parsed.success) return { success: false as const, error: parsed.error.issues[0].message }
 
+  const ipc = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
+  if (!rateLimit(`register-otp:${ipc}`, 15, 60 * 60 * 1000)) {
+    return { success: false as const, error: "Demasiados intentos. Intenta de nuevo más tarde." }
+  }
   const existingEmail = await db.user.findUnique({ where: { email: parsed.data.email } })
   if (existingEmail) return { success: false as const, error: "Ya existe una cuenta con ese email" }
 

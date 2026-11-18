@@ -176,7 +176,7 @@ export async function uploadFlowAsset(flowId: string, formData: FormData) {
     return { success: false as const, error: `El archivo supera el límite de ${limitMb}MB para este tipo` }
   }
 
-  const blob = await put(`flows/${guard.user.clinicId}/${flowId}/${Date.now()}-${file.name}`, file, { access: "public" })
+  const blob = await put(`flows/${guard.user.clinicId}/${flowId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100)}`, file, { access: "public" })
 
   return { success: true as const, data: { url: blob.url, mediaType } }
 }
@@ -185,6 +185,12 @@ export async function deleteFlowAsset(url: string) {
   const guard = await requirePermission("hermes_ai", "configure")
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
+  // Solo se pueden borrar assets de la propia clínica
+  let pathname = ""
+  try { pathname = decodeURIComponent(new URL(url).pathname) } catch { return { success: false as const, error: "URL inválida" } }
+  if (!pathname.startsWith(`/flows/${guard.user.clinicId}/`)) {
+    return { success: false as const, error: "No autorizado" }
+  }
   try { await del(url) } catch (err) { console.error("[deleteFlowAsset]", err) }
   return { success: true as const }
 }

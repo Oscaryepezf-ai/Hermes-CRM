@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyCron } from "@/lib/cron-auth"
 import {
   getActiveClinics,
   getClinicMetrics,
@@ -13,10 +14,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = verifyCron(request)
+  if (denied) return denied
 
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json({ error: "Resend no configurado" }, { status: 503 });

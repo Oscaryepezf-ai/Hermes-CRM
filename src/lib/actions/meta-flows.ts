@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { auth } from "../../../auth"
+import { requirePermission } from "@/lib/rbac/guards"
 import { revalidatePath } from "next/cache"
 import { createMetaFlow, uploadFlowAsset, publishMetaFlow, getMetaFlowStatus, sendFlowMessage } from "@/lib/whatsapp/meta-flows-api"
 import type { MetaFlowCategory } from "@prisma/client"
@@ -10,8 +10,9 @@ import { randomUUID } from "crypto"
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export async function getMetaFlows() {
-  const session = await auth()
-  if (!session?.user) throw new Error("No autenticado")
+  const guard = await requirePermission("settings", "view")
+  if (!guard.authorized) throw new Error(guard.error)
+  const session = { user: guard.user }
   return db.metaFlow.findMany({
     where:   { clinicId: session.user.clinicId },
     include: { _count: { select: { submissions: true } } },
@@ -20,8 +21,9 @@ export async function getMetaFlows() {
 }
 
 export async function getMetaFlowSubmissions(flowId: string) {
-  const session = await auth()
-  if (!session?.user) throw new Error("No autenticado")
+  const guard = await requirePermission("settings", "view")
+  if (!guard.authorized) throw new Error(guard.error)
+  const session = { user: guard.user }
   return db.metaFlowSubmission.findMany({
     where:   { flowId, clinicId: session.user.clinicId },
     include: { lead: { select: { fullName: true, phone: true } } },
@@ -38,8 +40,9 @@ export async function createAndDeployFlow(data: {
   category:    MetaFlowCategory
   screens:     object
 }) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const clinicId = session.user.clinicId
   const clinic = await db.clinic.findUnique({
@@ -99,8 +102,9 @@ export async function createAndDeployFlow(data: {
 // ─── Publish ──────────────────────────────────────────────────────────────────
 
 export async function publishFlow(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const flow = await db.metaFlow.findFirst({
     where:   { id, clinicId: session.user.clinicId },
@@ -126,8 +130,9 @@ export async function publishFlow(id: string) {
 // ─── Sync status from Meta ────────────────────────────────────────────────────
 
 export async function syncFlowStatus(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const flow = await db.metaFlow.findFirst({
     where:   { id, clinicId: session.user.clinicId },
@@ -165,8 +170,9 @@ export async function syncFlowStatus(id: string) {
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 export async function deleteMetaFlow(id: string) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("settings", "configure")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const flow = await db.metaFlow.findFirst({
     where: { id, clinicId: session.user.clinicId },
@@ -187,8 +193,9 @@ export async function sendFlowToLead(opts: {
   bodyText: string
   ctaText:  string
 }) {
-  const session = await auth()
-  if (!session?.user) return { success: false, error: "No autenticado" }
+  const guard = await requirePermission("inbox", "edit")
+  if (!guard.authorized) { return { success: false, error: guard.error } }
+  const session = { user: guard.user }
 
   const [flow, lead] = await Promise.all([
     db.metaFlow.findFirst({

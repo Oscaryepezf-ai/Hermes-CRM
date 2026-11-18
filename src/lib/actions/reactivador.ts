@@ -1,6 +1,7 @@
 "use server"
 
 import { z } from "zod"
+import { requirePermission } from '@/lib/rbac/guards'
 import { auth } from "../../../auth"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
@@ -50,8 +51,9 @@ const ConfigSchema = z.object({
 export async function saveReactivadorConfig(
   data: z.infer<typeof ConfigSchema>
 ) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
+  const guard = await requirePermission('hermes_ai', 'configure')
+  if (!guard.authorized) return { success: false, error: guard.error }
+  const session = { user: guard.user }
 
   const parsed = ConfigSchema.safeParse(data)
   if (!parsed.success) return { success: false, error: 'Datos inválidos' }
@@ -98,8 +100,9 @@ export async function getReactivationCampaigns(status?: string) {
 
 // ── Cancelar campaña manualmente ─────────────────────────
 export async function cancelCampaign(campaignId: string) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
+  const guard = await requirePermission('hermes_ai', 'configure')
+  if (!guard.authorized) return { success: false, error: guard.error }
+  const session = { user: guard.user }
 
   const campaign = await db.reactivationCampaign.findUnique({
     where:  { id: campaignId },
@@ -124,8 +127,15 @@ export async function registerReactivationConversion(
   leadId:  string,
   revenue: number
 ) {
-  const session = await auth()
-  if (!session?.user?.clinicId) return { success: false, error: 'No autorizado' }
+  const guard = await requirePermission('pipeline', 'edit')
+  if (!guard.authorized) return { success: false, error: guard.error }
+  if (!Number.isFinite(revenue) || revenue < 0) return { success: false, error: 'Monto inválido' }
+
+  const lead = await db.lead.findFirst({
+    where: { id: leadId, clinicId: guard.user.clinicId },
+    select: { id: true },
+  })
+  if (!lead) return { success: false, error: 'Lead no encontrado' }
 
   await markCampaignAsConverted(leadId, revenue)
   return { success: true }

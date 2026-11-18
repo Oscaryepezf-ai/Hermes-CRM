@@ -1,6 +1,7 @@
 "use server"
 
 import { z } from "zod"
+import { requirePermission } from "@/lib/rbac/guards"
 import { db } from "@/lib/db"
 import { auth } from "../../../auth"
 import { revalidatePath } from "next/cache"
@@ -57,6 +58,8 @@ export async function getMessagesByLead(
 export async function sendMessage(
   data: z.infer<typeof SendMessageSchema>
 ): Promise<ActionResponse<Message>> {
+  const guard = await requirePermission("inbox", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const parsed = SendMessageSchema.safeParse(data)
     if (!parsed.success) {

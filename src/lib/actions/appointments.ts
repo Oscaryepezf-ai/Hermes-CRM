@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { requirePermission } from "@/lib/rbac/guards";
+import { userInClinic } from "@/lib/rbac/tenant";
 import { db } from "@/lib/db";
 import { auth } from "../../../auth";
 import type { ActionResponse, AppointmentWithRelations } from "@/types";
@@ -23,6 +25,8 @@ async function getSession() {
 export async function createAppointment(
   data: z.infer<typeof createAppointmentSchema>
 ): Promise<ActionResponse<{ id: string }>> {
+  const guard = await requirePermission("agenda", "create");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
     const parsed = createAppointmentSchema.safeParse(data);
@@ -35,6 +39,9 @@ export async function createAppointment(
       return { success: false, error: "Paciente no válido" };
     }
 
+    if (!(await userInClinic(parsed.data.dentistId, session.user.clinicId))) {
+      return { success: false, error: "Dentista no válido" };
+    }
     const appointment = await db.appointment.create({
       data: {
         patientId: parsed.data.patientId,
@@ -58,6 +65,8 @@ export async function updateAppointmentStatus(
   id: string,
   status: "SCHEDULED" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
 ): Promise<ActionResponse<void>> {
+  const guard = await requirePermission("agenda", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
 

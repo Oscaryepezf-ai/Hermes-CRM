@@ -1,41 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
 
+// GET no modifica datos (los previsualizadores de enlaces de WhatsApp/email
+// lo ejecutan solos). Redirige a la página /confirm/[code], donde el paciente
+// confirma con un botón (POST vía Server Action).
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
-
-  if (!code) {
-    return NextResponse.redirect(`${base}/confirm/invalid`);
-  }
-
-  try {
-    const appointment = await db.appointment.findFirst({
-      where: { confirmationCode: code },
-    });
-
-    if (!appointment) {
-      return NextResponse.redirect(`${base}/confirm/invalid`);
-    }
-
-    if (appointment.status === "CANCELLED") {
-      return NextResponse.redirect(`${base}/confirm/cancelled`);
-    }
-
-    await db.appointment.update({
-      where: { id: appointment.id },
-      data: {
-        patientConfirmed: true,
-        reminderStatus: "CONFIRMED",
-        status: "CONFIRMED",
-      },
-    });
-
-    return NextResponse.redirect(`${base}/confirm/success`);
-  } catch {
-    return NextResponse.redirect(`${base}/confirm/error`);
-  }
+  return NextResponse.redirect(new URL(`/confirm/${encodeURIComponent(code)}`, request.url));
 }

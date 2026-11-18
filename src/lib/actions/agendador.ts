@@ -1,6 +1,8 @@
 "use server";
 
 import { z } from "zod";
+import { requirePermission } from "@/lib/rbac/guards";
+import { userInClinic, patientInClinic, leadInClinic } from "@/lib/rbac/tenant";
 import { auth } from "../../../auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -34,8 +36,11 @@ export async function fetchAvailableSlots(
   dentistUserId: string,
   daysAhead = 7
 ) {
-  const session = await auth();
-  if (!session?.user?.clinicId) return { success: false, error: "No autorizado" };
+  const guard = await requirePermission("agenda", "view");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  if (!(await userInClinic(dentistUserId, guard.user.clinicId))) {
+    return { success: false, error: "Dentista no válido" };
+  }
 
   try {
     const slots = await getAvailableSlots(dentistUserId, daysAhead);
@@ -60,15 +65,24 @@ const CreateAppointmentSchema = z.object({
 export async function createAppointmentWithSync(
   data: z.infer<typeof CreateAppointmentSchema>
 ) {
-  const session = await auth();
-  if (!session?.user?.clinicId) return { success: false, error: "No autorizado" };
+  const guard = await requirePermission("agenda", "create");
+  if (!guard.authorized) return { success: false, error: guard.error };
+  const session = { user: guard.user };
 
   const parsed = CreateAppointmentSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: "Datos inválidos" };
 
+  if (
+    !(await patientInClinic(data.patientId, session.user.clinicId)) ||
+    !(await leadInClinic(data.leadId, session.user.clinicId)) ||
+    !(await userInClinic(data.dentistId, session.user.clinicId))
+  ) {
+    return { success: false, error: "Paciente, lead o dentista no válido" };
+  }
+
   try {
     const [patient, clinic] = await Promise.all([
-      db.patient.findUniqueOrThrow({ where: { id: data.patientId } }),
+      db.patient.findFirstOrThrow({ where: { id: data.patientId, clinicId: session.user.clinicId } }),
       db.clinic.findUniqueOrThrow({ where: { id: session.user.clinicId } }),
     ]);
 
@@ -111,8 +125,8 @@ export async function createAppointmentWithSync(
     }
 
     // Update lead's last contact date
-    await db.lead.update({
-      where: { id: data.leadId },
+    await db.lead.updateMany({
+      where: { id: data.leadId, clinicId: session.user.clinicId },
       data: { lastContactAt: new Date(), status: "CITA_AGENDADA" },
     });
 
@@ -163,16 +177,13 @@ async function sendWhatsAppConfirmation(
 }
 
 export async function cancelAppointment(appointmentId: string) {
-  const session = await auth();
-  if (!session?.user?.clinicId) return { success: false, error: "No autorizado" };
+  const guard = await requirePermission("agenda", "edit");
+  if (!guard.authorized) return { success: false, error: guard.error };
 
-  const appt = await db.appointment.findUniqueOrThrow({
-    where: { id: appointmentId },
+  const appt = await db.appointment.findFirst({
+    where: { id: appointmentId, clinicId: guard.user.clinicId },
   });
-
-  if (appt.clinicId !== session.user.clinicId) {
-    return { success: false, error: "No autorizado" };
-  }
+  if (!appt) return { success: false, error: "Cita no encontrada" };
 
   if (appt.googleEventId) {
     try {

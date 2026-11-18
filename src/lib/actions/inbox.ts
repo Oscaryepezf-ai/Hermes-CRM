@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache"
 import { requirePermission, unauthorizedResponse } from "@/lib/rbac/guards"
 import {
   getInboxConversations, getConversationDetail,
-  getInboxCounts, getClinicLabels, upsertInboxConversation,
+  getInboxCounts, getClinicLabels,
 } from "@/lib/inbox/conversations"
 import type { InboxFilters } from "@/lib/inbox/conversations"
 import type { InboxStatus } from "@prisma/client"
@@ -127,6 +127,11 @@ export async function addLabelToConversation(conversationId: string, labelId: st
     where: { id: labelId, clinicId: guard.user.clinicId },
   })
   if (!label) return { success: false as const, error: 'Etiqueta no encontrada' }
+  const conv = await db.inboxConversation.findFirst({
+    where: { id: conversationId, clinicId: guard.user.clinicId },
+    select: { id: true },
+  })
+  if (!conv) return { success: false as const, error: 'Conversación no encontrada' }
 
   await db.inboxConversationLabel.upsert({
     where:  { conversationId_labelId: { conversationId, labelId } },
@@ -143,7 +148,7 @@ export async function removeLabelFromConversation(conversationId: string, labelI
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
   await db.inboxConversationLabel.deleteMany({
-    where: { conversationId, labelId },
+    where: { conversationId, labelId, conversation: { clinicId: guard.user.clinicId } },
   })
 
   revalidatePath('/inbox')
@@ -209,4 +214,3 @@ export async function fetchClinicUsers() {
   return { success: true as const, data: users }
 }
 
-export { upsertInboxConversation }

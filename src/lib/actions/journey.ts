@@ -115,6 +115,11 @@ export async function logJourneyEvent(params: {
   const guard = await requirePermission("pipeline", "edit")
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
+  const owned = await db.lead.findFirst({
+    where: { id: params.leadId, clinicId: guard.user.clinicId },
+    select: { id: true },
+  })
+  if (!owned) return { success: false as const, error: "Lead no encontrado" }
   await db.journeyEvent.create({
     data: {
       leadId: params.leadId,
@@ -124,8 +129,8 @@ export async function logJourneyEvent(params: {
     },
   })
 
-  await db.lead.update({
-    where: { id: params.leadId },
+  await db.lead.updateMany({
+    where: { id: params.leadId, clinicId: guard.user.clinicId },
     data: {
       lastActivityAt:   new Date(),
       totalTouchpoints: { increment: 1 },

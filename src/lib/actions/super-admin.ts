@@ -2,6 +2,7 @@
 
 import { z } from "zod"
 import bcrypt from "bcryptjs"
+import { randomInt } from "crypto"
 import { revalidatePath } from "next/cache"
 import { auth } from "../../../auth"
 import { db } from "@/lib/db"
@@ -20,7 +21,7 @@ async function requireSuperAdmin() {
 
 function generateTempPassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join("")
+  return Array.from({ length: 10 }, () => chars[randomInt(chars.length)]).join("")
 }
 
 async function logAdminAction(params: {

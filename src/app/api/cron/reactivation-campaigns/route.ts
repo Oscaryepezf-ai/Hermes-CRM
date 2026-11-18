@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyCron } from "@/lib/cron-auth"
 import { db } from '@/lib/db'
 import { runReactivationCycle } from '@/lib/reactivador/run-campaign'
 
@@ -6,10 +7,8 @@ export const dynamic     = 'force-dynamic'
 export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = verifyCron(request)
+  if (denied) return denied
 
   const clinics = await db.clinic.findMany({
     where:  { reactivadorActive: true },

@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   const signature = request.headers.get('x-hub-signature-256') ?? ''
   const sigOk = verifyMetaWebhookSignature(rawBody, signature)
-  console.log('[meta-webhook] signature header:', signature.slice(0, 20), '... valid:', sigOk)
+  console.log('[meta-webhook] signature valid:', sigOk)
 
   if (!sigOk) {
     console.warn('[meta-webhook] SIGNATURE FAILED — app secret mismatch or missing header')

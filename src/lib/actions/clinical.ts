@@ -229,10 +229,12 @@ export async function updateVisit(
   if (!guard.authorized) return { success: false, error: guard.error };
   try {
     const session = await getSession();
+    const parsedData = VisitSchema.omit({ leadId: true }).safeParse(data);
+    if (!parsedData.success) return { success: false, error: parsedData.error.issues[0].message };
     const existing = await db.clinicalVisit.findFirst({ where: { id, clinicId: session.user.clinicId } });
     if (!existing) return { success: false, error: "Visita no encontrada" };
 
-    const { visitDate, ...fields } = data;
+    const { visitDate, ...fields } = parsedData.data;
     const visit = await db.clinicalVisit.update({
       where: { id },
       data:  { ...fields, ...(visitDate ? { visitDate: new Date(visitDate) } : {}) },

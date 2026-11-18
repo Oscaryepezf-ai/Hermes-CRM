@@ -1,6 +1,7 @@
 "use server"
 
 import { z } from "zod"
+import { userInClinic, serviceInClinic } from "@/lib/rbac/tenant"
 import { requirePermission, unauthorizedResponse } from "@/lib/rbac/guards"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
@@ -31,8 +32,22 @@ export async function registerPayment(data: z.infer<typeof RegisterPaymentSchema
   // hasn't been converted yet (the payment form lists both) — resolve/upsert
   // the same way createAppointmentFromCalendar does.
   let patientId = parsed.data.patientId
-  let patient = await db.patient.findUnique({
-    where: { id: parsed.data.patientId },
+  const clinicId = guard.user.clinicId
+  if (!(await userInClinic(parsed.data.doctorId, clinicId))) {
+    return { success: false, error: "Doctor no válido" }
+  }
+  if (parsed.data.serviceId && !(await serviceInClinic(parsed.data.serviceId, clinicId))) {
+    return { success: false, error: "Servicio no válido" }
+  }
+  if (parsed.data.appointmentId) {
+    const appt = await db.appointment.findFirst({
+      where: { id: parsed.data.appointmentId, clinicId },
+      select: { id: true },
+    })
+    if (!appt) return { success: false, error: "Cita no válida" }
+  }
+  let patient = await db.patient.findFirst({
+    where: { id: parsed.data.patientId, clinicId },
     select: { id: true },
   })
 
@@ -88,8 +103,8 @@ export async function registerPayment(data: z.infer<typeof RegisterPaymentSchema
   })
 
   // CAPI: Purchase event — revenue registered
-  const fullPatient = await db.patient.findUnique({
-    where:  { id: patientId },
+  const fullPatient = await db.patient.findFirst({
+    where:  { id: patientId, clinicId },
     select: { phone: true, email: true },
   })
   if (fullPatient?.phone) {

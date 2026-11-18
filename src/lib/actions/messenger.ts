@@ -22,7 +22,7 @@ export async function sendMessengerReply(data: z.infer<typeof SendSchema>) {
   if (!parsed.success) return { success: false as const, error: "Datos inválidos" }
 
   const profile = await db.socialProfile.findFirst({
-    where: { leadId: data.leadId, channel: "FACEBOOK" },
+    where: { leadId: parsed.data.leadId, channel: "FACEBOOK", lead: { clinicId: guard.user.clinicId } },
   })
   if (!profile) return { success: false as const, error: "Este lead no tiene perfil de Facebook" }
 
@@ -36,7 +36,7 @@ export async function sendMessengerReply(data: z.infer<typeof SendSchema>) {
 
   await db.message.create({
     data: {
-      leadId:            data.leadId,
+      leadId:            parsed.data.leadId,
       direction:         "OUTBOUND",
       content:           data.content,
       channel:           "FACEBOOK",
@@ -44,7 +44,7 @@ export async function sendMessengerReply(data: z.infer<typeof SendSchema>) {
       status:            "SENT",
     },
   })
-  await db.lead.update({ where: { id: data.leadId }, data: { lastContactAt: new Date(), lastActivityAt: new Date() } })
+  await db.lead.updateMany({ where: { id: parsed.data.leadId, clinicId: guard.user.clinicId }, data: { lastContactAt: new Date(), lastActivityAt: new Date() } })
   revalidatePath("/pipeline")
   return { success: true as const }
 }
@@ -58,7 +58,7 @@ export async function sendInstagramReply(data: z.infer<typeof SendSchema>) {
   if (!parsed.success) return { success: false as const, error: "Datos inválidos" }
 
   const profile = await db.socialProfile.findFirst({
-    where: { leadId: data.leadId, channel: "INSTAGRAM" },
+    where: { leadId: parsed.data.leadId, channel: "INSTAGRAM", lead: { clinicId: guard.user.clinicId } },
   })
   if (!profile) return { success: false as const, error: "Este lead no tiene perfil de Instagram" }
 
@@ -81,7 +81,7 @@ export async function sendInstagramReply(data: z.infer<typeof SendSchema>) {
 
   await db.message.create({
     data: {
-      leadId:            data.leadId,
+      leadId:            parsed.data.leadId,
       direction:         "OUTBOUND",
       content:           data.content,
       channel:           "INSTAGRAM",
@@ -89,7 +89,7 @@ export async function sendInstagramReply(data: z.infer<typeof SendSchema>) {
       status:            "SENT",
     },
   })
-  await db.lead.update({ where: { id: data.leadId }, data: { lastContactAt: new Date(), lastActivityAt: new Date() } })
+  await db.lead.updateMany({ where: { id: parsed.data.leadId, clinicId: guard.user.clinicId }, data: { lastContactAt: new Date(), lastActivityAt: new Date() } })
   revalidatePath("/pipeline")
   return { success: true as const }
 }
@@ -100,7 +100,7 @@ export async function getUnifiedMessages(leadId: string) {
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
   const messages = await db.message.findMany({
-    where:   { leadId },
+    where:   { leadId, lead: { clinicId: guard.user.clinicId } },
     orderBy: { sentAt: "asc" },
     select: {
       id: true, direction: true, content: true,
@@ -116,7 +116,7 @@ export async function getLeadChannel(leadId: string) {
   if (!guard.authorized) return unauthorizedResponse(guard.error)
 
   const profile = await db.socialProfile.findFirst({
-    where:   { leadId },
+    where:   { leadId, lead: { clinicId: guard.user.clinicId } },
     select:  { channel: true },
     orderBy: { createdAt: "asc" },
   })
