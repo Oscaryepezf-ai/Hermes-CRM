@@ -126,7 +126,7 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
       </Link>
 
       {/* Clinic header */}
-      <div className="bg-surface border border-line-subtle rounded-[16px] p-5 shadow-card">
+      <div className="bg-surface rounded-2xl p-5 shadow-card">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-[12px] bg-brand-100 flex items-center justify-center">
@@ -239,7 +239,7 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
           Usuarios <span className="text-ink-tertiary font-normal text-[13px]">({clinic.users.length})</span>
         </h2>
 
-        <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+        <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
           {/* Header */}
           <div className="grid grid-cols-[2fr_1fr_1fr_1fr_180px] px-4 py-2.5 border-b border-line-subtle bg-inset">
             {["Usuario", "Rol", "Estado", "Última conexión", ""].map(h => (
@@ -345,7 +345,7 @@ export function ClinicDetail({ clinic }: { clinic: any }) {
       {clinic.leads.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-[15px] font-bold text-ink-primary">Leads recientes</h2>
-          <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+          <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
             {clinic.leads.slice(0, 5).map((lead: any, i: number) => (
               <div key={lead.id} className={cn("flex items-center justify-between px-4 py-2.5", i < 4 && "border-b border-line-subtle")}>
                 <div className="flex items-center gap-3">

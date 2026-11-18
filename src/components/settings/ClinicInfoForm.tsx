@@ -55,7 +55,7 @@ export function ClinicInfoForm({ clinic }: ClinicInfoFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Logo */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card">
+      <div className="bg-surface rounded-2xl p-5 shadow-card">
         <h3 className="text-[14px] font-bold text-ink-primary mb-4">Logo de la clínica</h3>
         <p className="text-[12px] text-ink-tertiary mb-4">
           Se mostrará en los presupuestos y documentos generados. Formato PNG o JPG, máx. 5MB.
@@ -88,7 +88,7 @@ export function ClinicInfoForm({ clinic }: ClinicInfoFormProps) {
       </div>
 
       {/* Info fields */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-4">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-4">
         <h3 className="text-[14px] font-bold text-ink-primary">Datos de la clínica</h3>
         <p className="text-[12px] text-ink-tertiary -mt-2">
           Aparecen en el encabezado de los presupuestos.

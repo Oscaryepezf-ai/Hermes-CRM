@@ -16,6 +16,8 @@ const ROUTE_LABELS: Record<string, string> = {
   "/patients":   "Pacientes",
   "/dr-clinic":  "Dr. Clinic",
   "/ai":         "Hermes AI",
+  "/reportes":   "Reportes",
+  "/crecimiento": "Crecimiento",
   "/settings":   "Ajustes",
 };
 
@@ -43,26 +45,25 @@ export function Header({ clinicName, userName, clinics, activeClinicId, onCreate
   )?.[1] ?? "Inicio";
 
   return (
-    <header
-      className="h-[52px] bg-surface border-b border-line-subtle flex items-center justify-between px-6 sticky top-0 z-30"
-      style={{ boxShadow: "var(--shadow-topbar)" }}
-    >
+    <header className="h-16 bg-canvas/95 backdrop-blur-md flex items-center justify-between px-3 md:px-6 sticky top-0 z-30">
       {/* Breadcrumb */}
-      <nav className="flex items-center text-[12px] min-w-0" aria-label="Breadcrumb">
+      <nav className="flex items-center text-[13px] min-w-0" aria-label="Breadcrumb">
         <ClinicSwitcher clinicName={clinicName} clinics={clinics} activeClinicId={activeClinicId} />
         <span className="mx-1.5 text-ink-disabled hidden sm:block">/</span>
-        <span className="font-[550] text-ink-primary">{pageLabel}</span>
+        <span className="font-semibold text-ink-primary">{pageLabel}</span>
       </nav>
 
       {/* Right actions */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <CreateButton onCreateAppointment={onCreateAppointment} onCreatePatient={onCreatePatient} />
 
         <button
           aria-label="Buscar"
-          className="w-7 h-7 flex items-center justify-center rounded-[7px] bg-inset text-ink-tertiary hover:text-ink-secondary transition-ui"
+          className="h-9 md:w-52 w-9 flex items-center md:justify-start justify-center gap-2 md:px-3.5 rounded-full bg-surface text-ink-tertiary hover:text-ink-secondary transition-ui text-[13px]"
+          style={{ boxShadow: "var(--shadow-card)" }}
         >
-          <Search className="w-3.5 h-3.5" />
+          <Search className="w-4 h-4 flex-shrink-0" />
+          <span className="hidden md:inline">Buscar…</span>
         </button>
 
         <ThemeToggle />
@@ -73,7 +74,7 @@ export function Header({ clinicName, userName, clinics, activeClinicId, onCreate
           onClick={() => signOut({ callbackUrl: "/login" })}
           aria-label="Cerrar sesión"
           title="Cerrar sesión"
-          className="w-7 h-7 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-[11px] font-[550] hover:bg-brand-200 transition-ui"
+          className="w-9 h-9 rounded-full bg-brand-gradient text-white flex items-center justify-center text-xs font-semibold hover:opacity-90 transition-ui"
         >
           {initials}
         </button>

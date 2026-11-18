@@ -18,7 +18,6 @@ import { ConversionChart } from "@/components/dashboard/ConversionChart";
 import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { ActivationChecklist } from "@/components/dashboard/ActivationChecklist";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { mockMetrics, mockActivityFeed } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/utils";
 
@@ -67,14 +66,19 @@ async function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-2xl border border-line-subtle bg-gradient-to-br from-white to-sky-50 dark:from-[#10151c] dark:to-[#0c1f2e] p-6 shadow-card">
-        <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-sky-200/50 dark:bg-sky-500/10 blur-2xl pointer-events-none" />
-        <div className="relative flex items-center gap-1.5 text-ink-tertiary text-[13px] mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-ink-primary tracking-tight">¡Hola, {greetingName}!</h1>
+          <p className="text-sm text-ink-tertiary mt-1">
+            {upcomingToday > 0
+              ? `Tienes ${upcomingToday} ${upcomingToday === 1 ? "cita pendiente" : "citas pendientes"} hoy.`
+              : "Resumen del día."}
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 text-ink-tertiary text-[13px] bg-surface rounded-full px-3.5 h-9" style={{ boxShadow: "var(--shadow-card)" }}>
           <Calendar className="w-4 h-4" />
           {today}
         </div>
-        <h2 className="relative text-2xl font-bold text-ink-primary">¡Hola, {greetingName}!</h2>
-        <p className="relative text-sm text-ink-tertiary mt-1">Resumen del día</p>
       </div>
 
       <ActivationChecklist />
@@ -82,56 +86,69 @@ async function DashboardContent() {
       {/* Fila 1: Métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <MetricCard
-          title="Total Leads"
+          title="Total leads"
           value={String(metrics.totalLeads)}
           icon={TrendingUp}
+          tone="brand"
         />
         <MetricCard
-          title="Tasa de Conversión"
+          title="Tasa de conversión"
           value={`${metrics.conversionRate}%`}
           icon={Target}
-         
+          tone="violet"
         />
         <MetricCard
           title="Ingresos este mes"
           value={formatCurrency(metrics.monthlyRevenue, "USD")}
           icon={DollarSign}
-         
+          featured
         />
         <MetricCard
           title="Citas este mes"
           value={String(metrics.appointmentsThisMonth)}
           subtitle={upcomingToday > 0 ? `${upcomingToday} pendientes hoy` : "Al día"}
           icon={CalendarCheck}
-         
+          tone="emerald"
         />
       </div>
 
       {/* Fila 2: Gráficos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-        <RevenueChart data={metrics.revenueByMonth} />
-        <ConversionChart data={metrics.leadsBySource} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="lg:col-span-2 min-w-0"><RevenueChart data={metrics.revenueByMonth} /></div>
+        <div className="min-w-0"><ConversionChart data={metrics.leadsBySource} /></div>
       </div>
 
       {/* Fila 3: Embudo + Actividad */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-        <Card className="bg-surface shadow-card border-line-subtle">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-ink-secondary">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-[15px] font-semibold text-ink-primary">
               Embudo de conversión
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {metrics.conversionByStage.map((stage, idx) => (
                 <div key={`${stage.stage}-${idx}`}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-ink-secondary font-medium">{stage.stage}</span>
-                    <span className="text-ink-tertiary">
+                  <div className="flex justify-between text-[13px] mb-1.5">
+                    <span className="text-ink-primary font-medium">{stage.stage}</span>
+                    <span className="text-ink-tertiary tabular-nums">
                       {stage.count} leads · {stage.percentage}%
                     </span>
                   </div>
-                  <Progress value={stage.percentage} className="h-2" />
+                  <div
+                    className="h-2 rounded-full bg-inset overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={stage.percentage}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={stage.stage}
+                  >
+                    <div
+                      className="h-full rounded-full bg-brand-gradient"
+                      style={{ width: `${Math.max(stage.percentage, stage.count > 0 ? 3 : 0)}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -161,15 +178,15 @@ export default function DashboardPage() {
 function DashboardSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="h-7 bg-inset rounded w-32" />
+      <div className="h-8 bg-surface rounded-lg w-48" />
       <div className="grid grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 bg-inset rounded-xl" />
+          <div key={i} className="h-32 bg-surface rounded-2xl" style={{ boxShadow: "var(--shadow-card)" }} />
         ))}
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="h-56 bg-inset rounded-xl" />
-        <div className="h-56 bg-inset rounded-xl" />
+        <div className="h-64 bg-surface rounded-2xl" style={{ boxShadow: "var(--shadow-card)" }} />
+        <div className="h-64 bg-surface rounded-2xl" style={{ boxShadow: "var(--shadow-card)" }} />
       </div>
     </div>
   );

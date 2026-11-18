@@ -545,7 +545,7 @@ function SectionCard({ title, subtitle, action, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-4">
+    <div className="bg-surface rounded-2xl p-5 shadow-card space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">{title}</h3>

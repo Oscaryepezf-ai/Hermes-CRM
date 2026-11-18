@@ -40,7 +40,7 @@ export function PrescriptionsTab({ leadId, patientName, clinicName, prescription
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-4">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[14px] font-bold text-ink-primary">Recetas emitidas</h3>
           <Button size="sm" onClick={() => setShowDialog(true)}>

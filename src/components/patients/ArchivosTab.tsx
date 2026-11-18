@@ -78,7 +78,7 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
         <h3 className="text-[14px] font-bold text-ink-primary">Subir archivo</h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
@@ -134,7 +134,7 @@ export function ArchivosTab({ leadId, files: initial }: ArchivosTabProps) {
         </div>
       </div>
 
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card">
+      <div className="bg-surface rounded-2xl p-5 shadow-card">
         <h3 className="text-[14px] font-bold text-ink-primary mb-3">Archivos del paciente</h3>
         {files.length === 0 ? (
           <p className="text-[13px] text-ink-tertiary text-center py-4">Sin archivos cargados</p>

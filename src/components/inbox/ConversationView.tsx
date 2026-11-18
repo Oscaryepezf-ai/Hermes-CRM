@@ -83,8 +83,8 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
   if (loading) {
     return (
       <div className="flex-1 flex flex-col bg-surface">
-        <div className="h-14 border-b border-line-subtle bg-surface animate-pulse" />
-        <div className="flex-1 bg-[#F0F2F5] dark:bg-[#0D0F14]" />
+        <div className="h-16 border-b border-line-subtle bg-surface animate-pulse" />
+        <div className="flex-1 bg-canvas" />
         <div className="h-36 border-t border-line-subtle bg-surface" />
       </div>
     )

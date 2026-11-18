@@ -161,7 +161,7 @@ export function FlowBuilderCanvas({ flowId, flowName, startNodeId: initialStartN
   }
 
   return (
-    <div className="flex flex-col h-[78vh] bg-surface border border-line-subtle rounded-[12px] shadow-card overflow-hidden">
+    <div className="flex flex-col h-[78vh] bg-surface rounded-2xl shadow-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-line-subtle flex-shrink-0">
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => router.push("/settings/flows")} className="text-ink-tertiary hover:text-ink-primary">

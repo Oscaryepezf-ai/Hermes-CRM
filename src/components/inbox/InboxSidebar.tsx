@@ -74,54 +74,58 @@ export function InboxSidebar({ filters, onFilterChange, initialCounts, initialLa
   ]
 
   return (
-    <aside className="w-[220px] flex-shrink-0 bg-surface border-r border-line-subtle flex flex-col overflow-y-auto scrollbar-thin">
+    <aside className="w-[220px] flex-shrink-0 bg-surface rounded-2xl shadow-card flex flex-col overflow-y-auto scrollbar-thin">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-line-subtle">
-        <h2 className="text-[13px] font-semibold text-ink-primary">Bandeja de entrada</h2>
+      <div className="px-5 pt-5 pb-2">
+        <h2 className="text-[17px] font-bold text-ink-primary tracking-tight">Bandeja</h2>
       </div>
 
-      <div className="flex-1 px-2 py-2 space-y-0.5">
+      <div className="flex-1 px-3 py-2 space-y-0.5">
         {/* Main filters */}
         {MAIN_FILTERS.map(item => (
           <button
             key={JSON.stringify(item.f)}
             onClick={() => onFilterChange(item.f)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-ui",
+              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-ui",
               isActive(item.f)
-                ? "bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400"
+                ? "bg-brand-50 text-brand-600 font-semibold dark:bg-brand-900/30 dark:text-brand-400"
                 : "text-ink-secondary hover:bg-inset hover:text-ink-primary"
             )}
           >
             {item.icon}
             <span className="flex-1 text-left text-[13px]">{item.label}</span>
             {item.dot && (
-              <span className="text-[10px] font-semibold bg-brand-500 text-white rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
+              <span className="text-[11px] font-semibold bg-brand-500 text-white rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
                 {counts.unread}
               </span>
             )}
             {!item.dot && item.f.isRead === undefined && counts.total > 0 && (
-              <span className="text-[10px] text-ink-tertiary">{counts.total}</span>
+              <span className="text-xs text-ink-tertiary tabular-nums">{counts.total}</span>
             )}
           </button>
         ))}
 
         {/* Labels */}
         <div className="pt-2">
-          <button
-            onClick={() => setLabelsOpen(o => !o)}
-            className="w-full flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide hover:text-ink-secondary transition-ui"
-          >
-            {labelsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            <span className="flex-1 text-left">Etiquetas</span>
+          <div className="w-full flex items-center">
             <button
-              onClick={e => { e.stopPropagation(); setCreating(c => !c) }}
-              className="w-4 h-4 flex items-center justify-center rounded hover:bg-inset transition-ui"
+              onClick={() => setLabelsOpen(o => !o)}
+              className="flex-1 flex items-center gap-1 px-3 py-2 text-xs font-semibold text-ink-tertiary hover:text-ink-secondary transition-ui"
+              aria-expanded={labelsOpen}
+            >
+              {labelsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              <span className="flex-1 text-left">Etiquetas</span>
+            </button>
+            <button
+              onClick={() => setCreating(c => !c)}
+              className="w-4 h-4 flex items-center justify-center rounded hover:bg-inset transition-ui mr-2"
               title="Nueva etiqueta"
+              aria-label="Nueva etiqueta"
             >
               <Plus className="w-3 h-3" />
             </button>
-          </button>
+          </div>
 
           {labelsOpen && (
             <div className="space-y-0.5 mt-1">
@@ -130,9 +134,9 @@ export function InboxSidebar({ filters, onFilterChange, initialCounts, initialLa
                   key={label.id}
                   onClick={() => onFilterChange({ labelId: label.id })}
                   className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-ui",
+                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-ui",
                     filters.labelId === label.id
-                      ? "bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400"
+                      ? "bg-brand-50 text-brand-600 font-semibold dark:bg-brand-900/30 dark:text-brand-400"
                       : "text-ink-secondary hover:bg-inset hover:text-ink-primary"
                   )}
                 >
@@ -188,7 +192,7 @@ export function InboxSidebar({ filters, onFilterChange, initialCounts, initialLa
         <div className="pt-2">
           <button
             onClick={() => setChannelsOpen(o => !o)}
-            className="w-full flex items-center gap-1 px-3 py-1.5 text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide hover:text-ink-secondary transition-ui"
+            className="w-full flex items-center gap-1 px-3 py-2 text-xs font-semibold text-ink-tertiary hover:text-ink-secondary transition-ui"
           >
             {channelsOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             <span className="flex-1 text-left">Canales</span>
@@ -201,16 +205,16 @@ export function InboxSidebar({ filters, onFilterChange, initialCounts, initialLa
                   key={item.channel}
                   onClick={() => onFilterChange({ channel: item.channel })}
                   className={cn(
-                    "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-ui",
+                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-ui",
                     filters.channel === item.channel
-                      ? "bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-400"
+                      ? "bg-brand-50 text-brand-600 font-semibold dark:bg-brand-900/30 dark:text-brand-400"
                       : "text-ink-secondary hover:bg-inset hover:text-ink-primary"
                   )}
                 >
                   {item.icon}
                   <span className="flex-1 text-left text-[13px]">{item.label}</span>
                   {counts.channels[item.channel] != null && (
-                    <span className="text-[10px] text-ink-tertiary">{counts.channels[item.channel]}</span>
+                    <span className="text-xs text-ink-tertiary tabular-nums">{counts.channels[item.channel]}</span>
                   )}
                 </button>
               ))}

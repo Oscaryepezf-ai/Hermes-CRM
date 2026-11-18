@@ -149,7 +149,7 @@ export function MetaFlowsClient({ initialFlows, hasPrivateKey }: Props) {
           { icon: "📡", title: "Sin salir del chat",  desc: "El paciente completa el formulario sin abrir ningún link" },
           { icon: "⚡", title: "Datos al CRM",         desc: "Las respuestas llegan automáticamente al perfil del lead" },
         ].map(item => (
-          <div key={item.title} className="bg-surface border border-line-subtle rounded-xl p-3">
+          <div key={item.title} className="bg-surface rounded-2xl shadow-card p-3">
             <p className="text-lg mb-1">{item.icon}</p>
             <p className="font-semibold text-ink-primary">{item.title}</p>
             <p className="text-ink-tertiary mt-0.5">{item.desc}</p>
@@ -165,7 +165,7 @@ export function MetaFlowsClient({ initialFlows, hasPrivateKey }: Props) {
             {DENTAL_FLOW_TEMPLATES.map(tpl => (
               <div
                 key={tpl.id}
-                className="bg-surface border border-line-subtle rounded-xl p-4 flex items-start justify-between gap-4"
+                className="bg-surface rounded-2xl shadow-card p-4 flex items-start justify-between gap-4"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -208,7 +208,7 @@ export function MetaFlowsClient({ initialFlows, hasPrivateKey }: Props) {
             const cat  = CATEGORY_CFG[flow.category]
 
             return (
-              <div key={flow.id} className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4">
+              <div key={flow.id} className="bg-surface rounded-2xl shadow-card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">

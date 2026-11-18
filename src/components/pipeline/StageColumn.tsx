@@ -61,23 +61,19 @@ export function StageColumn({
 
   return (
     <div
-      className="stage-col flex flex-col w-[280px] flex-shrink-0 rounded-[12px] overflow-hidden"
-      style={{
-        background:  stage.bgColor,
-        border:      `1px solid ${borderColor}`,
-        boxShadow:   "var(--shadow-col, 0 1px 3px rgba(0,0,0,0.06))",
-      }}
+      className="stage-col flex flex-col w-[290px] flex-shrink-0 rounded-2xl overflow-hidden"
+      style={{ background: stage.bgColor }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Column header */}
       <div
-        className="stage-col-hdr flex items-center justify-between px-[14px] py-[11px] border-b"
-        style={{ background: stage.headerBgColor, borderColor }}
+        className="stage-col-hdr flex items-center justify-between px-4 pt-4 pb-2"
+        style={{ background: "transparent" }}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span
-            className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+            className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ background: stage.color }}
           />
           {editing ? (
@@ -110,7 +106,7 @@ export function StageColumn({
             </div>
           ) : (
             <span
-              className="text-[14px] font-bold leading-tight truncate"
+              className="text-[14px] font-semibold leading-tight truncate"
               style={{ color: stage.color }}
             >
               {stage.name}
@@ -120,8 +116,8 @@ export function StageColumn({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           <span
-            className="text-[11px] font-[550] px-2 py-0.5 rounded-[9999px]"
-            style={{ background: "rgba(255,255,255,0.65)", color: stage.color }}
+            className="text-xs font-semibold px-2.5 py-0.5 rounded-full tabular-nums"
+            style={{ background: "rgba(255,255,255,0.8)", color: stage.color }}
           >
             {leads.length}
           </span>
@@ -147,13 +143,13 @@ export function StageColumn({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={cn(
-              "stage-col-body flex-1 flex flex-col gap-2 px-[10px] py-[12px]",
+              "stage-col-body flex-1 flex flex-col gap-3 px-3 pb-3 pt-2",
               "min-h-[200px] overflow-y-auto scrollbar-thin",
               "transition-colors duration-100",
               snapshot.isDraggingOver && "is-dragging-over"
             )}
             style={{
-              background:  snapshot.isDraggingOver ? "rgba(99,102,241,0.05)" : stage.bgColor,
+              background:  snapshot.isDraggingOver ? "rgba(99,102,241,0.08)" : stage.bgColor,
               maxHeight:   "calc(100vh - 160px)",
             }}
           >
@@ -172,10 +168,10 @@ export function StageColumn({
 
             {leads.length === 0 && !snapshot.isDraggingOver && (
               <div
-                className="flex-1 flex items-center justify-center py-8 rounded-[8px] border-2 border-dashed"
+                className="flex-1 flex items-center justify-center py-8 rounded-xl border-2 border-dashed"
                 style={{ borderColor }}
               >
-                <p className="text-[11px] text-ink-disabled">Sin leads en esta etapa</p>
+                <p className="text-xs text-ink-tertiary">Sin leads en esta etapa</p>
               </div>
             )}
           </div>

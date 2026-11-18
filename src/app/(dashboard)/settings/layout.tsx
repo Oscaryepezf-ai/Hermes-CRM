@@ -30,7 +30,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
       <div className="flex gap-6 items-start">
         <nav className="w-[180px] flex-shrink-0">
-          <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+          <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon
               const isActive = item.href === "/settings"

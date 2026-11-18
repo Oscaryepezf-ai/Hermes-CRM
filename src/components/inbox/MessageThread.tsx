@@ -59,7 +59,7 @@ export function MessageThread({ messages }: MessageThreadProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#F0F2F5] dark:bg-[#0D0F14] text-ink-tertiary text-sm">
+      <div className="flex-1 flex items-center justify-center bg-canvas text-ink-tertiary text-sm">
         Sin mensajes todavía
       </div>
     )
@@ -77,12 +77,12 @@ export function MessageThread({ messages }: MessageThreadProps) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin bg-[#F0F2F5] dark:bg-[#0D0F14] p-4 space-y-1">
+    <div className="flex-1 overflow-y-auto scrollbar-thin bg-canvas px-5 py-4 space-y-1">
       {grouped.map((group, gi) => (
         <div key={gi}>
           {/* Day separator */}
           <div className="flex justify-center my-3">
-            <span className="bg-white/80 dark:bg-white/10 rounded-full px-3 py-1 text-xs text-ink-tertiary">
+            <span className="bg-surface rounded-full px-3 py-1 text-xs font-medium text-ink-tertiary shadow-card">
               {formatDayLabel(group.date)}
             </span>
           </div>
@@ -117,21 +117,21 @@ export function MessageThread({ messages }: MessageThreadProps) {
               >
                 <div
                   className={cn(
-                    "max-w-[75%] px-3 py-2 rounded-2xl",
+                    "max-w-[75%] px-4 py-2.5 rounded-2xl",
                     isOut
-                      ? "bg-brand-500 text-white rounded-tr-none"
-                      : "bg-white dark:bg-[#1E2730] text-ink-primary rounded-tl-none shadow-sm"
+                      ? "bg-brand-gradient text-white rounded-br-md"
+                      : "bg-surface text-ink-primary rounded-bl-md shadow-card"
                   )}
                 >
                   {msg.mediaUrl && <MediaPreview url={msg.mediaUrl} />}
-                  <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                  <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
                   <div className={cn(
                     "flex items-center gap-1 mt-1",
                     isOut ? "justify-end" : "justify-start"
                   )}>
                     <span className={cn(
                       "text-[10px]",
-                      isOut ? "text-white/70" : "text-ink-disabled"
+                      isOut ? "text-white/80" : "text-ink-tertiary"
                     )}>
                       {format(new Date(msg.sentAt), "HH:mm")}
                     </span>

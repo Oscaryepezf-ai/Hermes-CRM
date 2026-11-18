@@ -109,7 +109,7 @@ export function AgendaCalendar() {
             startTime: "08:00",
             endTime: "18:00",
           }}
-          height="calc(100vh - 160px)"
+          height="calc(100vh - 300px)"
           events={fetchEvents}
           select={handleSelect}
           eventClick={handleEventClick}

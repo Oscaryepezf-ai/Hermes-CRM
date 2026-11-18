@@ -73,7 +73,7 @@ export function ClinicsTable({ clinics }: ClinicsTableProps) {
         </div>
       </div>
 
-      <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+      <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
         {/* Table header */}
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_80px] gap-0 px-4 py-2.5 border-b border-line-subtle bg-inset">
           {["Clínica", "Plan", "Usuarios", "Leads", "Última actividad", ""].map(h => (

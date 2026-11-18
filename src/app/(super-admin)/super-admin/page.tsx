@@ -60,7 +60,7 @@ export default async function SuperAdminPage() {
             {metrics.planBreakdown.map(p => {
               const cfg = PLAN_LABELS[p.plan] ?? { label: p.plan, color: "bg-inset text-ink-secondary", price: 0 }
               return (
-                <div key={p.plan} className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+                <div key={p.plan} className="bg-surface rounded-2xl p-4 shadow-card">
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-[4px] ${cfg.color}`}>
                       {cfg.label}
@@ -88,7 +88,7 @@ function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: string; color: string
 }) {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+    <div className="bg-surface rounded-2xl p-4 shadow-card">
       <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center mb-2.5 ${color.split(" ")[0]}`}>
         <Icon className={`w-4 h-4 ${color.split(" ")[1]}`} />
       </div>

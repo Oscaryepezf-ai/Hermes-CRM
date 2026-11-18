@@ -36,7 +36,7 @@ export function AnnualReportPanel({ year, monthlyRows, expensesByCategory, summa
 
       <div className="grid grid-cols-[1.6fr_1fr] gap-4">
         <div className="space-y-4">
-          <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+          <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
             <p className="text-sm font-semibold text-ink-secondary px-4 py-3 border-b border-line-subtle">Ingresos y egresos</p>
             <div className="grid grid-cols-4 px-4 py-2 border-b border-line-subtle bg-inset">
               {["Mes", "Ingreso", "Egreso", "Utilidad"].map((h) => (
@@ -53,7 +53,7 @@ export function AnnualReportPanel({ year, monthlyRows, expensesByCategory, summa
             ))}
           </div>
 
-          <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+          <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
             <p className="text-sm font-semibold text-ink-secondary px-4 py-3 border-b border-line-subtle">Egresos por categoría</p>
             {expensesByCategory.length === 0 ? (
               <p className="text-[12px] text-ink-disabled text-center py-6">Sin egresos registrados este año</p>
@@ -69,7 +69,7 @@ export function AnnualReportPanel({ year, monthlyRows, expensesByCategory, summa
         </div>
 
         <div className="space-y-4">
-          <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+          <div className="bg-surface rounded-2xl p-4 shadow-card">
             <p className="text-sm font-semibold text-ink-secondary mb-3">Resumen {year}</p>
             <div className="grid grid-cols-2 gap-3">
               <MiniStat label="Ingreso" value={formatCurrency(summary.totalIngreso)} />
@@ -78,7 +78,7 @@ export function AnnualReportPanel({ year, monthlyRows, expensesByCategory, summa
             </div>
           </div>
 
-          <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+          <div className="bg-surface rounded-2xl p-4 shadow-card">
             <p className="text-sm font-semibold text-ink-secondary mb-1">Top 10 de pacientes</p>
             <p className="text-[11px] text-ink-tertiary mb-3">Pacientes que te generaron más ventas este {year}</p>
             {topPatients.length === 0 ? (

@@ -82,7 +82,7 @@ export function UsersTable({ users }: { users: GlobalUser[] }) {
         />
       </div>
 
-      <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+      <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
         <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_180px] gap-0 px-4 py-2.5 border-b border-line-subtle bg-inset">
           {["Usuario", "Clínica", "Rol", "Estado", "Última conexión", ""].map((h) => (
             <p key={h} className="text-[11px] font-medium text-ink-tertiary uppercase tracking-[0.04em]">{h}</p>

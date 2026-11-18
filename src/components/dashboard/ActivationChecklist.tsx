@@ -44,41 +44,41 @@ export function ActivationChecklist() {
   const progressPct = total > 0 ? Math.round((completed / total) * 100) : 0
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden mb-6">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+    <div className="bg-surface rounded-2xl overflow-hidden mb-6 shadow-card">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-line-subtle">
         <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-ink-primary">
             ¡Cumple esta misión y canjea una recompensa!
           </p>
-          <div className="h-1.5 bg-gray-100 rounded-full mt-2 max-w-xs">
+          <div className="h-1.5 bg-inset rounded-full mt-2 max-w-xs">
             <div
-              className="h-1.5 bg-emerald-500 rounded-full transition-all"
+              className="h-1.5 bg-brand-gradient rounded-full transition-all"
               style={{ width: `${progressPct}%` }}
             />
           </div>
         </div>
-        <button onClick={toggleCollapsed} className="p-1.5 hover:bg-gray-50 rounded-md ml-3">
-          {collapsed ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronUp className="w-4 h-4 text-gray-400" />}
+        <button onClick={toggleCollapsed} className="p-1.5 hover:bg-inset rounded-lg ml-3">
+          {collapsed ? <ChevronDown className="w-4 h-4 text-ink-tertiary" /> : <ChevronUp className="w-4 h-4 text-ink-tertiary" />}
         </button>
       </div>
 
       {!collapsed && (
-        <div className="flex items-stretch divide-x divide-gray-100">
+        <div className="flex items-stretch divide-x divide-line-subtle">
           {missions.map((m) => (
             <Link
               key={m.id}
               href={m.ctaLink || "#"}
               className={cn(
                 "flex-1 flex items-center gap-2 px-4 py-3.5 text-xs transition-colors",
-                m.ctaLink ? "hover:bg-gray-50" : "cursor-default"
+                m.ctaLink ? "hover:bg-inset" : "cursor-default"
               )}
             >
               {m.completed ? (
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
               ) : (
-                <Circle className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                <Circle className="w-4 h-4 text-ink-disabled flex-shrink-0" />
               )}
-              <span className={cn("font-medium", m.completed ? "text-gray-400 line-through" : "text-gray-700")}>
+              <span className={cn("font-medium", m.completed ? "text-ink-tertiary line-through" : "text-ink-secondary")}>
                 {m.label}
               </span>
               {!m.completed && m.ctaLink && <ArrowRight className="w-3 h-3 text-gray-300 ml-auto flex-shrink-0" />}
@@ -90,11 +90,11 @@ export function ActivationChecklist() {
             disabled={!rewardAvailable}
             className={cn(
               "w-14 flex items-center justify-center flex-shrink-0",
-              rewardAvailable ? "bg-amber-50 hover:bg-amber-100" : "bg-gray-50"
+              rewardAvailable ? "bg-amber-50 hover:bg-amber-100" : "bg-inset"
             )}
             title={rewardAvailable ? "¡Reclama tu recompensa!" : "Completa las misiones"}
           >
-            <Gift className={cn("w-5 h-5", rewardAvailable ? "text-amber-500" : "text-gray-300")} />
+            <Gift className={cn("w-5 h-5", rewardAvailable ? "text-amber-500" : "text-ink-disabled")} />
           </button>
         </div>
       )}

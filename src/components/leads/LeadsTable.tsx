@@ -128,12 +128,12 @@ export function LeadsTable({ leads }: LeadsTableProps) {
         {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar por nombre, teléfono o email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-10 h-10 rounded-full border-0 shadow-card"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
               value={statusFilter}
               onValueChange={(v) => setStatusFilter((v ?? "ALL") as LeadStatus | "ALL")}
             >
-              <SelectTrigger className="w-44">
+              <SelectTrigger className="w-44 h-10 rounded-full border-0 shadow-card px-4">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -161,7 +161,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                 setChannelFilter((v ?? "ALL") as MarketingChannel | "ALL")
               }
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-48 h-10 rounded-full border-0 shadow-card px-4">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -177,18 +177,18 @@ export function LeadsTable({ leads }: LeadsTableProps) {
 
         {/* Results count + selection action bar */}
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[13px] text-ink-tertiary">
             {filtered.length} de {leads.length} lead{leads.length !== 1 ? "s" : ""}
           </p>
 
           {selectedLead && (
-            <div className="flex items-center gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-2">
-              <span className="text-sm font-medium text-indigo-800 truncate max-w-[180px]">
+            <div className="flex items-center gap-3 bg-brand-50 rounded-full pl-4 pr-1.5 py-1.5">
+              <span className="text-sm font-medium text-brand-700 truncate max-w-[180px]">
                 {selectedLead.fullName}
               </span>
               <button
                 onClick={() => setShowDictation(true)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-brand-gradient hover:opacity-95 text-white text-xs font-semibold px-3.5 py-1.5 rounded-full transition-opacity"
               >
                 <Mic className="w-3.5 h-3.5" />
                 Diagnóstico dictado
@@ -204,7 +204,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
             <p className="text-sm">Sin resultados para tu búsqueda</p>
           </div>
         ) : (
-          <div className="rounded-lg border">
+          <div className="rounded-2xl bg-surface shadow-card overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -233,15 +233,15 @@ export function LeadsTable({ leads }: LeadsTableProps) {
                       onClick={() => handleRowClick(lead.id)}
                       className={
                         selectedLeadId === lead.id
-                          ? "bg-indigo-50 border-l-2 border-indigo-400 cursor-pointer"
-                          : "hover:bg-muted/50 cursor-pointer"
+                          ? "bg-brand-50 cursor-pointer"
+                          : "cursor-pointer"
                       }
                     >
                       {/* Paciente */}
                       <TableCell>
                         <div>
-                          <p className="font-medium">{lead.fullName}</p>
-                          <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                          <p className="font-semibold text-ink-primary">{lead.fullName}</p>
+                          <p className="text-xs text-ink-tertiary tabular-nums">{lead.phone}</p>
                         </div>
                       </TableCell>
 

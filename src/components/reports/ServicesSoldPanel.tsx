@@ -58,7 +58,7 @@ export function ServicesSoldPanel({ byService, byCategory, services }: { byServi
 
 function BarList({ title, rows, max, mode }: { title: string; rows: Row[]; max: number; mode: "income" | "count" }) {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+    <div className="bg-surface rounded-2xl p-4 shadow-card">
       <p className="text-sm font-semibold text-ink-secondary mb-3">{title}</p>
       {rows.length === 0 ? (
         <p className="text-[12px] text-ink-disabled text-center py-10">Sin información en este período</p>

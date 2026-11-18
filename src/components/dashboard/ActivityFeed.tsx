@@ -18,18 +18,18 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ items }: ActivityFeedProps) {
   return (
-    <Card className="bg-surface shadow-card border-line-subtle">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-ink-secondary">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[15px] font-semibold text-ink-primary">
           Actividad reciente
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="divide-y divide-line-subtle">
           {items.map((item) => (
-            <div key={item.id} className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-brand-700">
+            <div key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+              <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-semibold text-brand-600">
                   {item.user[0]}
                 </span>
               </div>

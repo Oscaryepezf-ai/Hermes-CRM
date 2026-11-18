@@ -143,7 +143,7 @@ export function BudgetCard({ budget, clinic, lead, canEdit, onEdit }: BudgetCard
   const nextStatuses = NEXT_STATUSES[budget.status] ?? []
 
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] shadow-card overflow-hidden">
+    <div className="bg-surface rounded-2xl shadow-card overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">

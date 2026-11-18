@@ -110,7 +110,7 @@ export function SimulatorChat() {
     <div className="flex gap-4 h-[calc(100vh-160px)] min-h-[500px]">
 
       {/* LEFT: Chat panel */}
-      <div className="flex-1 flex flex-col bg-surface border border-line-subtle rounded-[12px] shadow-card overflow-hidden">
+      <div className="flex-1 flex flex-col bg-surface rounded-2xl shadow-card overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle bg-[#128C7E] text-white">
           <div className="flex items-center gap-2.5">
@@ -219,7 +219,7 @@ export function SimulatorChat() {
       {/* RIGHT: Status panel */}
       <div className="w-[280px] flex-shrink-0 space-y-3">
         {/* Pipeline stage */}
-        <div className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4">
+        <div className="bg-surface rounded-2xl shadow-card p-4">
           <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide mb-3">Estado del Pipeline</p>
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
@@ -241,7 +241,7 @@ export function SimulatorChat() {
         </div>
 
         {/* AI qualification */}
-        <div className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4">
+        <div className="bg-surface rounded-2xl shadow-card p-4">
           <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide mb-3">Calificación de la IA</p>
           <div className="space-y-2.5">
             <div className="flex items-start justify-between gap-2">
@@ -273,7 +273,7 @@ export function SimulatorChat() {
 
         {/* Turno info */}
         {status.turnsLeft !== null && (
-          <div className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4">
+          <div className="bg-surface rounded-2xl shadow-card p-4">
             <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide mb-2">Turnos restantes</p>
             <p className={cn("text-[22px] font-bold", status.turnsLeft <= 1 ? "text-red-500" : "text-ink-primary")}>
               {status.turnsLeft}
@@ -294,7 +294,7 @@ export function SimulatorChat() {
         )}
 
         {/* Tips */}
-        <div className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4">
+        <div className="bg-surface rounded-2xl shadow-card p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <Sparkles className="w-3.5 h-3.5 text-violet-500" />
             <p className="text-[11px] font-semibold text-ink-tertiary uppercase tracking-wide">Mensajes de prueba</p>

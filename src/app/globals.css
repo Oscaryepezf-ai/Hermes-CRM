@@ -58,31 +58,31 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --primary: #4F46E5;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF0FA;
+  --secondary-foreground: #2B3152;
+  --muted: #EEF0FA;
+  --muted-foreground: #66728C;
+  --accent: #EEF0FA;
+  --accent-foreground: #2B3152;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #E6E9F5;
+  --input: #DEE2F1;
+  --ring: #818CF8;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  --radius: 0.75rem;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1D23;
+  --sidebar-primary: #4F46E5;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EEF0FA;
+  --sidebar-accent-foreground: #2B3152;
+  --sidebar-border: #E6E9F5;
   --sidebar-ring: oklch(0.708 0 0);
 }
 
@@ -168,21 +168,21 @@
 /* ── Hermes Design System — Premium Medical SaaS ────────── */
 @theme {
   /* ── Fondos ─────────────────────────────────────────── */
-  --color-canvas:  #F7F8FA;
+  --color-canvas:  #F1F3FB;   /* lavanda-azulado muy claro: las tarjetas blancas "flotan" encima */
   --color-surface: #FFFFFF;
-  --color-inset:   #F0F2F6;
+  --color-inset:   #EBEEF9;
 
   /* ── Textos (ink scale) ─────────────────────────────── */
-  --color-ink-primary:   #1A1D23;
-  --color-ink-secondary: #4A5568;
-  --color-ink-tertiary:  #8896A8;
-  --color-ink-disabled:  #B8C4D0;
+  --color-ink-primary:   #1B1E3A;
+  --color-ink-secondary: #454C6B;
+  --color-ink-tertiary:  #66728C;   /* ≥4.5:1 sobre blanco (antes #8896A8 ≈3:1) */
+  --color-ink-disabled:  #A9B3C9;
 
   /* ── Bordes (line scale) ────────────────────────────── */
-  --color-line-subtle: #EDF0F4;
-  --color-line-soft:   #DDE3EC;
-  --color-line-medium: #C8D0DC;
-  --color-line-strong: #9AAABB;
+  --color-line-subtle: #E9ECF7;
+  --color-line-soft:   #DDE2F1;
+  --color-line-medium: #C7CEE3;
+  --color-line-strong: #9AA5C2;
 
   /* ── Acento principal — azul clínico ────────────────── */
   --color-brand-50:  #EEF2FF;
@@ -215,9 +215,9 @@
   --color-col-lost-hdr: #FDE2E7;
 
   /* ── Compatibilidad hacia atrás ─────────────────────── */
-  --color-medical-bg:     #F7F8FA;
+  --color-medical-bg:     #F1F3FB;
   --color-medical-card:   #FFFFFF;
-  --color-medical-border: #EDF0F4;
+  --color-medical-border: #E9ECF7;
 
   /* ── WhatsApp chat ──────────────────────────────────── */
   --color-wa-bg:        #ECE5DD;
@@ -227,22 +227,24 @@
   --color-wa-input-bg:  #F0F2F5;
 
   /* ── Sombras del sistema ────────────────────────────── */
-  --shadow-card:       0 1px 3px rgba(15,23,42,0.04), 0 1px 2px rgba(15,23,42,0.03);
-  --shadow-card-hover: 0 4px 12px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04);
-  --shadow-card-focus: 0 0 0 2px rgba(99,102,241,0.20), 0 1px 3px rgba(15,23,42,0.04);
-  --shadow-col:        0 2px 8px rgba(15,23,42,0.05);
-  --shadow-panel:      0 8px 32px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.06);
-  --shadow-topbar:     0 1px 0 #EDF0F4;
-  --shadow-sidebar:    1px 0 0 #EDF0F4;
-  --shadow-dropdown:   0 8px 24px rgba(15,23,42,0.12);
+  /* Soft UI: sombras difusas teñidas de índigo, sin borde en las tarjetas */
+  --shadow-card:       0 1px 2px rgba(41,50,120,0.04), 0 8px 24px -10px rgba(60,70,160,0.14);
+  --shadow-card-hover: 0 2px 4px rgba(41,50,120,0.05), 0 14px 32px -10px rgba(60,70,160,0.20);
+  --shadow-card-focus: 0 0 0 2px rgba(99,102,241,0.25), 0 8px 24px -10px rgba(60,70,160,0.14);
+  --shadow-col:        0 2px 10px rgba(41,50,120,0.06);
+  --shadow-panel:      0 12px 40px rgba(41,50,120,0.14), 0 2px 8px rgba(41,50,120,0.06);
+  --shadow-topbar:     none;
+  --shadow-sidebar:    0 0 32px rgba(41,50,120,0.06);
+  --shadow-dropdown:   0 12px 32px rgba(41,50,120,0.16);
+  --shadow-brand:      0 10px 24px -8px rgba(79,70,229,0.45);
 
   /* ── Border radius tokens ───────────────────────────── */
-  --radius-card:  10px;
-  --radius-col:   12px;
+  --radius-card:  16px;
+  --radius-col:   14px;
   --radius-badge: 6px;
   --radius-pill:  9999px;
-  --radius-input: 8px;
-  --radius-modal: 16px;
+  --radius-input: 10px;
+  --radius-modal: 20px;
   --radius-bubble:0.75rem;
 
   /* ── Pesos de fuente extra ──────────────────────────── */
@@ -267,8 +269,8 @@
   }
 
   body {
-    background-color: #F7F8FA;
-    color: #1A1D23;
+    background-color: #F1F3FB;
+    color: #1B1E3A;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-weight: 400;
     line-height: 1.6;
@@ -298,10 +300,10 @@
   input, textarea, select {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-size: 13px;
-    color: #1A1D23;
+    color: #1B1E3A;
   }
   input::placeholder, textarea::placeholder {
-    color: #B8C4D0;
+    color: #7C87A3;
   }
 
   /* Dark mode base overrides */
@@ -340,6 +342,11 @@
     border-radius: 9999px;
   }
 
+  /* Gradiente de marca — solo para la pieza destacada de cada pantalla */
+  .bg-brand-gradient {
+    background-image: linear-gradient(135deg, #5B5BF0 0%, #7C5CF2 55%, #8B5CF6 100%);
+  }
+
   /* Pulse animado para estado PACIENTE_ACTIVO */
   @keyframes pulse-dot {
     0%, 100% { opacity: 1; }
@@ -348,108 +355,116 @@
   .animate-pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
 }
 
-/* ── FullCalendar overrides ─────────────────────────────── */
+/* ── FullCalendar — soft UI (usa tokens, funciona en claro y oscuro) ───── */
 .fc {
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 12px;
+  --fc-border-color: var(--color-line-subtle);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--color-inset);
+  --fc-today-bg-color: color-mix(in srgb, var(--color-brand-500) 6%, transparent);
+  --fc-now-indicator-color: #F4506A;
 }
+.fc .fc-toolbar { gap: 12px; flex-wrap: wrap; margin-bottom: 16px !important; }
 .fc .fc-toolbar-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1A1D23;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-ink-primary);
   letter-spacing: -0.02em;
+  text-transform: capitalize;
 }
+/* Botones: píldoras sobre fondo suave */
 .fc .fc-button {
-  background: #FFFFFF !important;
-  border: 1px solid #DDE3EC !important;
-  color: #4A5568 !important;
-  border-radius: 7px !important;
-  font-size: 12px !important;
+  background: var(--color-inset) !important;
+  border: 0 !important;
+  color: var(--color-ink-secondary) !important;
+  border-radius: 9999px !important;
+  font-size: 12.5px !important;
   font-family: 'Inter', system-ui, sans-serif !important;
   font-weight: 500 !important;
-  box-shadow: 0 1px 2px rgba(15,23,42,0.04) !important;
-  transition: all 0.15s ease !important;
-  padding: 5px 12px !important;
+  box-shadow: none !important;
+  padding: 7px 14px !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
 }
 .fc .fc-button:hover {
-  background: #F0F2F6 !important;
-  border-color: #C8D0DC !important;
-  color: #1A1D23 !important;
+  background: var(--color-line-subtle) !important;
+  color: var(--color-ink-primary) !important;
 }
+.fc .fc-button:focus-visible { outline: 2px solid var(--color-brand-500) !important; outline-offset: 2px; }
+.fc .fc-button:disabled { opacity: 0.5 !important; }
+.fc .fc-button-group {
+  background: var(--color-inset);
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
+}
+.fc .fc-button-group > .fc-button { background: transparent !important; border-radius: 9999px !important; margin: 0 !important; }
+.fc .fc-button-group > .fc-button:hover { background: color-mix(in srgb, var(--color-surface) 70%, transparent) !important; }
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-  background: #EEF2FF !important;
-  color: #6366F1 !important;
-  border-color: #C7D2FE !important;
+  background: var(--color-surface) !important;
+  color: var(--color-brand-600) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-card) !important;
 }
-.fc .fc-timegrid-slot { height: 40px; }
-.fc .fc-timegrid-now-indicator-line { border-color: #F47B8A; border-width: 1.5px; }
-.fc .fc-day-today { background: rgba(99,102,241,0.03) !important; }
-.fc .fc-event {
-  border-radius: 5px !important;
-  border-left-width: 3px !important;
-  font-size: 11px !important;
-  font-weight: 500 !important;
-  padding: 2px 6px !important;
-  cursor: pointer !important;
-}
+.fc .fc-prev-button, .fc .fc-next-button { width: 34px; padding: 7px 0 !important; }
+
+/* Rejilla: casi sin bordes exteriores */
+.fc-theme-standard .fc-scrollgrid { border: 0; }
+.fc-theme-standard td, .fc-theme-standard th { border-color: var(--color-line-subtle); }
+.fc-theme-standard .fc-scrollgrid-section > td, .fc-theme-standard .fc-scrollgrid-section > th { border-left: 0; border-right: 0; }
+.fc .fc-timegrid-slot { height: 44px; border-color: var(--color-line-subtle); }
+.fc .fc-timegrid-slot-minor { border-top-style: dotted; }
+.fc .fc-non-business { background: color-mix(in srgb, var(--color-brand-500) 4%, transparent) !important; }
+.fc .fc-day-today { background: var(--fc-today-bg-color) !important; }
+.fc .fc-timegrid-now-indicator-line { border-width: 1.5px; }
+
+/* Cabeceras de día y horas */
+.fc .fc-col-header-cell { border-bottom-color: var(--color-line-subtle); }
 .fc .fc-col-header-cell-cushion {
-  font-size: 11px;
-  font-weight: 550;
-  color: #8896A8;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-tertiary);
   text-decoration: none;
+  padding: 10px 4px;
+  text-transform: capitalize;
 }
-.fc .fc-timegrid-axis-cushion {
+.fc .fc-day-today .fc-col-header-cell-cushion { color: var(--color-brand-600); }
+.fc .fc-timegrid-axis-cushion, .fc .fc-timegrid-slot-label-cushion {
   font-size: 11px;
-  color: #8896A8;
+  color: var(--color-ink-tertiary);
 }
-.fc-theme-standard .fc-scrollgrid { border-color: #EDF0F4; }
-.fc-theme-standard td, .fc-theme-standard th { border-color: #EDF0F4; }
-.fc .fc-list-event:hover td { background: #F7F8FA; }
 .fc .fc-daygrid-day-number,
 .fc .fc-daygrid-week-number {
-  color: #8896A8;
+  color: var(--color-ink-tertiary);
   font-size: 12px;
   text-decoration: none;
+  padding: 6px 8px;
+}
+.fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--color-brand-500);
+  color: #fff;
+  border-radius: 9999px;
+  margin: 4px;
+  padding: 2px 7px;
+  font-weight: 600;
 }
 
-/* ── FullCalendar dark mode ─────────────────────────────── */
-.dark .fc .fc-toolbar-title {
-  color: #F0F2F8;
+/* Eventos: tarjetas redondeadas sin franja lateral (el color de fondo ya identifica el motivo) */
+.fc .fc-event {
+  border-radius: 8px !important;
+  border: 0 !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  padding: 3px 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 2px rgba(41,50,120,0.08);
 }
-.dark .fc .fc-button {
-  background: #1A1D27 !important;
-  border: 1px solid #2A2F42 !important;
-  color: #9AA3B8 !important;
-  box-shadow: none !important;
-}
-.dark .fc .fc-button:hover {
-  background: #232736 !important;
-  border-color: #363C54 !important;
-  color: #F0F2F8 !important;
-}
-.dark .fc .fc-button-primary:not(:disabled).fc-button-active,
-.dark .fc .fc-button-primary:not(:disabled):active {
-  background: #1e1b4b !important;
-  color: #a5b4fc !important;
-  border-color: #312e81 !important;
-}
-.dark .fc .fc-col-header-cell-cushion {
-  color: #5C6680;
-}
-.dark .fc .fc-timegrid-axis-cushion {
-  color: #5C6680;
-}
-.dark .fc-theme-standard .fc-scrollgrid { border-color: #232736; }
-.dark .fc-theme-standard td,
-.dark .fc-theme-standard th { border-color: #232736; }
-.dark .fc .fc-list-event:hover td { background: #232736; }
-.dark .fc .fc-daygrid-day-number,
-.dark .fc .fc-daygrid-week-number { color: #5C6680; }
-.dark .fc .fc-day-today { background: rgba(99,102,241,0.06) !important; }
-.dark .fc .fc-timegrid-slot-label { color: #5C6680; }
+.fc .fc-event:hover { filter: brightness(0.97); }
+.fc .fc-list { border: 0; }
+.fc .fc-list-day-cushion { background: var(--color-inset) !important; }
+.fc .fc-list-event:hover td { background: var(--color-inset); }
+.fc .fc-highlight { background: color-mix(in srgb, var(--color-brand-500) 14%, transparent); border-radius: 8px; }
 
 /* ── Kanban columnas en dark mode ───────────────────────── */
 .dark .stage-col {

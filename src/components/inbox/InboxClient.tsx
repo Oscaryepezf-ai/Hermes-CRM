@@ -23,7 +23,7 @@ export function InboxClient({ initialConversations, initialCounts, initialLabels
   const [selectedId, setSelectedId] = useState<string | null>(initialOpenConversationId ?? null)
 
   return (
-    <div className="-m-3 md:-m-6 flex h-[calc(100vh-52px)] overflow-hidden bg-canvas">
+    <div className="-m-3 md:-m-6 flex gap-3 p-3 md:p-4 h-[calc(100vh-64px)] overflow-hidden bg-canvas">
 
       {/* Panel izquierdo — oculto en móvil */}
       <div className="hidden md:block">
@@ -37,7 +37,7 @@ export function InboxClient({ initialConversations, initialCounts, initialLabels
 
       {/* Panel central */}
       <div className={cn(
-        "flex-shrink-0 border-r border-line-subtle",
+        "flex-shrink-0 rounded-2xl overflow-hidden shadow-card",
         selectedId ? "hidden md:block md:w-[320px]" : "flex-1 md:flex-none md:w-[320px]"
       )}>
         <ConversationList
@@ -51,7 +51,7 @@ export function InboxClient({ initialConversations, initialCounts, initialLabels
 
       {/* Panel derecho */}
       {selectedId ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 min-w-0 flex flex-col overflow-hidden rounded-2xl shadow-card bg-surface">
           <button
             onClick={() => setSelectedId(null)}
             className="md:hidden flex items-center gap-2 px-4 py-2.5 text-sm text-brand-600 font-medium border-b border-line-subtle bg-surface flex-shrink-0"
@@ -62,9 +62,14 @@ export function InboxClient({ initialConversations, initialCounts, initialLabels
           <ConversationView key={selectedId} conversationId={selectedId} />
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 flex-col items-center justify-center bg-canvas text-ink-tertiary gap-3">
-          <MessageCircle className="w-12 h-12 opacity-20" />
-          <p className="text-sm">Selecciona una conversación para ver los mensajes</p>
+        <div className="hidden md:flex flex-1 flex-col items-center justify-center rounded-2xl bg-surface shadow-card text-ink-tertiary gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center">
+            <MessageCircle className="w-8 h-8 text-brand-500" />
+          </div>
+          <div className="text-center">
+            <p className="text-[15px] font-semibold text-ink-primary">Tus conversaciones</p>
+            <p className="text-sm mt-1">Selecciona una para ver los mensajes</p>
+          </div>
         </div>
       )}
     </div>

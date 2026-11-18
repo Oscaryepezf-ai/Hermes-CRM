@@ -39,18 +39,17 @@ export function ConversationItem({ conversation: c, isSelected, onClick }: Conve
   return (
     <button
       onClick={onClick}
+      aria-current={isSelected ? "true" : undefined}
       className={cn(
-        "w-full text-left px-3 py-3 flex gap-2.5 border-b border-line-subtle transition-colors duration-100",
+        "w-full text-left px-3 py-3 flex gap-3 rounded-2xl transition-colors duration-150",
         isSelected
-          ? "bg-brand-50 dark:bg-brand-900/20 border-l-2 border-l-brand-500"
-          : !isRead
-          ? "bg-inset/60 hover:bg-inset"
+          ? "bg-brand-50 dark:bg-brand-900/20"
           : "hover:bg-inset"
       )}
     >
       {/* Avatar */}
       <div
-        className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[11px] font-semibold"
+        className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-semibold"
         style={{ backgroundColor: getInitialsBg(lead.fullName) }}
       >
         {getInitials(lead.fullName)}
@@ -58,43 +57,50 @@ export function ConversationItem({ conversation: c, isSelected, onClick }: Conve
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        {/* Row 1: name + channel + time + dot */}
+        {/* Row 1: name + channel + time */}
         <div className="flex items-center gap-1 justify-between">
-          <div className="flex items-center gap-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             <span className={cn(
-              "text-[13px] truncate text-ink-primary",
+              "text-[14px] truncate text-ink-primary",
               !isRead ? "font-semibold" : "font-medium"
             )}>
               {lead.fullName}
             </span>
             <ChannelIcon channel={channel} size="sm" />
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
-            {timeStr && (
-              <span className="text-[10px] text-ink-tertiary whitespace-nowrap">{timeStr}</span>
-            )}
-            {!isRead && unreadCount > 0 && (
-              <span className="w-2 h-2 rounded-full bg-brand-500 flex-shrink-0" />
-            )}
-          </div>
+          {timeStr && (
+            <span className={cn(
+              "text-xs whitespace-nowrap flex-shrink-0 ml-1",
+              !isRead ? "text-brand-600 font-medium" : "text-ink-tertiary"
+            )}>
+              {timeStr}
+            </span>
+          )}
         </div>
 
-        {/* Row 2: preview */}
-        <p className={cn(
-          "text-xs line-clamp-1 mt-0.5",
-          !isRead ? "text-ink-secondary" : "text-ink-tertiary"
-        )}>
-          {lastMessagePreview ?? "Sin mensajes"}
-        </p>
+        {/* Row 2: preview + unread badge */}
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          <p className={cn(
+            "text-[13px] line-clamp-1",
+            !isRead ? "text-ink-primary" : "text-ink-tertiary"
+          )}>
+            {lastMessagePreview ?? "Sin mensajes"}
+          </p>
+          {!isRead && unreadCount > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-brand-500 text-white text-[11px] font-semibold flex items-center justify-center flex-shrink-0 tabular-nums">
+              {unreadCount}
+            </span>
+          )}
+        </div>
 
         {/* Row 3: labels */}
         {visibleLabels.length > 0 && (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-1 mt-1.5">
             {visibleLabels.map(l => (
               <LabelBadge key={l.id} name={l.name} color={l.color} emoji={l.emoji} />
             ))}
             {extraLabels > 0 && (
-              <span className="text-[10px] text-ink-tertiary">+{extraLabels}</span>
+              <span className="text-xs text-ink-tertiary">+{extraLabels}</span>
             )}
           </div>
         )}

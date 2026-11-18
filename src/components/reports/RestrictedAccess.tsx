@@ -2,7 +2,7 @@ import { Lock } from "lucide-react"
 
 export function RestrictedAccess() {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-8 shadow-card flex flex-col items-center gap-2 text-center">
+    <div className="bg-surface rounded-2xl p-8 shadow-card flex flex-col items-center gap-2 text-center">
       <div className="w-10 h-10 rounded-full bg-inset flex items-center justify-center">
         <Lock className="w-4.5 h-4.5 text-ink-tertiary" />
       </div>

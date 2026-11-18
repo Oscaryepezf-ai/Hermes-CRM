@@ -98,24 +98,26 @@ export function PipelineBoard({ initialLeads, userRole, selectedLeadId, onSelect
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-line-subtle bg-surface">
-        <div>
-          <h2 className="text-[18px] font-bold text-ink-primary leading-tight">Pipeline de Pacientes</h2>
-          <p className="text-[12px] text-ink-tertiary mt-0.5">Seguimiento comercial en tiempo real</p>
+      <div className="flex items-center justify-between gap-3 px-6 pt-5 pb-1">
+        <div className="min-w-0">
+          <h2 className="text-2xl font-bold text-ink-primary leading-tight tracking-tight">Pipeline de pacientes</h2>
+          <p className="text-[13px] text-ink-tertiary mt-1">
+            {leads.length} {leads.length === 1 ? "lead" : "leads"} en seguimiento
+          </p>
         </div>
         <Button
           onClick={() => setShowCreate(true)}
-          className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium h-8 px-3 rounded-[8px]"
-          style={{ boxShadow: "0 1px 3px rgba(99,102,241,0.25)" }}
+          className="bg-brand-gradient hover:opacity-95 text-white text-[13px] font-semibold h-9 px-4 rounded-full"
+          style={{ boxShadow: "var(--shadow-brand)" }}
         >
-          <Plus className="w-3.5 h-3.5 mr-1.5" />
-          Nuevo Lead
+          <Plus className="w-4 h-4 mr-1.5" />
+          Nuevo lead
         </Button>
       </div>
 
       {/* Board */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto p-5 h-full items-start">
+        <div className="flex gap-4 overflow-x-auto px-6 py-5 h-full items-start">
           {stages.map((stage, idx) => {
             const isBeforeLast  = idx < stages.length - 2
             const isProtected   = stage.isProtected

@@ -62,7 +62,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
 
   if (!isElite) {
     return (
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-6 shadow-card flex items-start gap-3">
+      <div className="bg-surface rounded-2xl p-6 shadow-card flex items-start gap-3">
         <div className="w-10 h-10 rounded-[10px] bg-inset flex items-center justify-center flex-shrink-0">
           <Lock className="w-5 h-5 text-ink-tertiary" />
         </div>
@@ -80,7 +80,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
   return (
     <div className="space-y-5">
       {/* Activation toggle */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card flex items-center justify-between gap-4">
+      <div className="bg-surface rounded-2xl p-5 shadow-card flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[10px] bg-brand-50 flex items-center justify-center flex-shrink-0">
             <Bot className="w-5 h-5 text-brand-600" />
@@ -111,7 +111,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
       </div>
 
       {/* General config */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-5">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-5">
         <h3 className="text-[14px] font-bold text-ink-primary">Comportamiento</h3>
 
         <div className="grid grid-cols-2 gap-4">
@@ -178,7 +178,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
       </div>
 
       {/* Specialties */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">Tratamientos que ofreces</h3>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
@@ -217,7 +217,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
       </div>
 
       {/* Modo del agente */}
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
         <div>
           <h3 className="text-[14px] font-bold text-ink-primary">Modo del agente</h3>
           <p className="text-[12px] text-ink-tertiary mt-0.5">
@@ -246,7 +246,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
 
       {/* Flujo activo */}
       {config.mode === "flujo" && (
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+        <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
           <div className="flex items-center gap-2">
             <Workflow className="w-4 h-4 text-brand-600" />
             <div>
@@ -277,7 +277,7 @@ export function AssistantSettingsView({ plan, initialActive, initialConfig, init
       {config.mode === "consultivo" ? (
         <KnowledgeBaseUpload initialDocuments={initialKnowledgeDocuments} />
       ) : config.mode === "flujo" ? null : (
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+        <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
           <div>
             <h3 className="text-[14px] font-bold text-ink-primary">Información de la clínica</h3>
             <p className="text-[12px] text-ink-tertiary mt-0.5">

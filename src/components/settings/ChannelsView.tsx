@@ -661,7 +661,7 @@ function ComingSoonCard({ channel, eta }: { channel: keyof typeof CHANNEL_META; 
   const meta = CHANNEL_META[channel]
   const Icon = meta.icon
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-5 opacity-55">
+    <div className="bg-surface rounded-2xl shadow-card p-5 opacity-55">
       <div className="flex items-center gap-3">
         <div className={cn("w-10 h-10 rounded-[10px] flex items-center justify-center", meta.iconBg)}>
           <Icon className={cn("w-5 h-5", meta.iconColor)} />

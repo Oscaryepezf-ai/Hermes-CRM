@@ -47,7 +47,7 @@ export function FlowListView({ initialFlows }: { initialFlows: FlowSummary[] }) 
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-3">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-3">
         <h3 className="text-[14px] font-bold text-ink-primary">Crear flujo</h3>
         <div className="flex gap-2">
           <input
@@ -65,7 +65,7 @@ export function FlowListView({ initialFlows }: { initialFlows: FlowSummary[] }) 
       </div>
 
       {flows.length === 0 ? (
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-8 shadow-card flex flex-col items-center text-center gap-2">
+        <div className="bg-surface rounded-2xl p-8 shadow-card flex flex-col items-center text-center gap-2">
           <Workflow className="w-8 h-8 text-ink-disabled" />
           <p className="text-[13px] text-ink-tertiary">Todavía no tienes flujos. Crea el primero arriba.</p>
         </div>
@@ -74,7 +74,7 @@ export function FlowListView({ initialFlows }: { initialFlows: FlowSummary[] }) 
           {flows.map((flow) => (
             <div
               key={flow.id}
-              className="flex items-center justify-between bg-surface border border-line-subtle rounded-[12px] px-4 py-3 shadow-card"
+              className="flex items-center justify-between bg-surface rounded-2xl px-4 py-3 shadow-card"
             >
               <a href={`/settings/flows/${flow.id}`} className="flex-1">
                 <p className="text-[13px] font-semibold text-ink-primary">{flow.name}</p>

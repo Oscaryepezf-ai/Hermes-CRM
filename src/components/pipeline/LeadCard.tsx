@@ -74,27 +74,25 @@ export function LeadCard({ lead, index, isSelected, onSelect, showConvertedBadge
           {...provided.dragHandleProps}
           onClick={() => onSelect(lead.id)}
           className={cn(
-            "bg-surface rounded-[10px] border p-[14px] select-none",
-            // Only transition safe properties — NEVER transition: all on a Draggable
-            // transition: transform/opacity during drag causes lag and broken visual
-            "transition-[box-shadow,border-color,opacity] duration-150",
+            "bg-surface rounded-2xl p-4 select-none",
+            // Only transition safe properties: NEVER transition "all" on a Draggable
+            // (transform/opacity transitions during drag cause lag and a broken visual)
+            "transition-[box-shadow,opacity] duration-150",
             snapshot.isDragging
-              ? "cursor-grabbing opacity-90"
-              : "cursor-grab hover:border-line-soft",
+              ? "cursor-grabbing opacity-95 shadow-[var(--shadow-panel)]"
+              : "cursor-grab hover:shadow-[var(--shadow-card-hover)]",
             isSelected && !snapshot.isDragging
-              ? "border-brand-200 ring-1 ring-brand-200 shadow-[var(--shadow-card-focus)]"
-              : !snapshot.isDragging
-              ? "border-line-subtle shadow-[var(--shadow-card)]"
-              : "border-line-soft",
+              ? "ring-2 ring-brand-400/70 shadow-[var(--shadow-card-focus)]"
+              : !snapshot.isDragging && "shadow-[var(--shadow-card)]",
           )}
         >
           {/* Row 1: Avatar + Priority */}
           <div className="flex items-start justify-between gap-2">
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-[550]", avatar.bg, avatar.text)}>
+            <div className={cn("w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold", avatar.bg, avatar.text)}>
               {initials}
             </div>
             <span
-              className="text-[10px] font-medium px-2 py-0.5 rounded-[9999px] flex-shrink-0"
+              className="text-[11px] font-medium px-2.5 py-0.5 rounded-full flex-shrink-0"
               style={{ background: priority.bg, color: priority.text }}
             >
               {priority.label}
@@ -102,7 +100,7 @@ export function LeadCard({ lead, index, isSelected, onSelect, showConvertedBadge
           </div>
 
           {/* Name */}
-          <p className="mt-2.5 text-[14px] font-[550] text-ink-primary leading-tight truncate">
+          <p className="mt-3 text-[15px] font-semibold text-ink-primary leading-tight truncate">
             {lead.fullName}
           </p>
 
@@ -125,39 +123,39 @@ export function LeadCard({ lead, index, isSelected, onSelect, showConvertedBadge
           )}
 
           {/* Phone */}
-          <p className="text-[11px] text-ink-tertiary mt-0.5">{lead.phone}</p>
+          <p className="text-xs text-ink-tertiary mt-0.5 tabular-nums">{lead.phone}</p>
 
           {/* Treatment */}
-          <div className="mt-2 flex items-center gap-1.5">
-            <Stethoscope className="w-3.5 h-3.5 text-ink-disabled flex-shrink-0" />
-            <span className="text-[12px] font-medium text-ink-secondary">
+          <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-50 text-brand-700 rounded-full px-2.5 py-1 max-w-full">
+            <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-xs font-medium truncate">
               {TREATMENT_LABELS[lead.treatment]}
             </span>
           </div>
 
           {/* Last note / message */}
-          <p className="mt-2 text-[12px] text-ink-tertiary italic line-clamp-1 leading-snug">
+          <p className="mt-2.5 text-xs text-ink-tertiary italic line-clamp-1 leading-snug">
             {lead.notes
               ? `"${lead.notes}"`
-              : <span className="not-italic text-ink-disabled">Sin notas aún</span>
+              : <span className="not-italic">Sin notas aún</span>
             }
           </p>
 
-          {/* Divider */}
-          <div className="mt-3 border-t border-line-subtle" />
-
-          {/* Row bottom: Channel dot + Time */}
-          <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-[5px]">
+          {/* Row bottom: Channel chip + Time */}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5"
+              style={{ background: channel.dot + "1A" }}
+            >
               <span
-                className="w-[5px] h-[5px] rounded-full flex-shrink-0"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{ background: channel.dot }}
               />
-              <span className="text-[10px] font-medium" style={{ color: channel.text }}>
+              <span className="text-[11px] font-medium" style={{ color: channel.text }}>
                 {channel.label}
               </span>
-            </div>
-            <span className="text-[11px] text-ink-tertiary">
+            </span>
+            <span className="text-[11px] text-ink-tertiary text-right">
               {lead.lastContactAt
                 ? formatDistanceToNow(new Date(lead.lastContactAt), { addSuffix: true, locale: es })
                 : "Sin contacto"}

@@ -1,20 +1,17 @@
-import { Plus } from "lucide-react"
 import { AgendaCalendar } from "@/components/agenda/AgendaCalendar"
 import { PushPermissionBanner } from "@/components/notifications/PushPermissionBanner"
 
 export default function AgendaPage() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full gap-5">
       <PushPermissionBanner />
 
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-sm text-gray-500">Calendario de citas de la clínica</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-ink-primary tracking-tight">Agenda</h1>
+        <p className="text-sm text-ink-tertiary mt-1">Calendario de citas de la clínica</p>
       </div>
 
-      <div className="flex-1 px-6 pb-6">
+      <div className="flex-1 bg-surface rounded-2xl shadow-card p-4 md:p-5">
         <AgendaCalendar />
       </div>
     </div>

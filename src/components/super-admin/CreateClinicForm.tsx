@@ -63,7 +63,7 @@ export function CreateClinicForm() {
 
   if (created) {
     return (
-      <div className="max-w-md mx-auto bg-surface border border-line-subtle rounded-[16px] p-6 shadow-card space-y-4">
+      <div className="max-w-md mx-auto bg-surface rounded-2xl p-6 shadow-card space-y-4">
         <h2 className="text-[16px] font-bold text-ink-primary">Clínica creada</h2>
         <p className="text-[13px] text-ink-tertiary">
           Comparte estas credenciales con el cliente — la contraseña no se mostrará de nuevo.
@@ -101,7 +101,7 @@ export function CreateClinicForm() {
         Volver a Clínicas
       </Link>
 
-      <form onSubmit={handleSubmit} className="bg-surface border border-line-subtle rounded-[16px] p-6 shadow-card space-y-4">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl p-6 shadow-card space-y-4">
         <h1 className="text-[18px] font-bold text-ink-primary">Crear nueva clínica</h1>
 
         <div className="space-y-1">

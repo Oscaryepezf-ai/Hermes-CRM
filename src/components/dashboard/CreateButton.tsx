@@ -33,9 +33,9 @@ export function CreateButton({ onCreateAppointment, onCreatePatient }: CreateBut
       <button
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "h-7 pl-2.5 pr-2 rounded-full bg-brand-500 hover:bg-brand-600 text-white text-[12.5px] font-medium flex items-center gap-1 transition-ui"
+          "h-9 pl-3.5 pr-3 rounded-full bg-brand-gradient hover:opacity-95 text-white text-[13px] font-semibold flex items-center gap-1.5 transition-ui"
         )}
-        style={{ boxShadow: "0 1px 3px rgba(99,102,241,0.35)" }}
+        style={{ boxShadow: "var(--shadow-brand)" }}
       >
         <Plus className="w-3.5 h-3.5" />
         Crear
@@ -43,17 +43,17 @@ export function CreateButton({ onCreateAppointment, onCreatePatient }: CreateBut
       </button>
 
       {open && (
-        <div className="absolute right-0 top-9 w-52 bg-popover rounded-xl shadow-xl ring-1 ring-foreground/10 z-50 overflow-hidden py-1">
+        <div className="absolute right-0 top-11 w-56 bg-popover rounded-2xl z-50 overflow-hidden p-1.5" style={{ boxShadow: "var(--shadow-dropdown)" }}>
           <button
             onClick={() => select(onCreateAppointment)}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium text-ink-primary hover:bg-inset transition-ui text-left"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-ink-primary hover:bg-inset transition-ui text-left"
           >
             <CalendarPlus className="w-4 h-4 text-brand-500" />
             Agendar cita
           </button>
           <button
             onClick={() => select(onCreatePatient)}
-            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] font-medium text-ink-primary hover:bg-inset transition-ui text-left"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-ink-primary hover:bg-inset transition-ui text-left"
           >
             <UserPlus className="w-4 h-4 text-brand-500" />
             Agregar paciente

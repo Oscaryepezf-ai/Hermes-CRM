@@ -53,19 +53,22 @@ export function ReplyBox({ conversationId, channel, onMessageSent }: ReplyBoxPro
   }
 
   return (
-    <div className="border-t border-line-subtle bg-surface">
-      {/* Tabs */}
-      <div className="flex border-b border-line-subtle">
+    <div className="bg-surface px-4 pb-4 pt-3 border-t border-line-subtle">
+      {/* Tabs (segmentado) */}
+      <div className="inline-flex items-center gap-1 bg-inset rounded-full p-1 mb-3" role="tablist">
         <TabButton active={tab === "reply"} onClick={() => setTab("reply")}>
-          <Send className="w-3 h-3" /> Responder
+          <Send className="w-3.5 h-3.5" /> Responder
         </TabButton>
         <TabButton active={tab === "note"} onClick={() => setTab("note")}>
-          <StickyNote className="w-3 h-3" /> Nota interna
+          <StickyNote className="w-3.5 h-3.5" /> Nota interna
         </TabButton>
       </div>
 
-      {/* Textarea */}
-      <div className="px-4 pt-3 pb-2">
+      {/* Caja de texto */}
+      <div className={cn(
+        "rounded-2xl px-4 pt-3 pb-2 transition-ui",
+        isNote ? "bg-amber-50 dark:bg-amber-950/30" : "bg-inset"
+      )}>
         <textarea
           ref={textareaRef}
           value={content}
@@ -74,37 +77,38 @@ export function ReplyBox({ conversationId, channel, onMessageSent }: ReplyBoxPro
           placeholder={isNote ? "Escribe una nota interna..." : "Responder aquí..."}
           rows={3}
           className={cn(
-            "w-full resize-none bg-transparent text-sm text-ink-primary placeholder:text-ink-tertiary",
+            "w-full resize-none bg-transparent text-[14px] text-ink-primary placeholder:text-ink-tertiary",
             "focus:outline-none",
             isNote && "italic"
           )}
         />
-      </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 pb-3">
-        <p className="text-[10px] text-ink-tertiary">
-          {isNote ? "Solo visible para el equipo" : `⌘↵ para enviar`}
-        </p>
-        <button
-          onClick={handleSend}
-          disabled={!canSend}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-ui",
-            canSend
-              ? isNote
-                ? "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-950/60 dark:text-amber-300"
-                : "bg-brand-500 text-white hover:bg-brand-600"
-              : "opacity-40 cursor-not-allowed bg-inset text-ink-tertiary"
-          )}
-        >
-          {sending
-            ? <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            : isNote
-            ? <><StickyNote className="w-3 h-3" /> Guardar nota</>
-            : <><Send className="w-3 h-3" /> Enviar a {channelLabel}</>
-          }
-        </button>
+        {/* Toolbar */}
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-xs text-ink-tertiary">
+            {isNote ? "Solo visible para el equipo" : "⌘↵ para enviar"}
+          </p>
+          <button
+            onClick={handleSend}
+            disabled={!canSend}
+            className={cn(
+              "inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-semibold transition-ui",
+              canSend
+                ? isNote
+                  ? "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-950/60 dark:text-amber-300"
+                  : "bg-brand-gradient text-white hover:opacity-95"
+                : "opacity-50 cursor-not-allowed bg-surface text-ink-tertiary"
+            )}
+            style={canSend && !isNote ? { boxShadow: "var(--shadow-brand)" } : undefined}
+          >
+            {sending
+              ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              : isNote
+              ? <><StickyNote className="w-3.5 h-3.5" /> Guardar nota</>
+              : <><Send className="w-3.5 h-3.5" /> Enviar a {channelLabel}</>
+            }
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -113,12 +117,14 @@ export function ReplyBox({ conversationId, channel, onMessageSent }: ReplyBoxPro
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-4 py-2 text-xs font-medium border-b-2 transition-ui",
+        "flex items-center gap-1.5 h-8 px-3.5 rounded-full text-[13px] font-medium transition-ui",
         active
-          ? "border-brand-500 text-brand-600 dark:text-brand-400"
-          : "border-transparent text-ink-tertiary hover:text-ink-secondary"
+          ? "bg-surface text-brand-600 shadow-card"
+          : "text-ink-tertiary hover:text-ink-secondary"
       )}
     >
       {children}

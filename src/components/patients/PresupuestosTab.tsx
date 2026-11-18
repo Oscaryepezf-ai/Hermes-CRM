@@ -55,7 +55,7 @@ export function PresupuestosTab({ leadId, budgets, doctors, clinic, lead, canEdi
       </div>
 
       {budgets.length === 0 ? (
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-10 flex flex-col items-center text-center gap-3 shadow-card">
+        <div className="bg-surface rounded-2xl p-10 flex flex-col items-center text-center gap-3 shadow-card">
           <div className="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center">
             <FileText className="w-6 h-6 text-brand-400" />
           </div>

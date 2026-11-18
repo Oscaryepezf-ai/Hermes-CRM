@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,55 +25,64 @@ export function RevenueChart({ data }: RevenueChartProps) {
 
   const dark = mounted && resolvedTheme === "dark";
 
-  const grid       = dark ? "#232736" : "#f1f5f9";
-  const tick       = dark ? "#5C6680" : "#94a3b8";
+  const grid       = dark ? "#232736" : "#E9ECF7";
+  const tick       = dark ? "#8A94AE" : "#66728C";
   const tooltipBg  = dark ? "#1A1D27" : "#ffffff";
-  const tooltipBrd = dark ? "#2A2F42" : "#e2e8f0";
-  const tooltipTxt = dark ? "#F0F2F8" : "#1A1D23";
+  const tooltipTxt = dark ? "#F0F2F8" : "#1B1E3A";
 
   return (
-    <Card className="bg-surface shadow-card border-line-subtle">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-ink-secondary">
-          Ingresos — Últimos 6 meses
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[15px] font-semibold text-ink-primary">
+          Ingresos · últimos 6 meses
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={grid} />
+        <ResponsiveContainer width="100%" height={240}>
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 4" stroke={grid} vertical={false} />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 11, fill: tick }}
+              tick={{ fontSize: 12, fill: tick }}
               axisLine={false}
               tickLine={false}
+              dy={6}
             />
             <YAxis
               tickFormatter={formatValue}
-              tick={{ fontSize: 11, fill: tick }}
+              tick={{ fontSize: 12, fill: tick }}
               axisLine={false}
               tickLine={false}
-              width={50}
+              width={60}
             />
             <Tooltip
               formatter={(value) => [formatValue(Number(value)), "Ingresos"]}
+              cursor={{ stroke: "#6366f1", strokeOpacity: 0.25, strokeWidth: 1 }}
               contentStyle={{
-                borderRadius: "8px",
-                border:     `1px solid ${tooltipBrd}`,
+                borderRadius: "12px",
+                border:     "none",
                 fontSize:   "12px",
                 background: tooltipBg,
                 color:      tooltipTxt,
+                boxShadow:  "0 12px 32px rgba(41,50,120,0.16)",
               }}
             />
-            <Line
+            <Area
               type="monotone"
               dataKey="value"
               stroke="#6366f1"
               strokeWidth={2.5}
-              dot={{ fill: "#6366f1", r: 4 }}
-              activeDot={{ r: 6 }}
+              fill="url(#revenueFill)"
+              dot={false}
+              activeDot={{ r: 5, fill: "#6366f1", stroke: "#fff", strokeWidth: 2 }}
             />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>

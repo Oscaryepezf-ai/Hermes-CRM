@@ -49,7 +49,7 @@ export function PipelineLayout({ initialLeads, clinicName, userRole }: PipelineL
             exit={{ x: "100%", opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             className={cn(
-              "flex flex-col border-l border-medical-border bg-white",
+              "flex flex-col bg-surface md:rounded-tl-2xl md:shadow-[var(--shadow-panel)]",
               // Mobile: fixed overlay; Desktop: static side panel
               "fixed inset-0 z-50 md:static md:z-auto md:w-[40%]"
             )}

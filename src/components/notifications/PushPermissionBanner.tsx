@@ -72,8 +72,8 @@ export function PushPermissionBanner() {
   if (!visible) return null
 
   return (
-    <div className="mx-6 mt-4 flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3">
-      <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+    <div className="flex items-center gap-3 bg-brand-50 rounded-2xl px-4 py-3">
+      <div className="w-9 h-9 rounded-xl bg-brand-100 flex items-center justify-center flex-shrink-0">
         <Bell className="w-4 h-4 text-indigo-600" />
       </div>
       <p className="flex-1 text-sm text-indigo-800">

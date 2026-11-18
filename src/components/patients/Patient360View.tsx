@@ -121,14 +121,14 @@ export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orth
       <div className="flex gap-6 items-start">
         {/* Left column — patient card + sidebar */}
         <div className="w-[220px] flex-shrink-0 space-y-4">
-          <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card text-center">
-            <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mx-auto">
-              <span className="text-lg font-bold text-brand-600">{initials}</span>
+          <div className="bg-surface rounded-2xl p-4 shadow-card text-center">
+            <div className="w-16 h-16 rounded-full bg-brand-gradient flex items-center justify-center mx-auto" style={{ boxShadow: "var(--shadow-brand)" }}>
+              <span className="text-lg font-bold text-white">{initials}</span>
             </div>
-            <p className="text-[14px] font-bold text-ink-primary mt-2.5 leading-tight">{lead.fullName}</p>
+            <p className="text-[15px] font-bold text-ink-primary mt-3 leading-tight">{lead.fullName}</p>
             {lead.nickname && <p className="text-[11px] text-ink-tertiary">&ldquo;{lead.nickname}&rdquo;</p>}
             {age !== null && <p className="text-[12px] text-ink-tertiary mt-0.5">{age} años</p>}
-            <span className={cn("inline-block mt-2 text-[10px] font-medium px-2 py-0.5 rounded-full", stateConfig.color)}>
+            <span className={cn("inline-block mt-2 text-[11px] font-medium px-2.5 py-0.5 rounded-full", stateConfig.color)}>
               {stateConfig.label}
             </span>
 
@@ -153,7 +153,7 @@ export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orth
             </div>
           </div>
 
-          <nav className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+          <nav className="bg-surface rounded-2xl p-2 shadow-card space-y-0.5">
             {visibleItems.map((item) => {
               const Icon = item.icon
               const isActive = tab === item.id
@@ -162,9 +162,9 @@ export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orth
                   key={item.id}
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-medium transition-ui border-b border-line-subtle last:border-0 text-left",
+                    "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-ui text-left",
                     isActive
-                      ? "bg-brand-50 text-brand-600"
+                      ? "bg-brand-50 text-brand-600 font-semibold"
                       : "text-ink-secondary hover:bg-inset hover:text-ink-primary"
                   )}
                 >
@@ -187,7 +187,7 @@ export function Patient360View({ lead, clinicalHistory, orthodonticHistory, orth
           )}
 
           {tab === "odontograma" && canViewClinico && (
-            <div className="bg-surface border border-line-subtle rounded-[12px] p-6 shadow-card">
+            <div className="bg-surface rounded-2xl p-6 shadow-card">
               <Odontogram leadId={lead.id} initialData={odontogramData} />
             </div>
           )}

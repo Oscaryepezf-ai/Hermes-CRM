@@ -64,7 +64,7 @@ export function KnowledgeBaseUpload({ initialDocuments }: { initialDocuments: Kn
   }
 
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-4">
+    <div className="bg-surface rounded-2xl p-5 shadow-card space-y-4">
       <div className="flex items-center gap-2">
         <BookOpen className="w-4 h-4 text-brand-600" />
         <div>

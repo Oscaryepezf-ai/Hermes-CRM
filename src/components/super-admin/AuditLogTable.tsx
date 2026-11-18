@@ -33,7 +33,7 @@ function describeMetadata(metadata: unknown): string | null {
 
 export function AuditLogTable({ logs }: { logs: AuditLog[] }) {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+    <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
       {logs.map((log, i) => {
         const detail = describeMetadata(log.metadata)
         return (

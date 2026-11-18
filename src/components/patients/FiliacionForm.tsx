@@ -90,7 +90,7 @@ export function FiliacionForm({ lead, lastAppointment }: FiliacionFormProps) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card space-y-5">
+      <div className="bg-surface rounded-2xl p-5 shadow-card space-y-5">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Nombre completo" required>
             <input className={inputClass} value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />

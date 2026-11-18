@@ -36,7 +36,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+        <div className="bg-surface rounded-2xl p-4 shadow-card">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign className="w-4 h-4 text-emerald-600" />
             <span className="text-[11px] text-ink-tertiary font-medium">Total invertido</span>
@@ -44,7 +44,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
           <p className="text-[16px] font-bold text-ink-primary">{formatCurrency(totalRevenue, "USD")}</p>
         </div>
 
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+        <div className="bg-surface rounded-2xl p-4 shadow-card">
           <div className="flex items-center gap-2 mb-1">
             <Calendar className="w-4 h-4 text-brand-500" />
             <span className="text-[11px] text-ink-tertiary font-medium">Total citas</span>
@@ -52,7 +52,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
           <p className="text-[16px] font-bold text-ink-primary">{patient.appointments.length}</p>
         </div>
 
-        <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+        <div className="bg-surface rounded-2xl p-4 shadow-card">
           <div className="flex items-center gap-2 mb-1">
             <Clock className="w-4 h-4 text-cyan-600" />
             <span className="text-[11px] text-ink-tertiary font-medium">Próxima cita</span>
@@ -63,7 +63,7 @@ export function EstadoCuentaTab({ patient }: { patient: PatientWithAppointments 
         </div>
       </div>
 
-      <div className="bg-surface border border-line-subtle rounded-[12px] p-5 shadow-card">
+      <div className="bg-surface rounded-2xl p-5 shadow-card">
         <h3 className="text-[14px] font-bold text-ink-primary mb-3">Historial de citas</h3>
         <div className="space-y-4">
           {patient.appointments.length === 0 ? (

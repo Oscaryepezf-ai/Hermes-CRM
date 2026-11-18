@@ -147,7 +147,7 @@ export function TemplatesClient({ initialTemplates, stages }: Props) {
             return (
               <div
                 key={tpl.id}
-                className="bg-surface border border-line-subtle rounded-[12px] shadow-card p-4"
+                className="bg-surface rounded-2xl shadow-card p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

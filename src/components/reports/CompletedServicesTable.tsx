@@ -30,7 +30,7 @@ export function CompletedServicesTable({
           <Stat label="N° de servicios" value={String(completed.cantidad)} />
         </div>
 
-        <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+        <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
           <div className="grid grid-cols-[1.4fr_0.9fr_0.9fr_1.2fr_0.9fr_0.7fr_0.7fr_0.8fr_1.2fr] px-4 py-2.5 border-b border-line-subtle bg-inset">
             {["Paciente", "Medio de pago", "Comprobante", "Servicio", "Total pagado", "Desc. 1", "Desc. 2", "Comisión", "Comentario"].map((h) => (
               <p key={h} className="text-[10.5px] font-medium text-ink-tertiary uppercase tracking-[0.03em] truncate">{h}</p>
@@ -58,7 +58,7 @@ export function CompletedServicesTable({
 
       <section className="space-y-3">
         <h2 className="text-[15px] font-bold text-ink-primary">Servicios por terminar (pendientes de cobro)</h2>
-        <div className="bg-surface border border-line-subtle rounded-[12px] overflow-hidden shadow-card">
+        <div className="bg-surface rounded-2xl overflow-hidden shadow-card">
           <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr] px-4 py-2.5 border-b border-line-subtle bg-inset">
             {["Paciente", "Servicio", "Total pagado", "Pendiente"].map((h) => (
               <p key={h} className="text-[10.5px] font-medium text-ink-tertiary uppercase tracking-[0.03em]">{h}</p>
@@ -84,7 +84,7 @@ export function CompletedServicesTable({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-surface border border-line-subtle rounded-[12px] p-4 shadow-card">
+    <div className="bg-surface rounded-2xl p-4 shadow-card">
       <p className="text-[11px] text-ink-tertiary">{label}</p>
       <p className="text-[20px] font-bold text-ink-primary tabular-nums mt-1">{value}</p>
     </div>
