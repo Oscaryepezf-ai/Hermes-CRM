@@ -177,7 +177,7 @@ export function Sidebar({ userRole, plan = "STARTER", isSuperAdmin = false }: Si
           )}
         >
           {isElite && <Star className="w-3 h-3" />}
-          {collapsed ? planLabel.slice(0, 3) : `Plan ${planLabel}`}
+          {collapsed ? planLabel : `Plan ${planLabel}`}
         </div>
         {!collapsed && !isPro && !isElite && (
           <Link
