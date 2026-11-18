@@ -22,17 +22,17 @@ model Clinic {
   updatedAt            DateTime @updatedAt
 
   // ─── Canales Meta ─────────────────────────────────────
-  facebookPageId   String?
-  messengerActive  Boolean @default(false)
-  instagramActive  Boolean @default(false)
+  facebookPageId  String?
+  messengerActive Boolean @default(false)
+  instagramActive Boolean @default(false)
 
   // ─── Hermes Captador ──────────────────────────────────
-  captadorActive   Boolean @default(false)
-  captadorConfig   Json?
+  captadorActive Boolean @default(false)
+  captadorConfig Json?
 
   // ─── Hermes Reactivador ───────────────────────────────
-  reactivadorActive  Boolean @default(false)
-  reactivadorConfig  Json?
+  reactivadorActive Boolean @default(false)
+  reactivadorConfig Json?
 
   // ─── Onboarding / activación ──────────────────────────
   practiceType        PracticeType?
@@ -72,6 +72,7 @@ model Clinic {
   waTemplates           WaTemplate[]
   waCampaigns           WaCampaign[]
   metaFlows             MetaFlow[]
+  campaigns             Campaign[]
 }
 
 model ClinicChannel {
@@ -103,33 +104,33 @@ model User {
   clinic    Clinic   @relation(fields: [clinicId], references: [id])
   createdAt DateTime @default(now())
 
-  isActive            Boolean               @default(true)
-  isSuperAdmin        Boolean               @default(false)
-  invitedByUserId     String?
-  invitedAt           DateTime?
-  lastLoginAt         DateTime?
+  isActive        Boolean   @default(true)
+  isSuperAdmin    Boolean   @default(false)
+  invitedByUserId String?
+  invitedAt       DateTime?
+  lastLoginAt     DateTime?
 
   // ─── Registro por WhatsApp ─────────────────────────────
-  phone             String?           @unique
-  phoneVerified     Boolean           @default(false)
-  selfReportedRole  SelfReportedRole?
+  phone            String?           @unique
+  phoneVerified    Boolean           @default(false)
+  selfReportedRole SelfReportedRole?
 
-  leadHistory                 LeadHistory[]
-  appointments                Appointment[]
-  assignedLeads               Lead[]                @relation("AssignedLeads")
-  googleCalendarToken         GoogleCalendarToken?
-  pushSubscriptions           PushSubscription[]
-  sentInvitations             UserInvitation[]      @relation("SentInvitations")
-  journeyEvents               JourneyEvent[]
-  assignedInboxConversations  InboxConversation[]   @relation("AssignedInboxConversations")
-  clinicalVisits              ClinicalVisit[]       @relation("DoctorVisits")
-  orthodonticVisits           OrthodonticVisit[]    @relation("OrthoDoctorVisits")
-  prescriptions               Prescription[]        @relation("DoctorPrescriptions")
-  uploadedFiles                PatientFile[]        @relation("UploadedFiles")
-  superAdminActions            SuperAdminAuditLog[] @relation("SuperAdminActions")
-  doctorPayments                Payment[]            @relation("DoctorPayments")
-  userClinics                  UserClinic[]
-  doctorBudgets                Budget[]             @relation("DoctorBudgets")
+  leadHistory                LeadHistory[]
+  appointments               Appointment[]
+  assignedLeads              Lead[]               @relation("AssignedLeads")
+  googleCalendarToken        GoogleCalendarToken?
+  pushSubscriptions          PushSubscription[]
+  sentInvitations            UserInvitation[]     @relation("SentInvitations")
+  journeyEvents              JourneyEvent[]
+  assignedInboxConversations InboxConversation[]  @relation("AssignedInboxConversations")
+  clinicalVisits             ClinicalVisit[]      @relation("DoctorVisits")
+  orthodonticVisits          OrthodonticVisit[]   @relation("OrthoDoctorVisits")
+  prescriptions              Prescription[]       @relation("DoctorPrescriptions")
+  uploadedFiles              PatientFile[]        @relation("UploadedFiles")
+  superAdminActions          SuperAdminAuditLog[] @relation("SuperAdminActions")
+  doctorPayments             Payment[]            @relation("DoctorPayments")
+  userClinics                UserClinic[]
+  doctorBudgets              Budget[]             @relation("DoctorBudgets")
 }
 
 // Acceso adicional a clínicas más allá de la clínica de origen (User.clinicId)
@@ -185,24 +186,24 @@ model GoogleCalendarToken {
 }
 
 model PipelineStage {
-  id            String   @id @default(cuid())
-  clinicId      String
-  clinic        Clinic   @relation(fields: [clinicId], references: [id])
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
   name          String
-  slug          String   @default("")
-  color         String   @default("#6366F1")
-  bgColor       String   @default("#EEF3FC")
-  headerBgColor String   @default("#DDE8F8")
+  slug          String  @default("")
+  color         String  @default("#6366F1")
+  bgColor       String  @default("#EEF3FC")
+  headerBgColor String  @default("#DDE8F8")
   order         Int
-  isProtected   Boolean  @default(false)
-  isDefault     Boolean  @default(false)
-  isCustom      Boolean  @default(false)
+  isProtected   Boolean @default(false)
+  isDefault     Boolean @default(false)
+  isCustom      Boolean @default(false)
   icon          String?
 
-  leads         Lead[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  leads     Lead[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clinicId, order])
 }
@@ -225,6 +226,8 @@ model Lead {
   status         LeadStatus       @default(NUEVO)
   treatment      DentalTreatment  @default(OTRO)
   channel        MarketingChannel @default(OTRO)
+  campaignId     String?
+  campaign       Campaign?        @relation(fields: [campaignId], references: [id])
   assignedToId   String?
   assignedTo     User?            @relation("AssignedLeads", fields: [assignedToId], references: [id])
   lastContactAt  DateTime?
@@ -234,20 +237,20 @@ model Lead {
   updatedAt      DateTime         @updatedAt
 
   // ─── Journey fields ───────────────────────────────────────
-  journeyState      JourneyState  @default(PROSPECTO)
-  interestLevel     Int?
-  budgetRange       BudgetRange?
-  consultationDate  DateTime?
-  conversionValue   Float?
-  lostReason        LostReason?
-  lostAt            DateTime?
-  lastActivityAt    DateTime?
-  totalTouchpoints  Int           @default(0)
-  responseTimeAvg   Float?
+  journeyState     JourneyState @default(PROSPECTO)
+  interestLevel    Int?
+  budgetRange      BudgetRange?
+  consultationDate DateTime?
+  conversionValue  Float?
+  lostReason       LostReason?
+  lostAt           DateTime?
+  lastActivityAt   DateTime?
+  totalTouchpoints Int          @default(0)
+  responseTimeAvg  Float?
 
-  isAgentHandled       Boolean @default(false)
-  isNewPatientOfMonth  Boolean @default(false)
-  convertedThisMonth   Boolean @default(false)
+  isAgentHandled      Boolean @default(false)
+  isNewPatientOfMonth Boolean @default(false)
+  convertedThisMonth  Boolean @default(false)
 
   history               LeadHistory[]
   messages              Message[]
@@ -288,20 +291,20 @@ model Lead {
 }
 
 model ClinicalHistory {
-  id                String   @id @default(cuid())
-  leadId            String   @unique
-  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  leadId String @unique
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
-  reasonForConsult  String?  @db.Text
-  medicalHistory    String?  @db.Text
-  dentalHistory     String?  @db.Text
-  odontogramNotes   String?  @db.Text
+  reasonForConsult  String? @db.Text
+  medicalHistory    String? @db.Text
+  dentalHistory     String? @db.Text
+  odontogramNotes   String? @db.Text
   odontogramData    Json?
-  proposedTreatment String?  @db.Text
-  observations      String?  @db.Text
+  proposedTreatment String? @db.Text
+  observations      String? @db.Text
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Message {
@@ -353,27 +356,27 @@ model Patient {
 }
 
 model Appointment {
-  id                 String            @id @default(cuid())
-  patientId          String
-  patient            Patient           @relation(fields: [patientId], references: [id])
-  clinicId           String
-  clinic             Clinic            @relation(fields: [clinicId], references: [id])
-  dentistId          String
-  dentist            User              @relation(fields: [dentistId], references: [id])
-  procedure          String
-  value              Float?
-  status             AppointmentStatus @default(SCHEDULED)
-  scheduledAt        DateTime
-  notes              String?
-  createdAt          DateTime          @default(now())
+  id               String            @id @default(cuid())
+  patientId        String
+  patient          Patient           @relation(fields: [patientId], references: [id])
+  clinicId         String
+  clinic           Clinic            @relation(fields: [clinicId], references: [id])
+  dentistId        String
+  dentist          User              @relation(fields: [dentistId], references: [id])
+  procedure        String
+  value            Float?
+  status           AppointmentStatus @default(SCHEDULED)
+  scheduledAt      DateTime
+  notes            String?
+  createdAt        DateTime          @default(now())
   // Agendador fields
-  googleEventId      String?
-  reminderSentAt     DateTime?
-  reminderStatus     ReminderStatus    @default(PENDING)
-  confirmationCode   String?           @default(cuid())
-  patientConfirmed   Boolean           @default(false)
+  googleEventId    String?
+  reminderSentAt   DateTime?
+  reminderStatus   ReminderStatus    @default(PENDING)
+  confirmationCode String?           @default(cuid())
+  patientConfirmed Boolean           @default(false)
 
-  payments           Payment[]
+  payments Payment[]
 }
 
 // ─── Reportes: catálogo de servicios, pagos y egresos ──────────────────────
@@ -387,26 +390,27 @@ model Service {
   isActive     Boolean         @default(true)
   createdAt    DateTime        @default(now())
 
-  payments     Payment[]
-  budgetItems  BudgetItem[]
+  payments    Payment[]
+  budgetItems BudgetItem[]
 
   @@unique([clinicId, name])
 }
 
 model Payment {
-  id              String        @id @default(cuid())
-  clinicId        String
-  clinic          Clinic        @relation(fields: [clinicId], references: [id])
-  patientId       String
-  patient         Patient       @relation(fields: [patientId], references: [id])
-  appointmentId   String?
-  appointment     Appointment?  @relation(fields: [appointmentId], references: [id])
-  serviceId       String?
-  service         Service?      @relation(fields: [serviceId], references: [id])
-  doctorId        String
-  doctor          User          @relation("DoctorPayments", fields: [doctorId], references: [id])
+  id            String       @id @default(cuid())
+  clinicId      String
+  clinic        Clinic       @relation(fields: [clinicId], references: [id])
+  patientId     String
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  appointmentId String?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  serviceId     String?
+  service       Service?     @relation(fields: [serviceId], references: [id])
+  doctorId      String
+  doctor        User         @relation("DoctorPayments", fields: [doctorId], references: [id])
 
   amount          Float
+  type            PaymentType   @default(PAYMENT)
   paymentMethod   PaymentMethod
   receiptType     ReceiptType   @default(RECIBO)
   discount1       Float?
@@ -415,8 +419,8 @@ model Payment {
   commissionValue Float?
   comment         String?
 
-  paidAt          DateTime      @default(now())
-  createdAt       DateTime      @default(now())
+  paidAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([clinicId, paidAt])
   @@index([clinicId, doctorId])
@@ -435,11 +439,46 @@ model Expense {
   @@index([clinicId, expenseDate])
 }
 
+// ─── Clínica Growth: inversión publicitaria y atribución ─────────────────────
+
+model Campaign {
+  id        String           @id @default(cuid())
+  clinicId  String
+  clinic    Clinic           @relation(fields: [clinicId], references: [id])
+  channel   MarketingChannel
+  name      String
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  dailySpend DailyAdSpend[]
+  leads      Lead[]
+
+  @@index([clinicId, isActive])
+}
+
+model DailyAdSpend {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  date        DateTime
+  spendAmount Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+
+  @@unique([campaignId, date])
+  @@index([campaignId, date])
+}
+
 enum PaymentMethod {
   EFECTIVO
   TARJETA
   TRANSFERENCIA
   OTRO
+}
+
+enum PaymentType {
+  PAYMENT
+  REFUND
 }
 
 enum ReceiptType {
@@ -469,6 +508,7 @@ enum UserRole {
   ADMIN
   DOCTOR
   RECEPTIONIST
+  ANALYST
 }
 
 enum LeadSource {
@@ -658,7 +698,7 @@ model SocialProfile {
   leadId        String
   lead          Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
   channel       MarketingChannel
-  externalId    String           // PSID de Facebook, IG user ID, etc.
+  externalId    String // PSID de Facebook, IG user ID, etc.
   displayName   String?
   profilePicUrl String?
   locale        String?
@@ -869,30 +909,30 @@ model AiUsageLog {
 // ─── Hermes Reactivador ───────────────────────────────────────────────────────
 
 model ReactivationCampaign {
-  id                 String              @id @default(cuid())
-  clinicId           String
-  clinic             Clinic              @relation(fields: [clinicId], references: [id])
-  leadId             String
-  lead               Lead                @relation(fields: [leadId], references: [id])
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
+  leadId   String
+  lead     Lead   @relation(fields: [leadId], references: [id])
 
-  segment            ReactivationSegment
-  treatmentFocus     String?
-  daysSinceLastAppt  Int
+  segment           ReactivationSegment
+  treatmentFocus    String?
+  daysSinceLastAppt Int
 
-  status             CampaignStatus      @default(PENDING)
-  attemptCount       Int                 @default(0)
-  maxAttempts        Int                 @default(3)
-  lastAttemptAt      DateTime?
-  nextAttemptAt      DateTime?
+  status        CampaignStatus @default(PENDING)
+  attemptCount  Int            @default(0)
+  maxAttempts   Int            @default(3)
+  lastAttemptAt DateTime?
+  nextAttemptAt DateTime?
 
-  responded          Boolean             @default(false)
-  respondedAt        DateTime?
-  convertedAt        DateTime?
-  revenue            Float?
+  responded   Boolean   @default(false)
+  respondedAt DateTime?
+  convertedAt DateTime?
+  revenue     Float?
 
-  messages           CampaignMessage[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  messages  CampaignMessage[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@unique([clinicId, leadId])
   @@index([clinicId, status])
@@ -900,17 +940,17 @@ model ReactivationCampaign {
 }
 
 model CampaignMessage {
-  id             String               @id @default(cuid())
-  campaignId     String
-  campaign       ReactivationCampaign @relation(fields: [campaignId], references: [id])
-  channel        MarketingChannel
-  content        String               @db.Text
-  attemptNumber  Int
-  sentAt         DateTime             @default(now())
-  deliveredAt    DateTime?
-  readAt         DateTime?
-  repliedAt      DateTime?
-  externalMsgId  String?
+  id            String               @id @default(cuid())
+  campaignId    String
+  campaign      ReactivationCampaign @relation(fields: [campaignId], references: [id])
+  channel       MarketingChannel
+  content       String               @db.Text
+  attemptNumber Int
+  sentAt        DateTime             @default(now())
+  deliveredAt   DateTime?
+  readAt        DateTime?
+  repliedAt     DateTime?
+  externalMsgId String?
 }
 
 enum ReactivationSegment {
@@ -933,24 +973,24 @@ enum CampaignStatus {
 // ─── Historial de visitas clínicas ────────────────────────────────────────────
 
 model ClinicalVisit {
-  id           String   @id @default(cuid())
-  leadId       String
-  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  clinicId     String
-  clinic       Clinic   @relation(fields: [clinicId], references: [id])
-  doctorId     String
-  doctor       User     @relation("DoctorVisits", fields: [doctorId], references: [id])
-  visitDate    DateTime @default(now())
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId  String
+  doctor    User     @relation("DoctorVisits", fields: [doctorId], references: [id])
+  visitDate DateTime @default(now())
 
-  procedures   String?  @db.Text   // Procedimientos realizados
-  findings     String?  @db.Text   // Hallazgos clínicos
-  medications  String?  @db.Text   // Medicamentos / recetas
-  instructions String?  @db.Text   // Indicaciones al paciente
-  followUp     String?  @db.Text   // Seguimiento / próxima cita
-  notes        String?  @db.Text   // Notas internas
+  procedures   String? @db.Text // Procedimientos realizados
+  findings     String? @db.Text // Hallazgos clínicos
+  medications  String? @db.Text // Medicamentos / recetas
+  instructions String? @db.Text // Indicaciones al paciente
+  followUp     String? @db.Text // Seguimiento / próxima cita
+  notes        String? @db.Text // Notas internas
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([leadId, visitDate])
   @@index([clinicId, visitDate])
@@ -979,8 +1019,8 @@ model OrthodonticHistory {
   breathingType   String?
   swallowingType  String?
   habits          String[]
-  tmjFindings     String? @db.Text
-  functionalNotes String? @db.Text
+  tmjFindings     String?  @db.Text
+  functionalNotes String?  @db.Text
 
   // Análisis dental y oclusal (intraoral)
   angleClassRight       String?
@@ -1000,9 +1040,9 @@ model OrthodonticHistory {
   crossbite             String[]
   openBite              Boolean? @default(false)
   curveOfSpee           String?
-  missingTeeth          String? @db.Text
-  impactedTeeth         String? @db.Text
-  occlusalNotes         String? @db.Text
+  missingTeeth          String?  @db.Text
+  impactedTeeth         String?  @db.Text
+  occlusalNotes         String?  @db.Text
 
   // Análisis cefalométrico
   snaAngle           Float?
@@ -1056,21 +1096,21 @@ model OrthodonticVisit {
 // ─── Prescripciones ────────────────────────────────────────────────────────────
 
 model Prescription {
-  id           String   @id @default(cuid())
-  leadId       String
-  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  clinicId     String
-  clinic       Clinic   @relation(fields: [clinicId], references: [id])
-  doctorId     String
-  doctor       User     @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
-  issuedAt     DateTime @default(now())
+  id       String   @id @default(cuid())
+  leadId   String
+  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  clinicId String
+  clinic   Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId String
+  doctor   User     @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  issuedAt DateTime @default(now())
 
-  diagnosis    String?  @db.Text
-  instructions String?  @db.Text
-  medications  Json     // [{ name, dose, frequency, duration, notes }]
+  diagnosis    String? @db.Text
+  instructions String? @db.Text
+  medications  Json // [{ name, dose, frequency, duration, notes }]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([leadId, issuedAt])
   @@index([clinicId, issuedAt])
@@ -1079,22 +1119,22 @@ model Prescription {
 // ─── Archivos del paciente ──────────────────────────────────────────────────────
 
 model PatientFile {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   leadId       String
-  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead         Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
   clinicId     String
-  clinic       Clinic   @relation(fields: [clinicId], references: [id])
+  clinic       Clinic @relation(fields: [clinicId], references: [id])
   uploadedById String
-  uploadedBy   User     @relation("UploadedFiles", fields: [uploadedById], references: [id])
+  uploadedBy   User   @relation("UploadedFiles", fields: [uploadedById], references: [id])
 
-  fileName     String
-  fileUrl      String
-  mimeType     String?
-  sizeBytes    Int?
-  category     String?
-  notes        String?  @db.Text
+  fileName  String
+  fileUrl   String
+  mimeType  String?
+  sizeBytes Int?
+  category  String?
+  notes     String? @db.Text
 
-  createdAt    DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([leadId, createdAt])
   @@index([clinicId, createdAt])
@@ -1109,23 +1149,23 @@ enum InboxStatus {
 }
 
 model InboxConversation {
-  id                 String        @id @default(cuid())
+  id                 String                   @id @default(cuid())
   clinicId           String
-  clinic             Clinic        @relation(fields: [clinicId], references: [id])
+  clinic             Clinic                   @relation(fields: [clinicId], references: [id])
   leadId             String
-  lead               Lead          @relation(fields: [leadId], references: [id])
+  lead               Lead                     @relation(fields: [leadId], references: [id])
   channel            MarketingChannel
-  status             InboxStatus   @default(OPEN)
+  status             InboxStatus              @default(OPEN)
   assignedToId       String?
-  assignedTo         User?         @relation("AssignedInboxConversations", fields: [assignedToId], references: [id])
-  isRead             Boolean       @default(false)
+  assignedTo         User?                    @relation("AssignedInboxConversations", fields: [assignedToId], references: [id])
+  isRead             Boolean                  @default(false)
   lastMessageAt      DateTime?
-  lastMessagePreview String?       @db.VarChar(200)
-  unreadCount        Int           @default(0)
-  isPinned           Boolean       @default(false)
+  lastMessagePreview String?                  @db.VarChar(200)
+  unreadCount        Int                      @default(0)
+  isPinned           Boolean                  @default(false)
   labels             InboxConversationLabel[]
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
 
   @@unique([leadId, channel])
   @@index([clinicId, status, lastMessageAt])
@@ -1173,13 +1213,13 @@ model PhoneVerification {
 // ─── Checklist gamificado de activación ───────────────────────────────────────
 
 model ActivationMission {
-  id          String      @id @default(cuid())
+  id          String     @id @default(cuid())
   clinicId    String
-  clinic      Clinic      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  clinic      Clinic     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   missionKey  MissionKey
-  completed   Boolean     @default(false)
+  completed   Boolean    @default(false)
   completedAt DateTime?
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime   @default(now())
 
   @@unique([clinicId, missionKey])
 }
@@ -1215,82 +1255,82 @@ enum SelfReportedRole {
 // ─── Plantillas de WhatsApp Marketing ────────────────────────────────────────
 
 model WaTemplate {
-  id              String            @id @default(cuid())
-  clinicId        String
-  clinic          Clinic            @relation(fields: [clinicId], references: [id])
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
-  name            String            // snake_case, único por clínica (requerido por Meta)
-  category        WaTemplateCategory
-  language        String            @default("es")
-  status          WaTemplateStatus  @default(BORRADOR)
+  name     String // snake_case, único por clínica (requerido por Meta)
+  category WaTemplateCategory
+  language String             @default("es")
+  status   WaTemplateStatus   @default(BORRADOR)
 
   // Meta tracking
-  metaId          String?           // ID devuelto por Meta al hacer submit
-  metaStatus      String?           // APPROVED / REJECTED / PENDING
+  metaId          String? // ID devuelto por Meta al hacer submit
+  metaStatus      String? // APPROVED / REJECTED / PENDING
   rejectionReason String?
 
   // Componentes
-  headerType      WaHeaderType?
-  headerText      String?
-  headerExample   String?           // ejemplo de variable del header
-  body            String            @db.Text
-  bodyExamples    Json?             // ["val1", "val2"] para variables {{1}}, {{2}}
-  footer          String?
-  buttons         Json?             // [{ type: "QUICK_REPLY"|"URL"|"PHONE_NUMBER", text, value? }]
+  headerType    WaHeaderType?
+  headerText    String?
+  headerExample String? // ejemplo de variable del header
+  body          String        @db.Text
+  bodyExamples  Json? // ["val1", "val2"] para variables {{1}}, {{2}}
+  footer        String?
+  buttons       Json? // [{ type: "QUICK_REPLY"|"URL"|"PHONE_NUMBER", text, value? }]
 
-  submittedAt     DateTime?
-  approvedAt      DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  campaigns       WaCampaign[]
+  campaigns WaCampaign[]
 
   @@unique([clinicId, name])
   @@index([clinicId])
 }
 
 model WaCampaign {
-  id           String           @id @default(cuid())
-  clinicId     String
-  clinic       Clinic           @relation(fields: [clinicId], references: [id])
-  templateId   String
-  template     WaTemplate       @relation(fields: [templateId], references: [id])
+  id         String     @id @default(cuid())
+  clinicId   String
+  clinic     Clinic     @relation(fields: [clinicId], references: [id])
+  templateId String
+  template   WaTemplate @relation(fields: [templateId], references: [id])
 
-  name         String
-  status       WaCampaignStatus @default(BORRADOR)
+  name   String
+  status WaCampaignStatus @default(BORRADOR)
 
   // Filtros de destinatarios (JSON flexible)
-  targetFilter Json             // { all: bool, stageIds: [], labelIds: [] }
+  targetFilter Json // { all: bool, stageIds: [], labelIds: [] }
   // Mapeo variable → campo: { "1": "fullName", "2": "treatment" }
-  variableMap  Json             @default("{}")
+  variableMap  Json @default("{}")
 
-  scheduledAt  DateTime?
-  startedAt    DateTime?
-  completedAt  DateTime?
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
 
-  totalCount   Int              @default(0)
-  sentCount    Int              @default(0)
-  failedCount  Int              @default(0)
+  totalCount  Int @default(0)
+  sentCount   Int @default(0)
+  failedCount Int @default(0)
 
-  sends        WaCampaignSend[]
+  sends WaCampaignSend[]
 
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([clinicId])
 }
 
 model WaCampaignSend {
-  id           String         @id @default(cuid())
-  campaignId   String
-  campaign     WaCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  leadId       String
-  lead         Lead           @relation(fields: [leadId], references: [id])
-  phone        String
-  status       WaSendStatus   @default(PENDIENTE)
-  errorMsg     String?
-  sentAt       DateTime?
-  deliveredAt  DateTime?
+  id          String       @id @default(cuid())
+  campaignId  String
+  campaign    WaCampaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId      String
+  lead        Lead         @relation(fields: [leadId], references: [id])
+  phone       String
+  status      WaSendStatus @default(PENDIENTE)
+  errorMsg    String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
 
   @@index([campaignId])
   @@index([leadId])
@@ -1335,26 +1375,26 @@ enum WaSendStatus {
 // ─── Meta WhatsApp Flows ──────────────────────────────────────────────────────
 
 model MetaFlow {
-  id          String          @id @default(cuid())
-  clinicId    String
-  clinic      Clinic          @relation(fields: [clinicId], references: [id])
+  id       String @id @default(cuid())
+  clinicId String
+  clinic   Clinic @relation(fields: [clinicId], references: [id])
 
   name        String
   description String?
   category    MetaFlowCategory
-  status      MetaFlowStatus  @default(DRAFT)
+  status      MetaFlowStatus   @default(DRAFT)
 
   // Meta IDs
-  metaFlowId  String?         // ID devuelto por Meta al crear
-  metaStatus  String?         // DRAFT / PUBLISHED / DEPRECATED / BLOCKED / THROTTLED
+  metaFlowId String? // ID devuelto por Meta al crear
+  metaStatus String? // DRAFT / PUBLISHED / DEPRECATED / BLOCKED / THROTTLED
 
   // Flow JSON schema (pantallas y componentes)
-  screens     Json
+  screens Json
 
   submittedAt DateTime?
   publishedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   submissions MetaFlowSubmission[]
 
@@ -1362,17 +1402,17 @@ model MetaFlow {
 }
 
 model MetaFlowSubmission {
-  id         String   @id @default(cuid())
-  flowId     String
-  flow       MetaFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
-  clinicId   String
-  leadId     String?
-  lead       Lead?    @relation(fields: [leadId], references: [id])
+  id       String   @id @default(cuid())
+  flowId   String
+  flow     MetaFlow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  clinicId String
+  leadId   String?
+  lead     Lead?    @relation(fields: [leadId], references: [id])
 
   // Datos enviados por el usuario al completar el flow
-  data       Json
+  data        Json
   // Token único por envío (traza)
-  flowToken  String?
+  flowToken   String?
   // Mensaje de WhatsApp asociado
   waMessageId String?
 

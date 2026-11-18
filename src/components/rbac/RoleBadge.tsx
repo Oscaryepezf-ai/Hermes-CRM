@@ -1,8 +1,8 @@
 import { ROLE_LABELS, ROLE_COLORS, ROLE_ICONS } from '@/types/rbac'
 import type { UserRole } from '@prisma/client'
-import { ShieldCheck, Stethoscope, Headset } from 'lucide-react'
+import { ShieldCheck, Stethoscope, Headset, BarChart3 } from 'lucide-react'
 
-const ICONS = { ShieldCheck, Stethoscope, Headset }
+const ICONS = { ShieldCheck, Stethoscope, Headset, BarChart3 }
 
 type RoleBadgeProps = {
   role: UserRole

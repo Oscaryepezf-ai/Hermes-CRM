@@ -7,7 +7,7 @@ import { inviteUser } from "@/lib/actions/users"
 import { ROLE_LABELS, ROLE_DESCRIPTIONS } from "@/types/rbac"
 import type { UserRole } from "@prisma/client"
 
-const ROLES: UserRole[] = ["ADMIN", "DOCTOR", "RECEPTIONIST"]
+const ROLES: UserRole[] = ["ADMIN", "DOCTOR", "RECEPTIONIST", "ANALYST"]
 
 export function InviteUserModal() {
   const [open, setOpen] = useState(false)

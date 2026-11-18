@@ -1,4 +1,4 @@
-import { PrismaClient, LeadSource, AppointmentStatus, UserRole, Plan, MsgDirection, MsgStatus } from "@prisma/client";
+import { PrismaClient, LeadSource, AppointmentStatus, UserRole, Plan, MsgDirection, MsgStatus, MarketingChannel } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import * as dotenv from "dotenv";
@@ -190,7 +190,11 @@ async function main() {
   const createdLeads = [];
   for (const lead of leadsData) {
     const created = await prisma.lead.create({
-      data: { ...lead, clinicId: clinic.id },
+      // El seed original solo seteaba `source` (legacy Kanban); `channel` quedaba
+      // en su default OTRO. Los valores de LeadSource y MarketingChannel coinciden
+      // 1:1, así que se refleja aquí para que el módulo de Crecimiento tenga datos
+      // por canal reales en el seed.
+      data: { ...lead, clinicId: clinic.id, channel: lead.source as unknown as MarketingChannel },
     });
     createdLeads.push(created);
 
@@ -424,6 +428,46 @@ async function main() {
   }
 
   console.log("✅ Mensajes de demo creados");
+
+  // ─── Clínica Growth: campañas e inversión publicitaria (últimos 30 días) ───
+  const campaignsData = [
+    { name: "IG Reels — Ortodoncia", channel: MarketingChannel.INSTAGRAM, baseSpend: 18 },
+    { name: "Google Search — Implantes", channel: MarketingChannel.GOOGLE, baseSpend: 25 },
+    { name: "FB Leads — Blanqueamiento", channel: MarketingChannel.FACEBOOK, baseSpend: 12 },
+  ];
+
+  const createdCampaigns = [];
+  for (const c of campaignsData) {
+    const campaign = await prisma.campaign.create({
+      data: { clinicId: clinic.id, name: c.name, channel: c.channel },
+    });
+    createdCampaigns.push(campaign);
+
+    for (let d = 29; d >= 0; d--) {
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - d);
+      const variance = 0.6 + Math.random() * 0.8;
+      await prisma.dailyAdSpend.create({
+        data: { campaignId: campaign.id, date, spendAmount: Math.round(c.baseSpend * variance * 100) / 100 },
+      });
+    }
+  }
+
+  // Atribuir los leads demo existentes a la campaña de su mismo canal
+  await prisma.lead.updateMany({
+    where: { clinicId: clinic.id, channel: MarketingChannel.INSTAGRAM },
+    data: { campaignId: createdCampaigns[0].id },
+  });
+  await prisma.lead.updateMany({
+    where: { clinicId: clinic.id, channel: MarketingChannel.GOOGLE },
+    data: { campaignId: createdCampaigns[1].id },
+  });
+  await prisma.lead.updateMany({
+    where: { clinicId: clinic.id, channel: MarketingChannel.FACEBOOK },
+    data: { campaignId: createdCampaigns[2].id },
+  });
+
+  console.log("✅ Campañas e inversión publicitaria creadas:", createdCampaigns.length);
+
   console.log("\n🎉 Seed completado exitosamente!");
   console.log("\n📧 Credenciales de acceso:");
   console.log("   Email: dr.garcia@sonrisas.ec");

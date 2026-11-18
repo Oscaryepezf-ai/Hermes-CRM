@@ -10,13 +10,15 @@ const ROUTE_MODULE_MAP: Record<string, string> = {
   "/dr-clinic":     "dr_clinic",
   "/ai":            "hermes_ai",
   "/reportes":      "reports",
+  "/crecimiento":   "ad_spend",
   "/settings":      "settings",
 }
 
 const ROLE_ALLOWED_MODULES: Record<string, string[]> = {
-  ADMIN:        ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports", "settings"],
+  ADMIN:        ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports", "ad_spend", "settings"],
   DOCTOR:       ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports"],
   RECEPTIONIST: ["dashboard", "pipeline", "agenda", "patients", "reports"],
+  ANALYST:      ["dashboard", "reports", "ad_spend"],
   // Legacy JWT values — users with old tokens before the role rename
   OWNER:   ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports", "settings"],
   DENTIST: ["dashboard", "pipeline", "agenda", "patients", "dr_clinic", "hermes_ai", "reports"],
@@ -55,6 +57,7 @@ export const authConfig: NextAuthConfig = {
         pathname.startsWith("/settings") ||
         pathname.startsWith("/ai") ||
         pathname.startsWith("/reportes") ||
+        pathname.startsWith("/crecimiento") ||
         pathname.startsWith("/dr-clinic") ||
         pathname.startsWith("/wizard") ||
         pathname.startsWith("/super-admin");

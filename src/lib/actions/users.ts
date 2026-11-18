@@ -30,7 +30,7 @@ export async function getClinicUsers() {
 
 const InviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(["ADMIN", "DOCTOR", "RECEPTIONIST"]),
+  role: z.enum(["ADMIN", "DOCTOR", "RECEPTIONIST", "ANALYST"]),
   name: z.string().min(2).max(80),
 })
 
@@ -64,7 +64,7 @@ export async function inviteUser(data: z.infer<typeof InviteSchema>) {
 
 export async function updateUserRole(
   userId: string,
-  newRole: "ADMIN" | "DOCTOR" | "RECEPTIONIST"
+  newRole: "ADMIN" | "DOCTOR" | "RECEPTIONIST" | "ANALYST"
 ) {
   const guard = await requirePermission("users", "edit")
   if (!guard.authorized) return unauthorizedResponse(guard.error)

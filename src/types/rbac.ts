@@ -11,6 +11,7 @@ export type Module =
   | 'reports'
   | 'settings'
   | 'users'
+  | 'ad_spend'
 
 export type Action =
   | 'view'
@@ -40,22 +41,26 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN:        'Administrador',
   DOCTOR:       'Doctor',
   RECEPTIONIST: 'Recepcionista',
+  ANALYST:      'Analista',
 }
 
 export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   ADMIN:        'Acceso total al CRM, configuración y equipo',
   DOCTOR:       'Acceso clínico completo: pipeline, pacientes y Dr. Clinic',
   RECEPTIONIST: 'Gestión de agenda, leads y contacto con pacientes',
+  ANALYST:      'Reportes e inversión publicitaria, sin acceso a datos clínicos de pacientes',
 }
 
 export const ROLE_COLORS: Record<UserRole, { bg: string; text: string; border: string }> = {
   ADMIN:        { bg: 'bg-violet-100', text: 'text-violet-700', border: 'border-violet-300' },
   DOCTOR:       { bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-300'   },
   RECEPTIONIST: { bg: 'bg-teal-100',   text: 'text-teal-700',   border: 'border-teal-300'   },
+  ANALYST:      { bg: 'bg-amber-100',  text: 'text-amber-700',  border: 'border-amber-300'  },
 }
 
-export const ROLE_ICONS: Record<UserRole, 'ShieldCheck' | 'Stethoscope' | 'Headset'> = {
+export const ROLE_ICONS: Record<UserRole, 'ShieldCheck' | 'Stethoscope' | 'Headset' | 'BarChart3'> = {
   ADMIN:        'ShieldCheck',
   DOCTOR:       'Stethoscope',
   RECEPTIONIST: 'Headset',
+  ANALYST:      'BarChart3',
 }

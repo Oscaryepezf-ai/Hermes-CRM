@@ -26,6 +26,7 @@ const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: "ADMIN", label: "Administrador" },
   { value: "DOCTOR", label: "Doctor" },
   { value: "RECEPTIONIST", label: "Recepcionista" },
+  { value: "ANALYST", label: "Analista" },
 ]
 
 export function UsersTable({ currentUserId }: { currentUserId: string }) {
